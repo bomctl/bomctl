@@ -56,7 +56,8 @@ func rootCmd() *cobra.Command {
 
 type (
 	DirectoryValue      string
-	FileValue           string
+	ExistingFileValue   string
+	OutputFileValue     string
 	URLValue            string
 	DirectorySliceValue []string
 	FileSliceValue      []string
@@ -64,7 +65,7 @@ type (
 )
 
 var (
-	outputFile FileValue
+	outputFile OutputFileValue
 	sbomUrls   URLSliceValue
 )
 
@@ -91,8 +92,9 @@ func checkFile(value string) {
 
 func (dv *DirectoryValue) String() string       { return fmt.Sprintf("%v", *dv) }
 func (dsv *DirectorySliceValue) String() string { return fmt.Sprintf("%v", *dsv) }
-func (fv *FileValue) String() string            { return fmt.Sprintf("%v", *fv) }
+func (efv *ExistingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
 func (fsv *FileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
+func (ofv *OutputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
 func (uv *URLValue) String() string             { return fmt.Sprintf("%v", *uv) }
 func (usv *URLSliceValue) String() string       { return fmt.Sprintf("%v", *usv) }
 
@@ -108,15 +110,20 @@ func (dsv *DirectorySliceValue) Set(value string) error {
 	return nil
 }
 
-func (fv *FileValue) Set(value string) error {
+func (efv *ExistingFileValue) Set(value string) error {
 	checkFile(value)
-	*fv = FileValue(value)
+	*efv = ExistingFileValue(value)
 	return nil
 }
 
 func (fsv *FileSliceValue) Set(value string) error {
 	checkFile(value)
 	*fsv = append(*fsv, value)
+	return nil
+}
+
+func (ofv *OutputFileValue) Set(value string) error {
+	*ofv = OutputFileValue(value)
 	return nil
 }
 
@@ -130,12 +137,19 @@ func (usv *URLSliceValue) Set(value string) error {
 	return nil
 }
 
-func (dv *DirectoryValue) Type() string       { return "DIRECTORY" }
-func (dsv *DirectorySliceValue) Type() string { return "DIRECTORY" }
-func (fv *FileValue) Type() string            { return "FILE" }
-func (fsv *FileSliceValue) Type() string      { return "FILE" }
-func (uv *URLValue) Type() string             { return "URL" }
-func (usv *URLSliceValue) Type() string       { return "URL" }
+const (
+	dirType  string = "DIRECTORY"
+	fileType string = "FILE"
+	urlType  string = "URL"
+)
+
+func (dv *DirectoryValue) Type() string       { return dirType }
+func (dsv *DirectorySliceValue) Type() string { return dirType }
+func (efv *ExistingFileValue) Type() string   { return fileType }
+func (fsv *FileSliceValue) Type() string      { return fileType }
+func (ofv *OutputFileValue) Type() string     { return fileType }
+func (uv *URLValue) Type() string             { return urlType }
+func (usv *URLSliceValue) Type() string       { return urlType }
 
 func Execute() {
 	err := rootCmd().Execute()

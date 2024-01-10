@@ -6,7 +6,13 @@
 // -------------------------------------------------------
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"strings"
+
+	"github.com/spf13/cobra"
+
+	"github.com/bomctl/bomctl/pkg/utils"
+)
 
 func fetchCmd() *cobra.Command {
 	fetchCmd := &cobra.Command{
@@ -32,4 +38,15 @@ func fetchCmd() *cobra.Command {
 	return fetchCmd
 }
 
-func fetch(cmd *cobra.Command, args []string) {}
+func fetch(cmd *cobra.Command, args []string) {
+	for _, url := range sbomUrls {
+		switch {
+		case strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://"):
+			cobra.CheckErr(utils.DownloadHTTP(url, outputFile.String(), nil))
+		case strings.HasPrefix(url, "oci://"):
+			// TODO
+		case strings.HasPrefix(url, "git@") || strings.HasPrefix(url, "git+"):
+			// TODO
+		}
+	}
+}
