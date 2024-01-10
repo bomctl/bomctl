@@ -4,9 +4,9 @@
 # Whitelist patterns anchored to project root
 !/.editorconfig
 !/.gitattributes
+!/.github/workflows/*.yml
 !/.gitignore
 !/.gitlab-ci.yml
-!/.gitlab/ci/*.yml
 !/.golangci.yml
 !/.goreleaser.yml
 !/.markdownlint.yml
