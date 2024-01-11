@@ -7,7 +7,7 @@
 package cmd
 
 import (
-	"strings"
+	"regexp"
 
 	"github.com/spf13/cobra"
 
@@ -40,13 +40,13 @@ func fetchCmd() *cobra.Command {
 
 func fetch(cmd *cobra.Command, args []string) {
 	for _, url := range sbomUrls {
-		switch {
-		case strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://"):
+		switch urlBytes := []byte(url); {
+		case regexp.MustCompile("^http(s)?://").Match(urlBytes):
 			cobra.CheckErr(utils.DownloadHTTP(url, outputFile.String(), nil))
-		case strings.HasPrefix(url, "oci://"):
-			// TODO
-		case strings.HasPrefix(url, "git@") || strings.HasPrefix(url, "git+"):
-			// TODO
+		case regexp.MustCompile("^oci://").Match(urlBytes):
+			return // TODO
+		case regexp.MustCompile(`((git|ssh|http(s)?)|(git@[\w\.-]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`).Match(urlBytes):
+			return // TODO
 		}
 	}
 }

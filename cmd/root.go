@@ -42,14 +42,15 @@ func rootCmd() *cobra.Command {
 
 	rootCmd := &cobra.Command{
 		Use:     "bomctl",
-		Version: "0.0.1",
 		Long:    "Simpler Software Bill of Materials management",
+		Version: getVersion(),
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.bomctl.yaml)")
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable debug output")
 
 	rootCmd.AddCommand(fetchCmd())
+	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd
 }
@@ -138,18 +139,18 @@ func (usv *URLSliceValue) Set(value string) error {
 }
 
 const (
-	dirType  string = "DIRECTORY"
-	fileType string = "FILE"
-	urlType  string = "URL"
+	valueTypeDir  string = "DIRECTORY"
+	valueTypeFile string = "FILE"
+	valueTypeURL  string = "URL"
 )
 
-func (dv *DirectoryValue) Type() string       { return dirType }
-func (dsv *DirectorySliceValue) Type() string { return dirType }
-func (efv *ExistingFileValue) Type() string   { return fileType }
-func (fsv *FileSliceValue) Type() string      { return fileType }
-func (ofv *OutputFileValue) Type() string     { return fileType }
-func (uv *URLValue) Type() string             { return urlType }
-func (usv *URLSliceValue) Type() string       { return urlType }
+func (dv *DirectoryValue) Type() string       { return valueTypeDir }
+func (dsv *DirectorySliceValue) Type() string { return valueTypeDir }
+func (efv *ExistingFileValue) Type() string   { return valueTypeFile }
+func (fsv *FileSliceValue) Type() string      { return valueTypeFile }
+func (ofv *OutputFileValue) Type() string     { return valueTypeFile }
+func (uv *URLValue) Type() string             { return valueTypeURL }
+func (usv *URLSliceValue) Type() string       { return valueTypeURL }
 
 func Execute() {
 	err := rootCmd().Execute()
