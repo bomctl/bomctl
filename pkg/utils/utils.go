@@ -37,6 +37,40 @@ type parsedURL struct {
 	Fragment string
 }
 
+func (url *parsedURL) String() string {
+	var urlBytes []byte
+	pathSep := ""
+
+	switch url.Scheme {
+	case "http", "https", "oci":
+		urlBytes = append(urlBytes, fmt.Sprintf("%s://", url.Scheme)...)
+		pathSep = "/"
+	case "git", "ssh":
+		urlBytes = append(urlBytes, fmt.Sprintf("%s@", url.Scheme)...)
+		pathSep = ":"
+	}
+
+	if url.Username != "" && url.Password != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("%s:%s@", url.Username, url.Password)...)
+	}
+
+	urlBytes = append(urlBytes, url.Hostname...)
+
+	if url.Path != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("%s%s", pathSep, url.Path)...)
+	}
+
+	if url.Query != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("?%s", url.Query)...)
+	}
+
+	if url.Fragment != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("#%s", url.Fragment)...)
+	}
+
+	return string(urlBytes)
+}
+
 func basicAuth(username, password string) string {
 	data := []byte(username + ":" + password)
 	return base64.URLEncoding.EncodeToString(data)
@@ -79,10 +113,10 @@ func DownloadHTTP(url, filepath string, auth *basicAuthCredentials) (err error) 
 	return nil
 }
 
-func ParseURL(url string) parsedURL {
+func ParseURL(url string) *parsedURL {
 	matches := urlPattern.FindStringSubmatch(url)
 
-	return parsedURL{
+	return &parsedURL{
 		Scheme:   matches[urlPattern.SubexpIndex("scheme")],
 		Username: matches[urlPattern.SubexpIndex("username")],
 		Password: matches[urlPattern.SubexpIndex("password")],
