@@ -14,23 +14,19 @@ import (
 
 func fetchCmd() *cobra.Command {
 	fetchCmd := &cobra.Command{
-		Use:   "fetch",
-		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Run:   fetch,
+		Use:    "fetch [flags] SBOM_URL...",
+		Args:   cobra.MinimumNArgs(1),
+		PreRun: parsePositionalArgs,
+		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Run:    fetch,
 	}
 
-	fetchCmd.Flags().VarP(
-		&sbomUrls,
-		"sbom-url",
-		"u",
-		"URL of SBOM to fetch (can be specified multiple times)",
-	)
 	fetchCmd.Flags().VarP(
 		&outputFile,
 		"output-file",
 		"o",
-		"Path to output file [default: hopctl-merge-YYMMDD-HHMMSS.json]",
+		"Path to output file",
 	)
 
 	return fetchCmd
@@ -46,5 +42,11 @@ func fetch(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(utils.DownloadHTTP(url, outputFile.String(), nil))
 		case "oci":
 		}
+	}
+}
+
+func parsePositionalArgs(cmd *cobra.Command, args []string) {
+	for _, arg := range args {
+		sbomUrls = append(sbomUrls, arg)
 	}
 }
