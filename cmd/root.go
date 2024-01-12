@@ -63,6 +63,7 @@ func rootCmd() *cobra.Command {
 			"Windows: %LocalAppData%\bomctl]",
 		),
 	)
+
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
 		fmt.Sprintf("config file [defaults:\n\t%s\n\t%s\n\t%s",
 			"Unix:    $HOME/.config/bomctl/bomctl.yaml",
@@ -70,6 +71,7 @@ func rootCmd() *cobra.Command {
 			"Windows: %AppData%\bomctl\bomctl.yml]",
 		),
 	)
+
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable debug output")
 
 	rootCmd.AddCommand(fetchCmd())

@@ -65,6 +65,9 @@ clean: # Clean the working directory
 lint: # Lint Golang code files
 	golangci-lint run --verbose
 
+lint-fix: # Fix linter findings
+	golangci-lint run --fix --verbose
+
 #@ Build
 define gobuild
 	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o build/bomctl-${1}-${2}${3}

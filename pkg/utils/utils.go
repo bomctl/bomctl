@@ -15,11 +15,15 @@ import (
 	"regexp"
 )
 
-var urlPattern = regexp.MustCompile(`^(` +
-	`(?P<scheme>git|http(s)?|oci|ssh)(?:@|://))?(//)?((` +
-	`(?P<username>[^:]+)(?::(?P<password>[^@]+)?)?@)?` +
-	`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?)?` +
-	`(/?(?P<path>[^?#]*))(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`)
+var urlPattern = regexp.MustCompile(
+	fmt.Sprintf("%s%s%s%s%s",
+		`^//|(?P<scheme>git|http(s)?|oci|ssh)(@|(\+http(s)?)?://)`,
+		`(((?P<username>[^:]+)(?::(?P<password>[^@]+))?:@)?`,
+		`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?)?`,
+		`(/?(?P<path>[^@?#]*))(?:@(?P<gitRef>[^#]+))?`,
+		`(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
+	),
+)
 
 type basicAuthCredentials struct {
 	username string
@@ -32,6 +36,7 @@ type parsedURL struct {
 	Password string
 	Hostname string
 	Port     string
+	GitRef   string
 	Path     string
 	Query    string
 	Fragment string
@@ -122,6 +127,7 @@ func ParseURL(url string) *parsedURL {
 		Password: matches[urlPattern.SubexpIndex("password")],
 		Hostname: matches[urlPattern.SubexpIndex("hostname")],
 		Port:     matches[urlPattern.SubexpIndex("port")],
+		GitRef:   matches[urlPattern.SubexpIndex("gitRef")],
 		Path:     matches[urlPattern.SubexpIndex("path")],
 		Query:    matches[urlPattern.SubexpIndex("query")],
 		Fragment: matches[urlPattern.SubexpIndex("fragment")],
