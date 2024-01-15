@@ -52,6 +52,7 @@
   "git.autofetch": true,
   "git.autoStash": true,
   "git.enableCommitSigning": true,
+  "git.inputValidationSubjectLength": null,
   "git.pruneOnFetch": true,
   "git.terminalAuthentication": true,
   "git.terminalGitEditor": true,

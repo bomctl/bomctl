@@ -46,14 +46,7 @@ func fetchCmd() *cobra.Command {
 
 func fetch(cmd *cobra.Command, args []string) {
 	for _, url := range sbomUrls {
-		parsedURL := utils.ParseURL(url)
-
-		switch parsedURL.Scheme {
-		case "git":
-		case "http", "https":
-			cobra.CheckErr(utils.DownloadHTTP(url, outputFile.String(), nil))
-		case "oci":
-		}
+		cobra.CheckErr(utils.FetchSBOM(url, outputFile.String()))
 	}
 }
 
