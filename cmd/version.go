@@ -54,5 +54,5 @@ func getVersion() string {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	fmt.Print(getVersion())
+	fmt.Println("bomctl version", getVersion())
 }
