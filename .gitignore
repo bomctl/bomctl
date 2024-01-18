@@ -4,8 +4,6 @@
 # Whitelist patterns anchored to project root
 !/.editorconfig
 !/.gitattributes
-!/.github/workflows/*.yml
-!/.gitignore
 !/.gitlab-ci.yml
 !/.golangci.yml
 !/.goreleaser.yml
@@ -15,6 +13,7 @@
 
 # Whitelist patterns found anywhere in project
 !*.go
+!.gitignore
 !Dockerfile
 !go.mod
 !go.sum
