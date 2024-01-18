@@ -1,3 +1,4 @@
-!.gitignore
 !tables.sql
+!triggers.sql
 !types.sql
+!views.sql
