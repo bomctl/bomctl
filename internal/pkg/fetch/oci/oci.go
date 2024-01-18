@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-// SPDX-FileName: cmd/version.go
+// SPDX-FileName: internal/pkg/fetch/oci/oci.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,41 +16,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package cmd
+package oci
 
 import (
-	"fmt"
+	"github.com/bom-squad/protobom/pkg/sbom"
 
-	"github.com/spf13/cobra"
+	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func versionCmd() *cobra.Command {
-	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Show version",
-		Long:  "Print the version",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("bomctl version", getVersion())
-		},
-	}
+type OCIFetcher struct{}
 
-	return versionCmd
-}
-
-const (
-	// VersionMajor is for an API incompatible changes.
-	VersionMajor = 0
-
-	// VersionMinor is for functionality in a backwards-compatible manner.
-	VersionMinor = 0
-
-	// VersionPatch is for backwards-compatible bug fixes.
-	VersionPatch = 1
-
-	// VersionDev indicates development branch. Releases will be empty string.
-	VersionDev = "-dev.1"
-)
-
-func getVersion() string {
-	return fmt.Sprintf("%d.%d.%d%s", VersionMajor, VersionMinor, VersionPatch, VersionDev)
+// Not yet implemented.
+func (of *OCIFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+	return nil, nil
 }

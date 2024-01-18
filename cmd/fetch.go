@@ -21,7 +21,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/fetch"
 )
 
 func fetchCmd() *cobra.Command {
@@ -31,7 +31,11 @@ func fetchCmd() *cobra.Command {
 		PreRun: parsePositionalArgs,
 		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Run:    fetch,
+		Run: func(cmd *cobra.Command, args []string) {
+			for _, url := range sbomURLs {
+				cobra.CheckErr(fetch.Exec(url, outputFile.String()))
+			}
+		},
 	}
 
 	fetchCmd.Flags().VarP(
@@ -44,14 +48,8 @@ func fetchCmd() *cobra.Command {
 	return fetchCmd
 }
 
-func fetch(cmd *cobra.Command, args []string) {
-	for _, url := range sbomUrls {
-		cobra.CheckErr(utils.FetchSBOM(url, outputFile.String()))
-	}
-}
-
 func parsePositionalArgs(cmd *cobra.Command, args []string) {
 	for _, arg := range args {
-		sbomUrls = append(sbomUrls, arg)
+		sbomURLs = append(sbomURLs, arg)
 	}
 }

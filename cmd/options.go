@@ -39,7 +39,7 @@ type (
 
 var (
 	outputFile OutputFileValue
-	sbomUrls   URLSliceValue
+	sbomURLs   URLSliceValue
 )
 
 var (

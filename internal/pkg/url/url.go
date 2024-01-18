@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-// SPDX-FileName: pkg/utils/url.go
+// SPDX-FileName: internal/pkg/url/url.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,12 +16,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package utils
+package url
 
 import (
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"regexp"
+	"strings"
 )
 
 var urlPattern = regexp.MustCompile(
@@ -34,12 +36,42 @@ var urlPattern = regexp.MustCompile(
 	),
 )
 
-type basicAuthCredentials struct {
-	username string
-	password string
+type BasicAuth struct {
+	Username, Password string
 }
 
-type parsedURL struct {
+func (auth *BasicAuth) Encode() string {
+	if auth == nil {
+		return ""
+	}
+
+	data := []byte(strings.Join([]string{auth.Username, auth.Password}, ":"))
+
+	return base64.URLEncoding.EncodeToString(data)
+}
+
+func (auth *BasicAuth) Name() string {
+	return "http-basic-auth"
+}
+
+func (auth *BasicAuth) SetAuth(request *http.Request) {
+	if auth == nil {
+		return
+	}
+
+	request.SetBasicAuth(auth.Username, auth.Password)
+}
+
+func (auth *BasicAuth) String() string {
+	masked := "*******"
+	if auth.Password == "" {
+		masked = "<empty>"
+	}
+
+	return fmt.Sprintf("Authorization: Basic %s:%s", auth.Username, masked)
+}
+
+type ParsedURL struct {
 	Scheme   string
 	Username string
 	Password string
@@ -51,7 +83,7 @@ type parsedURL struct {
 	Fragment string
 }
 
-func (url *parsedURL) String() string {
+func (url *ParsedURL) String() string {
 	var urlBytes []byte
 	pathSep := ""
 
@@ -85,15 +117,10 @@ func (url *parsedURL) String() string {
 	return string(urlBytes)
 }
 
-func basicAuth(username, password string) string {
-	data := []byte(username + ":" + password)
-	return base64.URLEncoding.EncodeToString(data)
-}
-
-func ParseURL(url string) *parsedURL {
+func Parse(url string) *ParsedURL {
 	matches := urlPattern.FindStringSubmatch(url)
 
-	return &parsedURL{
+	return &ParsedURL{
 		Scheme:   matches[urlPattern.SubexpIndex("scheme")],
 		Username: matches[urlPattern.SubexpIndex("username")],
 		Password: matches[urlPattern.SubexpIndex("password")],
