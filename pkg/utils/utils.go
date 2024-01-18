@@ -30,6 +30,11 @@ import (
 
 	"github.com/bom-squad/protobom/pkg/reader"
 	"github.com/bom-squad/protobom/pkg/sbom"
+	"github.com/go-git/go-billy/v5/memfs"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	httpGit "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/storage/memory"
 )
 
 var errUnsupportedURL = errors.New("unsupported URL scheme")
@@ -54,7 +59,49 @@ func parseSBOMData(data []byte) (document *sbom.Document, err error) {
 	return
 }
 
-func DownloadHTTP(url, outputFile string, auth *basicAuthCredentials) (*sbom.Document, error) {
+func downloadGit(parsedURL *parsedURL, authentication *httpGit.BasicAuth) (*sbom.Document, error) {
+	memStorage := memory.NewStorage()
+	memFS := memfs.New()
+
+	refName := plumbing.NewRemoteReferenceName("origin", parsedURL.GitRef)
+
+	repository, err := git.Clone(memStorage, memFS, &git.CloneOptions{
+		URL:           parsedURL.String(),
+		Auth:          authentication,
+		RemoteName:    "origin",
+		ReferenceName: refName,
+		SingleBranch:  true,
+		Depth:         1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	tree, err := repository.Worktree()
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	sbomFile, err := tree.Filesystem.Open(parsedURL.Fragment)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	sbomBytes := []byte{}
+	_, err = sbomFile.Read(sbomBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	document, err := parseSBOMData(sbomBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	return document, nil
+}
+
+func downloadHTTP(url, outputFile string, auth *basicAuthCredentials) (*sbom.Document, error) {
 	client := http.DefaultClient
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -109,8 +156,14 @@ func FetchSBOM(url, outputFile string) (err error) {
 
 	switch parsedURL.Scheme {
 	case "git":
+		document, err = downloadGit(
+			parsedURL,
+			&httpGit.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password})
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	case "http", "https":
-		document, err = DownloadHTTP(url, outputFile, nil)
+		document, err = downloadHTTP(url, outputFile, nil)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -122,6 +175,8 @@ func FetchSBOM(url, outputFile string) (err error) {
 	// Fetch externally referenced BOMs
 	var idx uint8
 	for _, ref := range getBOMReferences(document) {
+		idx += 1
+
 		if outputFile != "" {
 			// Matches base filename, excluding extension
 			baseFilename := regexp.MustCompile(`^([^\.]+)?`).FindString(filepath.Base(outputFile))
