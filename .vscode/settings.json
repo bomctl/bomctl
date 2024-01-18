@@ -1,0 +1,118 @@
+{
+  "[dockerfile][editorconfig][ignore][properties][shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format",
+    "editor.tabSize": 2
+  },
+
+  "[go][go.mod][go.sum]": {
+    "editor.defaultFormatter": "golang.go",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false
+  },
+
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  "[makefile]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format",
+    "editor.insertSpaces": false
+  },
+
+  "[markdown]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.markdownlint": true
+    },
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml",
+    "editor.tabSize": 2
+  },
+
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2
+  },
+
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+
+  "git.alwaysSignOff": true,
+  "git.autofetch": true,
+  "git.autoStash": true,
+  "git.enableCommitSigning": true,
+  "git.inputValidationSubjectLength": null,
+  "git.pruneOnFetch": true,
+  "git.terminalAuthentication": true,
+  "git.terminalGitEditor": true,
+  "git.useIntegratedAskPass": true,
+
+  "gitlens.showWelcomeOnInstall": false,
+  "gitlens.showWhatsNewAfterUpgrades": false,
+
+  "git-graph.dialog.fetchRemote.prune": true,
+  "git-graph.repository.commits.showSignatureStatus": true,
+  "git-graph.repository.fetchAndPrune": true,
+  "git-graph.repository.sign.commits": true,
+  "git-graph.repository.sign.tags": true,
+
+  "go.coverageDecorator": {
+    "coveredGutterStyle": "blockgreen",
+    "coveredHighlightColor": "rgba(64,128,128,0.5)",
+    "type": "gutter",
+    "uncoveredGutterStyle": "blockred",
+    "uncoveredHighlightColor": "rgba(128,64,64,0.25)"
+  },
+  "go.coverMode": "atomic",
+  "go.coverOnSave": true,
+  "go.coverOnSingleTest": true,
+  "go.lintFlags": ["--fast"],
+  "go.lintOnSave": "package",
+  "go.lintTool": "golangci-lint",
+  "go.testFlags": ["-race", "-covermode=atomic"],
+
+  "json.schemaDownload.enable": true,
+
+  "markdown-preview-enhanced.frontMatterRenderingOption": "code block",
+  "markdown-preview-enhanced.codeBlockTheme": "default.css",
+  "markdown-preview-enhanced.previewTheme": "none.css",
+
+  "markdownlint.config": {
+    "first-line-heading": false,
+    "no-inline-html": false
+  },
+
+  "prettier.printWidth": 120,
+  "prettier.singleQuote": true,
+
+  "shellformat.flag": "--binary-next-line --keep-padding --case-indent --space-redirects --indent=2",
+  "shellformat.useEditorConfig": true,
+
+  "sqltools.autoConnectTo": ["bomctl"],
+  "sqltools.connections": [
+    {
+      "previewLimit": 100,
+      "driver": "SQLite",
+      "name": "bomctl",
+      "database": "bomctl.db"
+    }
+  ],
+  "sqltools.defaultExportType": "json",
+  "sqltools.defaultOpenType": "json",
+  "sqltools.format": { "reservedWordCase": "upper" },
+  "sqltools.useNodeRuntime": true,
+
+  "yaml.customTags": ["!reference sequence"],
+  "yaml.format.printWidth": 160
+}

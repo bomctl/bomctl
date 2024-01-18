@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "go",
+      "label": "go: build package",
+      "command": "build",
+      "args": ["${workspaceFolder}"],
+      "problemMatcher": ["$go"],
+      "group": "build"
+    },
+
+    {
+      "type": "go",
+      "label": "go: build (debug)",
+      "command": "build",
+      "args": ["-gcflags=all=-N -l", "-o", "${workspaceFolder}/bin/bomctl.debug"],
+      "group": "build"
+    },
+
+    {
+      "type": "go",
+      "label": "go: test package",
+      "command": "test",
+      "args": ["${fileDirname}"],
+      "problemMatcher": ["$go"],
+      "group": "test"
+    },
+
+    {
+      "type": "shell",
+      "label": "go: test (debug)",
+      "command": "go",
+      "args": ["test", "-c", "-o", "${workspaceFolder}/bin/bomctl.debug"],
+      "group": "test"
+    }
+  ]
+}
