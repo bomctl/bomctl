@@ -102,8 +102,5 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	err = rootCmd().Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+	cobra.CheckErr(rootCmd().Execute())
 }
