@@ -5,8 +5,11 @@
   },
 
   "[go][go.mod][go.sum]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
     "editor.defaultFormatter": "golang.go",
-    "editor.tabSize": 4,
     "editor.insertSpaces": false
   },
 
@@ -39,9 +42,10 @@
 
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.detectIndentation": false,
-  "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
   "editor.insertSpaces": true,
+  "editor.rulers": [{ "column": 120 }],
   "editor.tabSize": 4,
 
   "files.insertFinalNewline": true,
@@ -78,7 +82,7 @@
   "go.coverOnSave": true,
   "go.coverOnSingleTest": true,
   "go.lintFlags": ["--fast"],
-  "go.lintOnSave": "package",
+  "go.lintOnSave": "file",
   "go.lintTool": "golangci-lint",
   "go.testFlags": ["-race", "-covermode=atomic"],
 

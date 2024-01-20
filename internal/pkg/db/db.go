@@ -19,10 +19,10 @@
 package db
 
 import (
-	"embed"
 	"fmt"
 	"path/filepath"
 
+	"github.com/bom-squad/protobom/pkg/sbom"
 	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -33,9 +33,6 @@ type databaseORM struct {
 }
 
 var db *databaseORM
-
-//go:embed scripts
-var scripts embed.FS
 
 // Create database and initialize schema.
 func Create() (*databaseORM, error) {
@@ -49,13 +46,24 @@ func Create() (*databaseORM, error) {
 
 	db = &databaseORM{DB: dbConn}
 
-	for _, scriptName := range []string{"types", "tables", "triggers", "views"} {
-		script, err := scripts.ReadFile(filepath.Join("scripts", scriptName+".sql"))
-		if err != nil {
-			return nil, fmt.Errorf("error reading database %s creation script file: %w", scriptName, err)
-		}
+	// Create database tables from model definitions.
+	models := []interface{}{
+		&sbom.DocumentORM{},
+		&sbom.DocumentTypeORM{},
+		&sbom.EdgeORM{},
+		&sbom.ExternalReferenceORM{},
+		&sbom.MetadataORM{},
+		&sbom.NodeListORM{},
+		&sbom.NodeORM{},
+		&sbom.PersonORM{},
+		&sbom.ToolORM{},
+	}
 
-		db.Exec(string(script))
+	for _, model := range models {
+		err := db.AutoMigrate(model)
+		if err != nil {
+			return nil, fmt.Errorf("%T: %w", model, err)
+		}
 	}
 
 	return db, nil
