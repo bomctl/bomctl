@@ -70,6 +70,13 @@ func rootCmd() *cobra.Command {
 		Use:     "bomctl",
 		Long:    "Simpler Software Bill of Materials management",
 		Version: getVersion(),
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			_, err := db.Create(filepath.Join(cacheDir, "bomctl.db"))
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "database creation: %w", err)
+				os.Exit(1)
+			}
+		},
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
@@ -96,11 +103,5 @@ func rootCmd() *cobra.Command {
 }
 
 func Execute() {
-	_, err := db.Create()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "database creation: %w", err)
-		os.Exit(1)
-	}
-
 	cobra.CheckErr(rootCmd().Execute())
 }

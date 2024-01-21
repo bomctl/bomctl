@@ -20,31 +20,25 @@ package db
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/bom-squad/protobom/pkg/sbom"
-	"github.com/spf13/viper"
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
-type databaseORM struct {
-	*gorm.DB
-}
+// Enable SQLite foreign key support.
+const dsnParams string = "?_pragma=foreign_keys(1)"
 
-var db *databaseORM
+var db *gorm.DB
 
 // Create database and initialize schema.
-func Create() (*databaseORM, error) {
-	cacheDir := viper.GetString("cache_dir")
-	dbFile := filepath.Join(cacheDir, "bomctl.db")
+func Create(dbFile string) (*gorm.DB, error) {
+	var err error
 
-	dbConn, err := gorm.Open(sqlite.Open(dbFile), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open(dbFile+dsnParams), &gorm.Config{})
 	if err != nil {
-		return nil, fmt.Errorf("error opening database file: %w", err)
+		return nil, fmt.Errorf("opening database file %s: %w", dbFile, err)
 	}
-
-	db = &databaseORM{DB: dbConn}
 
 	// Create database tables from model definitions.
 	models := []interface{}{
