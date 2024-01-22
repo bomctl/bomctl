@@ -2,7 +2,7 @@ module github.com/bomctl/bomctl
 
 go 1.21
 
-replace github.com/bom-squad/protobom => github.com/jhoward-lm/protobom v0.0.0-20240121210446-0e587b196d9c
+replace github.com/bom-squad/protobom => github.com/jhoward-lm/protobom v0.0.0-20240122194845-2585f03620ab
 
 require (
 	github.com/bom-squad/protobom v0.3.0
