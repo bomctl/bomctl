@@ -1,0 +1,70 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+# SPDX-FileName: .goreleaser.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+project_name: bomctl
+
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+
+before:
+  hooks:
+    - go mod download
+
+gomod:
+  proxy: true
+
+builds:
+  - id: linux
+    binary: bomctl-linux-{{ .Arch }}
+    no_unique_dist_dir: true
+    flags: [-trimpath]
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags: ["-s {{.Env.VERSION_LDFLAGS}}"]
+
+  - id: darwin
+    binary: bomctl-darwin-{{ .Arch }}
+    no_unique_dist_dir: true
+    mod_timestamp: \{{ .CommitTimestamp }}
+    goos: [darwin]
+    goarch: [amd64, arm64]
+    ldflags: ["-s {{.Env.VERSION_LDFLAGS}}"]
+
+  - id: windows
+    binary: bomctl-windows-{{ .Arch }}
+    no_unique_dist_dir: true
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos: [windows]
+    goarch: [amd64, arm64]
+    ldflags: [-buildmode=exe, "-s {{.Env.VERSION_LDFLAGS}}"]
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+
+snapshot:
+  name_template: SNAPSHOT-{{ .ShortCommit }}
+
+changelog:
+  skip: false
+
+release:
+  footer: |
+    ### Thanks for all contributors!

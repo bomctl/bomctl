@@ -10,7 +10,8 @@
       "source.organizeImports": "explicit"
     },
     "editor.defaultFormatter": "golang.go",
-    "editor.insertSpaces": false
+    "editor.insertSpaces": false,
+    "editor.rulers": [{ "column": 120 }]
   },
 
   "[json]": {
@@ -45,7 +46,7 @@
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
   "editor.insertSpaces": true,
-  "editor.rulers": [{ "column": 120 }],
+  "editor.rulers": [{ "column": 100 }],
   "editor.tabSize": 4,
 
   "files.insertFinalNewline": true,
