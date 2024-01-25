@@ -24,17 +24,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func versionCmd() *cobra.Command {
-	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Show version",
-		Long:  "Print the version",
-		Run:   version,
-	}
-
-	return versionCmd
-}
-
 const (
 	// VersionMajor is for an API incompatible changes.
 	VersionMajor = 0
@@ -49,10 +38,18 @@ const (
 	VersionDev = "-dev.1"
 )
 
-func getVersion() string {
-	return fmt.Sprintf("%d.%d.%d%s", VersionMajor, VersionMinor, VersionPatch, VersionDev)
-}
+// Version is the specification version that the package types support.
+var Version = fmt.Sprintf("%d.%d.%d%s", VersionMajor, VersionMinor, VersionPatch, VersionDev)
 
-func version(cmd *cobra.Command, args []string) {
-	fmt.Println("bomctl version", getVersion())
+func versionCmd() *cobra.Command {
+	versionCmd := &cobra.Command{
+		Use:   "version",
+		Short: "Show version",
+		Long:  "Print the version",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("bomctl version", Version)
+		},
+	}
+
+	return versionCmd
 }
