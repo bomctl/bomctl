@@ -22,7 +22,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bom-squad/protobom/pkg/sbom"
+	protobom "github.com/bom-squad/protobom/pkg/sbom"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -51,15 +51,15 @@ func CreateSchema(dbFile string) (*gorm.DB, error) {
 
 	// Create database tables from model definitions.
 	models := []interface{}{
-		&sbom.DocumentORM{},
-		&sbom.DocumentTypeORM{},
-		&sbom.EdgeORM{},
-		&sbom.ExternalReferenceORM{},
-		&sbom.MetadataORM{},
-		&sbom.NodeListORM{},
-		&sbom.NodeORM{},
-		&sbom.PersonORM{},
-		&sbom.ToolORM{},
+		&protobom.DocumentORM{},
+		&protobom.DocumentTypeORM{},
+		&protobom.EdgeORM{},
+		&protobom.ExternalReferenceORM{},
+		&protobom.MetadataORM{},
+		&protobom.NodeListORM{},
+		&protobom.NodeORM{},
+		&protobom.PersonORM{},
+		&protobom.ToolORM{},
 	}
 
 	for _, model := range models {
@@ -73,32 +73,30 @@ func CreateSchema(dbFile string) (*gorm.DB, error) {
 }
 
 // Insert protobom Document into `documents` table.
-func AddDocument(document *sbom.Document) error {
+func AddDocument(document *protobom.Document) error {
 	documentORM, err := document.ToORM(ctx)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	documentORM.Id = document.Metadata.Id
-
-	db.Clauses(clause.OnConflict{DoNothing: true}).Create(documentORM)
+	db.Clauses(clause.OnConflict{DoNothing: true}).Create(&documentORM)
 
 	return nil
 }
 
-func GetDocumentByID(id string) *sbom.Document {
-	documentORM := &sbom.DocumentORM{}
+func GetDocumentByID(id uint32) *protobom.Document {
+	documentORM := &protobom.DocumentORM{}
 
-	db.Where(&sbom.DocumentORM{Id: id}).First(&documentORM)
-	db.Where(&sbom.MetadataORM{DocumentId: &id}).First(&documentORM.Metadata)
-	db.Where(&sbom.NodeListORM{DocumentId: &id}).First(&documentORM.NodeList)
+	db.Where(&protobom.DocumentORM{Id: id}).First(&documentORM)
+	db.Where(&protobom.MetadataORM{DocumentId: &id}).First(&documentORM.Metadata)
+	db.Where(&protobom.NodeListORM{DocumentId: &id}).First(&documentORM.NodeList)
 
-	db.Where(&sbom.DocumentTypeORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.DocumentTypes)
-	db.Where(&sbom.PersonORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.Authors)
-	db.Where(&sbom.ToolORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.Tools)
+	db.Where(&protobom.DocumentTypeORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.DocumentTypes)
+	db.Where(&protobom.PersonORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.Authors)
+	db.Where(&protobom.ToolORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.Tools)
 
-	db.Where(&sbom.NodeORM{NodeListId: &documentORM.NodeList.Id}).Find(&documentORM.NodeList.Nodes)
-	db.Where(&sbom.EdgeORM{NodeListId: &documentORM.NodeList.Id}).Find(&documentORM.NodeList.Edges)
+	db.Where(&protobom.NodeORM{NodeListId: &documentORM.NodeList.Id}).Find(&documentORM.NodeList.Nodes)
+	db.Where(&protobom.EdgeORM{NodeListId: &documentORM.NodeList.Id}).Find(&documentORM.NodeList.Edges)
 
 	document, err := documentORM.ToPB(ctx)
 	if err != nil {
