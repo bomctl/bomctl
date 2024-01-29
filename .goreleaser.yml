@@ -21,7 +21,7 @@ project_name: bomctl
 
 env:
   - GO111MODULE=on
-  - CGO_ENABLED=1
+  - CGO_ENABLED=0
 
 before:
   hooks:

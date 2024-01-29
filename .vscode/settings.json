@@ -5,9 +5,13 @@
   },
 
   "[go][go.mod][go.sum]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
     "editor.defaultFormatter": "golang.go",
-    "editor.tabSize": 4,
-    "editor.insertSpaces": false
+    "editor.insertSpaces": false,
+    "editor.rulers": [{ "column": 120 }]
   },
 
   "[json]": {
@@ -39,9 +43,10 @@
 
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.detectIndentation": false,
-  "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
   "editor.insertSpaces": true,
+  "editor.rulers": [{ "column": 100 }],
   "editor.tabSize": 4,
 
   "files.insertFinalNewline": true,
@@ -78,7 +83,7 @@
   "go.coverOnSave": true,
   "go.coverOnSingleTest": true,
   "go.lintFlags": ["--fast"],
-  "go.lintOnSave": "package",
+  "go.lintOnSave": "file",
   "go.lintTool": "golangci-lint",
   "go.testFlags": ["-race", "-covermode=atomic"],
 
@@ -98,6 +103,20 @@
 
   "shellformat.flag": "--binary-next-line --keep-padding --case-indent --space-redirects --indent=2",
   "shellformat.useEditorConfig": true,
+
+  "sqltools.autoConnectTo": ["bomctl"],
+  "sqltools.connections": [
+    {
+      "previewLimit": 100,
+      "driver": "SQLite",
+      "name": "bomctl",
+      "database": "bomctl.db"
+    }
+  ],
+  "sqltools.defaultExportType": "json",
+  "sqltools.defaultOpenType": "json",
+  "sqltools.format": { "reservedWordCase": "upper" },
+  "sqltools.useNodeRuntime": true,
 
   "yaml.customTags": ["!reference sequence"],
   "yaml.format.printWidth": 160

@@ -25,6 +25,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 var cacheDir, cfgFile string
@@ -67,7 +69,14 @@ func rootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "bomctl",
 		Long:    "Simpler Software Bill of Materials management",
-		Version: getVersion(),
+		Version: Version,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			_, err := db.CreateSchema(filepath.Join(cacheDir, "bomctl.db"))
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "database creation: %w", err)
+				os.Exit(1)
+			}
+		},
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
