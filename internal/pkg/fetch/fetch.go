@@ -26,8 +26,10 @@ import (
 
 	"github.com/bom-squad/protobom/pkg/sbom"
 
+	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
+	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
@@ -35,33 +37,35 @@ import (
 var errUnsupportedURL = errors.New("unsupported URL scheme")
 
 type Fetcher interface {
+	url.URLParser
 	Fetch(*url.ParsedURL, *url.BasicAuth) (*sbom.Document, error)
 }
 
-func Exec(sbomURL, outputFile string) (err error) {
-	var document *sbom.Document
-	parsedURL := url.Parse(sbomURL)
+func Exec(sbomURL, outputFile string) error {
+	var fetcher Fetcher
 
-	switch parsedURL.Scheme {
-	case "git":
-		document, err = (&git.GitFetcher{}).Fetch(
-			parsedURL,
-			&url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password},
-		)
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-	case "http", "https":
-		document, err = (&http.HTTPFetcher{OutputFile: outputFile}).Fetch(
-			parsedURL,
-			&url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password},
-		)
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-	case "oci":
+	switch {
+	case (&git.GitFetcher{}).Parse(sbomURL) != nil:
+		fetcher = &git.GitFetcher{}
+	case (&http.HTTPFetcher{}).Parse(sbomURL) != nil:
+		fetcher = &http.HTTPFetcher{OutputFile: outputFile}
+	case (&oci.OCIFetcher{}).Parse(sbomURL) != nil:
+		fetcher = &oci.OCIFetcher{}
 	default:
-		return fmt.Errorf("%w: %s", errUnsupportedURL, parsedURL.Scheme)
+		return fmt.Errorf("%w", errUnsupportedURL)
+	}
+
+	parsedURL := fetcher.Parse(sbomURL)
+	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	document, err := fetcher.Fetch(parsedURL, auth)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	// Insert fetched document data into database.
+	err = db.AddDocument(document)
+	if err != nil {
+		return fmt.Errorf("%w", err)
 	}
 
 	// Fetch externally referenced BOMs

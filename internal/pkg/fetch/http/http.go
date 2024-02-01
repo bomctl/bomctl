@@ -23,6 +23,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/bom-squad/protobom/pkg/sbom"
 
@@ -34,6 +35,38 @@ var client = http.DefaultClient
 
 type HTTPFetcher struct {
 	OutputFile string
+}
+
+func (hf *HTTPFetcher) RegExp() *regexp.Regexp {
+	return regexp.MustCompile(
+		fmt.Sprintf("%s%s%s%s",
+			`((?P<scheme>https?)://)`,
+			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
+			`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?`,
+			`(/?(?P<path>[^@?#]*))(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
+		),
+	)
+}
+
+func (hf *HTTPFetcher) Parse(fetchURL string) *url.ParsedURL {
+	results := map[string]string{}
+	pattern := hf.RegExp()
+	match := pattern.FindStringSubmatch(fetchURL)
+
+	for idx, name := range match {
+		results[pattern.SubexpNames()[idx]] = name
+	}
+
+	return &url.ParsedURL{
+		Scheme:   results["scheme"],
+		Username: results["username"],
+		Password: results["password"],
+		Hostname: results["hostname"],
+		Port:     results["port"],
+		Path:     results["path"],
+		Query:    results["query"],
+		Fragment: results["fragment"],
+	}
 }
 
 func (hf *HTTPFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {

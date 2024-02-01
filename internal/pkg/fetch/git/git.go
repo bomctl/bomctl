@@ -20,6 +20,7 @@ package git
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/bom-squad/protobom/pkg/sbom"
 	"github.com/go-git/go-billy/v5/memfs"
@@ -34,6 +35,40 @@ import (
 
 type GitFetcher struct{}
 
+func (gf *GitFetcher) RegExp() *regexp.Regexp {
+	return regexp.MustCompile(
+		fmt.Sprintf("%s%s%s%s%s",
+			`(?P<scheme>git|ssh)(?:@|(\+https?)?://)`,
+			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
+			`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?`,
+			`(?P<path>[^@?#]*)(?:@(?P<gitRef>[^#]+))?`,
+			`(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
+		),
+	)
+}
+
+func (gf *GitFetcher) Parse(fetchURL string) *url.ParsedURL {
+	results := map[string]string{}
+	pattern := gf.RegExp()
+	match := pattern.FindStringSubmatch(fetchURL)
+
+	for idx, name := range match {
+		results[pattern.SubexpNames()[idx]] = name
+	}
+
+	return &url.ParsedURL{
+		Scheme:   results["scheme"],
+		Username: results["username"],
+		Password: results["password"],
+		Hostname: results["hostname"],
+		Port:     results["port"],
+		Path:     results["path"],
+		GitRef:   results["gitRef"],
+		Query:    results["query"],
+		Fragment: results["fragment"],
+	}
+}
+
 func (gf *GitFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
 	memStorage := memory.NewStorage()
 	memFS := memfs.New()
@@ -47,7 +82,7 @@ func (gf *GitFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbo
 		ReferenceName: refName,
 		SingleBranch:  true,
 		Depth:         1,
-		ProxyOptions:  transport.ProxyOptions{URL: "http://proxy-zxgov.external.lmco.com:80"},
+		ProxyOptions:  transport.ProxyOptions{},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
