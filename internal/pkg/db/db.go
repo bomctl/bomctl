@@ -36,6 +36,14 @@ var (
 	db  *gorm.DB
 )
 
+type ORMToPBConverter interface {
+	ToPB(context.Context) (protobom.Document, error)
+}
+
+type PBToORMConverter interface {
+	ToORM(context.Context) (protobom.DocumentORM, error)
+}
+
 // Create database and initialize schema.
 func CreateSchema(dbFile string) (*gorm.DB, error) {
 	if db != nil {
@@ -44,9 +52,9 @@ func CreateSchema(dbFile string) (*gorm.DB, error) {
 
 	var err error
 
-	db, err = gorm.Open(sqlite.Open(dbFile+dsnParams), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open(dbFile + dsnParams))
 	if err != nil {
-		return nil, fmt.Errorf("opening database file %s: %w", dbFile, err)
+		return nil, fmt.Errorf("error opening database file %s: %w", dbFile, err)
 	}
 
 	// Create database tables from model definitions.
@@ -65,7 +73,7 @@ func CreateSchema(dbFile string) (*gorm.DB, error) {
 	for _, model := range models {
 		err := db.AutoMigrate(model)
 		if err != nil {
-			return nil, fmt.Errorf("%T: %w", model, err)
+			return nil, fmt.Errorf("failed to migrate %T: %w", model, err)
 		}
 	}
 
@@ -73,13 +81,18 @@ func CreateSchema(dbFile string) (*gorm.DB, error) {
 }
 
 // Insert protobom Document into `documents` table.
-func AddDocument(document *protobom.Document) error {
+func AddDocument(document PBToORMConverter) error {
 	documentORM, err := document.ToORM(ctx)
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return fmt.Errorf("failed to convert protobuf models to gorm: %w", err)
 	}
 
-	db.Clauses(clause.OnConflict{DoNothing: true}).Create(&documentORM)
+	session := db.Session(&gorm.Session{Context: ctx})
+	tx := session.Begin()
+	tx.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Create(&documentORM.Metadata)
+	tx.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Create(&documentORM.NodeList)
+	tx.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Create(&documentORM)
+	tx.Commit()
 
 	return nil
 }

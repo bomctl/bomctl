@@ -16,6 +16,3 @@ indent_size = 4
 
 [*.{ansi,md,txt}]
 insert_final_newline = false
-
-[*.sql]
-indent_size = 4
