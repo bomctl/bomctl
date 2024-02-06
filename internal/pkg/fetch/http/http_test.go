@@ -53,14 +53,7 @@ func TestHTTPFetcherParse(t *testing.T) {
 		t.Run(data.name, func(t *testing.T) {
 			actual := fetcher.Parse(data.url)
 
-			assert.Equal(t, data.expected.Scheme, actual.Scheme, data.url)
-			assert.Equal(t, data.expected.Username, actual.Username, data.url)
-			assert.Equal(t, data.expected.Password, actual.Password, data.url)
-			assert.Equal(t, data.expected.Hostname, actual.Hostname, data.url)
-			assert.Equal(t, data.expected.Port, actual.Port, data.url)
-			assert.Equal(t, data.expected.Path, actual.Path, data.url)
-			assert.Equal(t, data.expected.Query, actual.Query, data.url)
-			assert.Equal(t, data.expected.Fragment, actual.Fragment, data.url)
+			assert.Equal(t, data.expected, actual, data.url)
 		})
 	}
 }
