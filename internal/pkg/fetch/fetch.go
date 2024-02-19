@@ -27,6 +27,7 @@ import (
 	"github.com/bom-squad/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
@@ -43,6 +44,8 @@ func Exec(sbomURL, outputFile string) error {
 	var fetcher Fetcher
 
 	switch {
+	case (&git.GitFetcher{}).Parse(sbomURL) != nil:
+		fetcher = &git.GitFetcher{}
 	case (&http.HTTPFetcher{}).Parse(sbomURL) != nil:
 		fetcher = &http.HTTPFetcher{OutputFile: outputFile}
 	default:

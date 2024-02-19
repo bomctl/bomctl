@@ -97,6 +97,10 @@ func (url *ParsedURL) String() string {
 		urlBytes = append(urlBytes, fmt.Sprintf("%s%s", pathSep, url.Path)...)
 	}
 
+	if url.GitRef != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("@%s", url.GitRef)...)
+	}
+
 	if url.Query != "" {
 		urlBytes = append(urlBytes, fmt.Sprintf("?%s", url.Query)...)
 	}
