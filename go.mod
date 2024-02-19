@@ -7,7 +7,6 @@ replace github.com/bom-squad/protobom => github.com/jhoward-lm/protobom v0.0.0-2
 require (
 	github.com/bom-squad/protobom v0.3.0
 	github.com/glebarez/sqlite v1.10.0
-	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.16.0
@@ -29,6 +28,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
+	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
