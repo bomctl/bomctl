@@ -37,13 +37,13 @@ func TestGitFetcherParse(t *testing.T) {
 		{
 			name:     "git+http scheme",
 			url:      "git+http://github.com/bomctl/bomctl.git",
-			expected: &url.ParsedURL{Scheme: "git", Hostname: "github.com", Path: "bomctl/bomctl.git"},
+			expected: &url.ParsedURL{Scheme: "http", Hostname: "github.com", Path: "bomctl/bomctl.git"},
 		},
 		{
 			name: "git+https scheme with username, port",
 			url:  "git+https://git@github.com:12345/bomctl/bomctl.git",
 			expected: &url.ParsedURL{
-				Scheme:   "git",
+				Scheme:   "https",
 				Username: "git",
 				Hostname: "github.com",
 				Port:     "12345",
@@ -54,7 +54,7 @@ func TestGitFetcherParse(t *testing.T) {
 			name: "git+https scheme with username, password, port",
 			url:  "git+https://username:password@github.com:12345/bomctl/bomctl.git",
 			expected: &url.ParsedURL{
-				Scheme:   "git",
+				Scheme:   "https",
 				Username: "username",
 				Password: "password",
 				Hostname: "github.com",
@@ -66,7 +66,7 @@ func TestGitFetcherParse(t *testing.T) {
 			name: "git+https scheme with ref, file path",
 			url:  "git+https://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
 			expected: &url.ParsedURL{
-				Scheme:   "git",
+				Scheme:   "https",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl.git",
 				GitRef:   "main",
@@ -77,7 +77,7 @@ func TestGitFetcherParse(t *testing.T) {
 			name: "git+https scheme with username, ref, file path",
 			url:  "git+https://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
 			expected: &url.ParsedURL{
-				Scheme:   "git",
+				Scheme:   "https",
 				Username: "git",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl.git",
@@ -190,7 +190,7 @@ func TestGitFetcherParse(t *testing.T) {
 		{
 			name:     "git SCP-like syntax",
 			url:      "github.com:bomctl/bomctl.git",
-			expected: &url.ParsedURL{Hostname: "github.com", Path: "bomctl/bomctl.git"},
+			expected: &url.ParsedURL{Scheme: "ssh", Hostname: "github.com", Path: "bomctl/bomctl.git"},
 		},
 		{
 			name:     "git SCP-like syntax with username",

@@ -48,7 +48,15 @@ var (
 type OCIFetcher struct{}
 
 func (of *OCIFetcher) RegExp() *regexp.Regexp {
-	return regexp.MustCompile(`((?P<scheme>oci)(?:://))?(?P<hostname>[^/:]*)[/:]?(?P<path>[^:]*)?:?(?P<tag>(.*))`)
+	return regexp.MustCompile(
+		fmt.Sprintf("^%s%s%s%s%s$",
+			`((?P<scheme>oci|docker)(?:-archive)?:\/\/)?`,
+			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
+			`((?P<hostname>[^@\/?#:]+))(?::(?P<port>\d+))?`,
+			`(?:[\/:](?P<path>[^:@]+))`,
+			`((?::(?P<tag>[^@]+))|(?:@(?P<digest>sha256:[A-Fa-f0-9]{64})))`,
+		),
+	)
 }
 
 func (of *OCIFetcher) Parse(fetchURL string) *url.ParsedURL {
@@ -60,11 +68,19 @@ func (of *OCIFetcher) Parse(fetchURL string) *url.ParsedURL {
 		results[pattern.SubexpNames()[idx]] = name
 	}
 
+	if results["scheme"] == "docker" {
+		results["scheme"] = "oci"
+	}
+
 	return &url.ParsedURL{
 		Scheme:   results["scheme"],
+		Username: results["username"],
+		Password: results["password"],
 		Hostname: results["hostname"],
+		Port:     results["port"],
 		Path:     results["path"],
 		Tag:      results["tag"],
+		Digest:   results["digest"],
 	}
 }
 
