@@ -21,10 +21,12 @@ package fetch
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 
 	"github.com/bom-squad/protobom/pkg/sbom"
+	"github.com/jdx/go-netrc"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
@@ -41,7 +43,7 @@ type Fetcher interface {
 	Fetch(*url.ParsedURL, *url.BasicAuth) (*sbom.Document, error)
 }
 
-func Exec(sbomURL, outputFile string) error {
+func Exec(sbomURL, outputFile string, useNetRC bool) error {
 	var fetcher Fetcher
 
 	switch {
@@ -57,6 +59,13 @@ func Exec(sbomURL, outputFile string) error {
 
 	parsedURL := fetcher.Parse(sbomURL)
 	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+
+	if useNetRC {
+		if err := setNetRCAuth(parsedURL.Hostname, auth); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
 	document, err := fetcher.Fetch(parsedURL, auth)
 	if err != nil {
 		return fmt.Errorf("%w", err)
@@ -84,10 +93,30 @@ func Exec(sbomURL, outputFile string) error {
 			)
 		}
 
-		err := Exec(ref.Url, outputFile)
+		err := Exec(ref.Url, outputFile, useNetRC)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
+	}
+
+	return nil
+}
+
+func setNetRCAuth(hostname string, auth *url.BasicAuth) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	authFile, err := netrc.Parse(filepath.Join(home, ".netrc"))
+	if err != nil {
+		return fmt.Errorf("failed to parse .netrc file: %w", err)
+	}
+
+	// Use credentials in .netrc if entry for the hostname is found
+	if machine := authFile.Machine(hostname); machine != nil {
+		auth.Username = machine.Get("login")
+		auth.Password = machine.Get("password")
 	}
 
 	return nil

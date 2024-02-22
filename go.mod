@@ -8,6 +8,7 @@ require (
 	github.com/bom-squad/protobom v0.3.0
 	github.com/glebarez/sqlite v1.10.0
 	github.com/go-git/go-git/v5 v5.11.0
+	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.16.0
