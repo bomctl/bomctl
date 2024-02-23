@@ -32,36 +32,28 @@ before:
 
 sboms:
   - artifacts: binary
-
-gomod:
-  proxy: true
-
-# Build a universal MacOS binary
-universal_binaries:
-  - replace: false
+    documents: [$artifact.cdx.json]
+    cmd: syft
+    args: [$artifact, --output, cyclonedx-json=$document]
 
 builds:
-  - binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}{{.Ext}}"
+  - binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}"
     no_unique_dist_dir: true
     mod_timestamp: "{{.CommitTimestamp}}"
     flags: [-trimpath]
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
-    ldflags: ["-s {{.Env.VERSION_LDFLAGS}}"]
-    overrides:
-      - goos: windows
-        ldflags: [-buildmode=exe, "-s {{.Env.VERSION_LDFLAGS}}"]
+    ldflags: -w -s -extldflags "-static" -X github.com/bomctl/bomctl/cmd.Version={{.Tag}} -X github.com/bomctl/bomctl/cmd.BuildTime={{.Date}}
 
 signs:
   - id: cosign
-    signature: "${artifact}.sig"
+    signature: $artifact.sig
     cmd: cosign
-    args: [sign-blob, "--output-signature=${artifact}.sig", "--key={{.Env.COSIGN_PRIVATE_KEY}}", "${artifact}"]
+    args: [sign-blob, --output-signature=$artifact.sig, --key=env://COSIGN_PRIVATE_KEY, $artifact]
     artifacts: binary
 
 nfpms:
   - license: Apache License 2.0
-    builds: [linux]
     maintainer: bomctl authors
     homepage: https://github.com/bomctl/bomctl
     description: Simpler Software Bill of Materials management
