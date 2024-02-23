@@ -17,54 +17,78 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
 project_name: bomctl
 
 env:
-  - GO111MODULE=on
   - CGO_ENABLED=0
+  - COSIGN_YES=true
+  - GO111MODULE=on
 
 before:
   hooks:
-    - go mod download
+    - go mod tidy
+
+sboms:
+  - artifacts: binary
 
 gomod:
   proxy: true
 
+# Build a universal MacOS binary
+universal_binaries:
+  - replace: false
+
 builds:
-  - id: linux
-    binary: bomctl-linux-{{ .Arch }}
+  - binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}{{.Ext}}"
     no_unique_dist_dir: true
+    mod_timestamp: "{{.CommitTimestamp}}"
     flags: [-trimpath]
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    goos: [linux]
+    goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
     ldflags: ["-s {{.Env.VERSION_LDFLAGS}}"]
+    overrides:
+      - goos: windows
+        ldflags: [-buildmode=exe, "-s {{.Env.VERSION_LDFLAGS}}"]
 
-  - id: darwin
-    binary: bomctl-darwin-{{ .Arch }}
-    no_unique_dist_dir: true
-    mod_timestamp: \{{ .CommitTimestamp }}
-    goos: [darwin]
-    goarch: [amd64, arm64]
-    ldflags: ["-s {{.Env.VERSION_LDFLAGS}}"]
+signs:
+  - id: cosign
+    signature: "${artifact}.sig"
+    cmd: cosign
+    args: [sign-blob, "--output-signature=${artifact}.sig", "--key={{.Env.COSIGN_PRIVATE_KEY}}", "${artifact}"]
+    artifacts: binary
 
-  - id: windows
-    binary: bomctl-windows-{{ .Arch }}
-    no_unique_dist_dir: true
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    goos: [windows]
-    goarch: [amd64, arm64]
-    ldflags: [-buildmode=exe, "-s {{.Env.VERSION_LDFLAGS}}"]
+nfpms:
+  - license: Apache License 2.0
+    builds: [linux]
+    maintainer: bomctl authors
+    homepage: https://github.com/bomctl/bomctl
+    description: Simpler Software Bill of Materials management
+    formats: [apk, deb, rpm]
+
+archives:
+  - format: binary
+    name_template: "{{.Binary}}"
+    allow_different_binary_count: true
 
 checksum:
-  name_template: "{{ .ProjectName }}_checksums.txt"
+  name_template: "{{.ProjectName}}_checksums.txt"
 
 snapshot:
-  name_template: SNAPSHOT-{{ .ShortCommit }}
+  name_template: SNAPSHOT-{{.ShortCommit}}
 
 changelog:
   skip: false
 
 release:
+  prerelease: allow # remove this when we start publishing non-prerelease or set to auto
+  draft: true # allow for manual edits
+  github:
+    owner: bomctl
+    name: bomctl
   footer: |
-    ### Thanks for all contributors!
+    ### Thanks to all contributors!
+
+  extra_files:
+    - glob: dist/*.sig
