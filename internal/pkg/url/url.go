@@ -72,6 +72,7 @@ type ParsedURL struct {
 	Query    string
 	Fragment string
 	Tag      string
+	Digest   string
 }
 
 func (url *ParsedURL) String() string {

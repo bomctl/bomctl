@@ -33,7 +33,7 @@ func fetchCmd() *cobra.Command {
 		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Run: func(cmd *cobra.Command, args []string) {
 			for _, url := range sbomURLs {
-				cobra.CheckErr(fetch.Exec(url, outputFile.String()))
+				cobra.CheckErr(fetch.Exec(url, outputFile.String(), useNetRC))
 			}
 		},
 	}
@@ -43,6 +43,12 @@ func fetchCmd() *cobra.Command {
 		"output-file",
 		"o",
 		"Path to output file",
+	)
+	fetchCmd.Flags().BoolVar(
+		&useNetRC,
+		"netrc",
+		false,
+		"Use .netrc file for authentication to remote hosts",
 	)
 
 	return fetchCmd
