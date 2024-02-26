@@ -79,5 +79,3 @@ release:
   github:
     owner: bomctl
     name: bomctl
-  footer: |
-    ### Thanks to all contributors!
