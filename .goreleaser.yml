@@ -81,6 +81,3 @@ release:
     name: bomctl
   footer: |
     ### Thanks to all contributors!
-
-  extra_files:
-    - glob: dist/*.sig
