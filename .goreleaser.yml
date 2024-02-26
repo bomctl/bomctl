@@ -74,7 +74,7 @@ changelog:
   skip: false
 
 release:
-  prerelease: allow # remove this when we start publishing non-prerelease or set to auto
+  prerelease: auto
   draft: true # allow for manual edits
   github:
     owner: bomctl
