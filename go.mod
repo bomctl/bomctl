@@ -2,10 +2,8 @@ module github.com/bomctl/bomctl
 
 go 1.21
 
-replace github.com/bom-squad/protobom => github.com/jhoward-lm/protobom v0.0.0-20240129200539-aa24acee465f
-
 require (
-	github.com/bom-squad/protobom v0.3.0
+	github.com/bom-squad/protobom v0.3.1-0.20240301165935-631d732bfcce
 	github.com/glebarez/sqlite v1.10.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/jdx/go-netrc v1.0.0
@@ -35,7 +33,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/uuid v1.5.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
