@@ -20,14 +20,13 @@ package git
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/bom-squad/protobom/pkg/sbom"
-	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport"
-	"github.com/go-git/go-git/v5/storage/memory"
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
@@ -37,12 +36,12 @@ type GitFetcher struct{}
 
 func (gf *GitFetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
-		fmt.Sprintf("%s%s%s%s%s",
-			`(?P<scheme>git|ssh)(?:@|(\+https?)?://)`,
+		fmt.Sprintf("^%s%s%s%s%s$",
+			`((?:git\+)?(?P<scheme>https?|git|ssh):\/\/)?`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?`,
-			`(?P<path>[^@?#]*)(?:@(?P<gitRef>[^#]+))?`,
-			`(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
+			`((?P<hostname>[^@\/?#:]+))(?::(?P<port>\d+))?`,
+			`(?:[\/:](?P<path>[^@#]+\.git)@?)`,
+			`((?:@(?P<gitRef>[^#]+))(?:#(?P<fragment>.*)))?`,
 		),
 	)
 }
@@ -54,6 +53,10 @@ func (gf *GitFetcher) Parse(fetchURL string) *url.ParsedURL {
 
 	for idx, name := range match {
 		results[pattern.SubexpNames()[idx]] = name
+	}
+
+	if results["scheme"] == "" {
+		results["scheme"] = "ssh"
 	}
 
 	return &url.ParsedURL{
@@ -70,43 +73,49 @@ func (gf *GitFetcher) Parse(fetchURL string) *url.ParsedURL {
 }
 
 func (gf *GitFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
-	memStorage := memory.NewStorage()
-	memFS := memfs.New()
+	// Create temp directory to clone into
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp directory: %w", err)
+	}
 
-	refName := plumbing.NewRemoteReferenceName("origin", parsedURL.GitRef)
+	defer os.RemoveAll(tmpDir)
 
-	repository, err := git.Clone(memStorage, memFS, &git.CloneOptions{
-		URL:           parsedURL.String(),
+	refName := plumbing.NewBranchReferenceName(parsedURL.GitRef)
+
+	// Copy parsedURL, excluding auth, git ref, and fragment.
+	baseURL := &url.ParsedURL{
+		Scheme:   parsedURL.Scheme,
+		Hostname: parsedURL.Hostname,
+		Path:     parsedURL.Path,
+		Port:     parsedURL.Port,
+	}
+
+	cloneOpts := &git.CloneOptions{
+		URL:           baseURL.String(),
 		Auth:          auth,
 		RemoteName:    "origin",
 		ReferenceName: refName,
 		SingleBranch:  true,
 		Depth:         1,
-		ProxyOptions:  transport.ProxyOptions{},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
 	}
 
-	tree, err := repository.Worktree()
+	// Clone the repository into the temp directory
+	_, err = git.PlainClone(tmpDir, false, cloneOpts)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}
 
-	sbomFile, err := tree.Filesystem.Open(parsedURL.Fragment)
+	// Read the file specified in the URL fragment
+	sbomBytes, err := os.ReadFile(filepath.Join(tmpDir, parsedURL.Fragment))
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("failed to open file %s: %w", parsedURL.Fragment, err)
 	}
 
-	sbomBytes := []byte{}
-	_, err = sbomFile.Read(sbomBytes)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-
+	// Parse the file content
 	document, err := utils.ParseSBOMData(sbomBytes)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
 	}
 
 	return document, nil

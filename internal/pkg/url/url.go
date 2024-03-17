@@ -72,6 +72,7 @@ type ParsedURL struct {
 	Query    string
 	Fragment string
 	Tag      string
+	Digest   string
 }
 
 func (url *ParsedURL) String() string {
@@ -95,6 +96,10 @@ func (url *ParsedURL) String() string {
 
 	if url.Path != "" {
 		urlBytes = append(urlBytes, fmt.Sprintf("%s%s", pathSep, url.Path)...)
+	}
+
+	if url.GitRef != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("@%s", url.GitRef)...)
 	}
 
 	if url.Query != "" {

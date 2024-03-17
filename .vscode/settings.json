@@ -26,7 +26,7 @@
 
   "[markdown]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.markdownlint": true
+      "source.fixAll.markdownlint": "explicit"
     },
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },

@@ -40,6 +40,7 @@ type (
 var (
 	outputFile OutputFileValue
 	sbomURLs   URLSliceValue
+	useNetRC   bool
 )
 
 var (
