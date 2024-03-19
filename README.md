@@ -10,9 +10,9 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 - Work with multiple SBOMs in tree structures (through external references)
 - Fetch and push SBOMs using HTTPS, OCI, and GIT protocols
 - Leverage a `.netrc` file to handle authentication
-- Manipulate SBOMs like `diff`, `split`, and `redact`
+- Manipulate SBOMs with commands like `diff`, `split`, and `redact`
 - Manage SBOMs using a persistent database cache
-- Interface with OpenSSF projects and services like GUAC and Sigstore
+- Interface with OpenSSF projects and services like [GUAC](https://guac.sh/) and [Sigstore](https://www.sigstore.dev/)
 
 ## Join our Community
 
@@ -24,14 +24,17 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 
 ### Fetch (Implemented)
 
-Ability to download an SBOM from a variety of SBOM storage mechanisms:
+Ability to retrieve an SBOM via several protocols:
 
 - HTTP/S
-- OCI
 - Git
-- Filesystem
 
-This includes following external references in an SBOM to other SBOMs and loading them into the persistent cache. If SBOMs are access controlled, a user's [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) file to authenticate.
+and from various locations:
+
+- Local Filesystem
+- OCI
+
+This includes recursive loading of external references in an SBOM to other SBOMs and placing them into the persistent cache. If SBOMs are access controlled, a user's [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) file to authenticate.
 
 ### Diff (Planned)
 
