@@ -19,9 +19,12 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
+	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func fetchCmd() *cobra.Command {
@@ -32,8 +35,17 @@ func fetchCmd() *cobra.Command {
 		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Run: func(cmd *cobra.Command, args []string) {
+			var err error
+			logger = utils.NewLogger("fetch")
+
 			for _, url := range sbomURLs {
-				cobra.CheckErr(fetch.Exec(url, outputFile.String(), useNetRC))
+				if err = fetch.Exec(url, outputFile.String(), useNetRC); err != nil {
+					logger.Error(err)
+				}
+			}
+
+			if err != nil {
+				os.Exit(1)
 			}
 		},
 	}

@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-// SPDX-FileName: cmd/version.go
+// SPDX-FileName: internal/pkg/utils/logger.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,40 +16,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package cmd
+package utils
 
 import (
-	"fmt"
+	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/charmbracelet/log"
 )
 
-const (
-	// VersionMajor is for an API incompatible changes.
-	VersionMajor = 0
-
-	// VersionMinor is for functionality in a backwards-compatible manner.
-	VersionMinor = 1
-
-	// VersionPatch is for backwards-compatible bug fixes.
-	VersionPatch = 1
-
-	// VersionDev indicates development branch. Releases will be empty string.
-	VersionDev = "-alpha"
-)
-
-// Version is the specification version that the package types support.
-var Version = fmt.Sprintf("%d.%d.%d%s", VersionMajor, VersionMinor, VersionPatch, VersionDev)
-
-func versionCmd() *cobra.Command {
-	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Show version",
-		Long:  "Print the version",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("bomctl version", Version)
-		},
+func NewLogger(prefix string) *log.Logger {
+	// Set displayed width of log level in messages to show full level name
+	styles := log.DefaultStyles()
+	for _, level := range []log.Level{log.DebugLevel, log.ErrorLevel, log.FatalLevel, log.InfoLevel, log.WarnLevel} {
+		styles.Levels[level] = styles.Levels[level].MaxWidth(5).Width(5)
 	}
 
-	return versionCmd
+	logger := log.NewWithOptions(os.Stdout, log.Options{Prefix: prefix, Level: log.GetLevel()})
+	logger.SetStyles(styles)
+
+	return logger
 }
