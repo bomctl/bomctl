@@ -23,13 +23,18 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
-var cacheDir, cfgFile string
+var (
+	cacheDir, cfgFile string
+	logger            *log.Logger
+	verbose           bool
+)
 
 func initCache() {
 	if cache, err := os.UserCacheDir(); cacheDir == "" && err == nil {
@@ -71,6 +76,10 @@ func rootCmd() *cobra.Command {
 		Long:    "Simpler Software Bill of Materials management",
 		Version: Version,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if verbose {
+				log.SetLevel(log.DebugLevel)
+			}
+
 			_, err := db.CreateSchema(filepath.Join(cacheDir, "bomctl.db"))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "database creation: %w", err)
@@ -95,7 +104,7 @@ func rootCmd() *cobra.Command {
 		),
 	)
 
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable debug output")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable debug output")
 
 	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(versionCmd())

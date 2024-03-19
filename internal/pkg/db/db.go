@@ -23,17 +23,21 @@ import (
 	"fmt"
 
 	protobom "github.com/bom-squad/protobom/pkg/sbom"
+	"github.com/charmbracelet/log"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 // Enable SQLite foreign key support.
 const dsnParams string = "?_pragma=foreign_keys(1)"
 
 var (
-	ctx = context.Background()
-	db  *gorm.DB
+	ctx    = context.Background()
+	db     *gorm.DB
+	logger *log.Logger
 )
 
 type ORMToPBConverter interface {
@@ -46,9 +50,15 @@ type PBToORMConverter interface {
 
 // Create database and initialize schema.
 func CreateSchema(dbFile string) (*gorm.DB, error) {
+	logger = utils.NewLogger("")
+
 	if db != nil {
+		logger.Info("Database file already exists, will not recreate")
 		return db, nil
 	}
+
+	logger.Info("Initializing database")
+	logger.Debug("Connection string", "dbFile", dbFile, "dsnParams", dsnParams)
 
 	var err error
 

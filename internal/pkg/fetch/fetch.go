@@ -45,13 +45,17 @@ type Fetcher interface {
 
 func Exec(sbomURL, outputFile string, useNetRC bool) error {
 	var fetcher Fetcher
+	logger := utils.NewLogger("fetch")
 
 	switch {
 	case (&oci.OCIFetcher{}).Parse(sbomURL) != nil:
+		logger.Info("Fetching from OCI URL", "url", sbomURL)
 		fetcher = &oci.OCIFetcher{}
 	case (&git.GitFetcher{}).Parse(sbomURL) != nil:
+		logger.Info("Fetching from Git URL", "url", sbomURL)
 		fetcher = &git.GitFetcher{}
 	case (&http.HTTPFetcher{}).Parse(sbomURL) != nil:
+		logger.Info("Fetching from HTTP URL", "url", sbomURL)
 		fetcher = &http.HTTPFetcher{OutputFile: outputFile}
 	default:
 		return fmt.Errorf("%w", errUnsupportedURL)

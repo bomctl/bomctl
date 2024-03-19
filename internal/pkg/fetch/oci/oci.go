@@ -182,10 +182,12 @@ func getSBOMDescriptor(successors []ocispec.Descriptor) (*ocispec.Descriptor, er
 
 	// Error if more than one SBOM identified
 	if len(sbomDigests) > 1 {
-		digestString := "\n" + strings.Join(sbomDigests, "\n")
-		return nil, fmt.Errorf(
-			"%w. Specify one of the following digests in the fetch URL:%s", errMultipleSBOMs, digestString,
+		digestString := strings.Join(
+			append([]string{"Specify one of the following digests in the fetch URL:"}, sbomDigests...),
+			"\n\t\t",
 		)
+
+		return nil, fmt.Errorf("%w.\n\t%s", errMultipleSBOMs, digestString)
 	}
 
 	return &sbomDescriptor, nil

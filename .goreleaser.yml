@@ -36,6 +36,9 @@ sboms:
     cmd: syft
     args: [$artifact, --output, cyclonedx-json=$document]
 
+gomod:
+  proxy: true
+
 builds:
   - binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}"
     no_unique_dist_dir: true
@@ -43,7 +46,7 @@ builds:
     flags: [-trimpath]
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
-    ldflags: -w -s -extldflags "-static" -X github.com/bomctl/bomctl/cmd.Version={{.Tag}} -X github.com/bomctl/bomctl/cmd.BuildTime={{.Date}}
+    ldflags: -s -w -X=github.com/bomctl/bomctl/cmd.Version={{.Tag}} -X=github.com/bomctl/bomctl/cmd.BuildTime={{.Date}}
 
 signs:
   - id: cosign
