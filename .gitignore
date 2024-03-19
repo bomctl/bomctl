@@ -16,6 +16,7 @@
 !.gitignore
 !CODE_OF_CONDUCT.md
 !COPYRIGHT.md
+!DEVELOPMENT.md
 !Dockerfile
 !go.mod
 !go.sum
