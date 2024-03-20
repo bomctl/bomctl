@@ -14,11 +14,15 @@
 # Whitelist patterns found anywhere in project
 !*.go
 !.gitignore
+!CODE_OF_CONDUCT.md
+!COPYRIGHT.md
+!DEVELOPMENT.md
 !Dockerfile
 !go.mod
 !go.sum
 !LICENSE
 !Makefile
 !README.md
+!SECURITY.md
 
 !*/
