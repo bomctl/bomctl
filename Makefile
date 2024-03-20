@@ -12,6 +12,17 @@ MAKEFILE ?= ${abspath ${firstword ${MAKEFILE_LIST}}}
 ARCH ?= amd64
 OS ?= linux
 
+VERSION := ${shell git describe --tags --abbrev=0}
+VERSION ?= undefined
+
+GIT_SHA := ${shell git rev-parse HEAD}
+GIT_SHA ?= undefined
+
+BUILD_DATE := ${shell date -u +'%Y-%m-%dT%H:%M:%SZ'}
+LDFLAGS := -s -w \
+  -X=github.com/bomctl/bomctl/cmd.Version=${VERSION} \
+  -X=github.com/bomctl/bomctl/cmd.BuildTime=${BUILD_DATE}
+
 # ANSI color escape codes
 BOLD ?= \033[1m
 CYAN ?= \033[36m
@@ -45,10 +56,6 @@ ifeq (${OS},windows)
 	TARGET_BIN := ${addsuffix .exe,${TARGET_BIN}}
 endif
 
-CLI_VERSION ?= $(if $(shell git describe --tags),$(shell git describe --tags),"UnknownVersion")
-GIT_SHA := $(if $(shell git rev-parse HEAD),$(shell git rev-parse HEAD),"")
-BUILD_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
-
 .PHONY: all build clean help format test
 .SILENT: clean
 
@@ -70,7 +77,7 @@ lint-fix: # Fix linter findings
 
 #@ Build
 define gobuild
-	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o build/bomctl-${1}-${2}${3}
+	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o dist/bomctl-${1}-${2}${3} -ldflags="${LDFLAGS}"
 endef
 
 build-linux-amd: # Build for Linux on AMD64
