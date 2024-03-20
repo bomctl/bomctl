@@ -6,7 +6,7 @@ This document describes the process for building and running `bomctl`.
 
 - [go command](https://go.dev/dl/)
 - [make](https://www.gnu.org/software/make/manual/make.html)
-- [golangci-fix](https://golangci-lint.run/welcome/install/#local-installation)
+- [golangci-lint](https://golangci-lint.run/welcome/install/#local-installation)
 
 ## Getting Started
 
