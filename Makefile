@@ -12,13 +12,24 @@ MAKEFILE ?= ${abspath ${firstword ${MAKEFILE_LIST}}}
 ARCH ?= amd64
 OS ?= linux
 
+VERSION := ${shell git describe --tags --abbrev=0}
+VERSION ?= undefined
+
+GIT_SHA := ${shell git rev-parse HEAD}
+GIT_SHA ?= undefined
+
+BUILD_DATE := ${shell date -u +'%Y-%m-%dT%H:%M:%SZ'}
+LDFLAGS := -s -w \
+  -X=github.com/bomctl/bomctl/cmd.Version=${VERSION} \
+  -X=github.com/bomctl/bomctl/cmd.BuildTime=${BUILD_DATE}
+
 # ANSI color escape codes
-BOLD ?= \033[1m
-CYAN ?= \033[36m
-GREEN ?= \033[32m
-RED ?= \033[31m
-YELLOW ?= \033[33m
-NC ?= \033[0m # No Color
+BOLD :=   \033[1m
+CYAN :=   \033[36m
+GREEN :=  \033[32m
+RED :=    \033[31m
+YELLOW := \033[33m
+RESET :=  \033[0m
 
 ifeq (${OS},Windows_NT)
 	OS := windows
@@ -45,18 +56,14 @@ ifeq (${OS},windows)
 	TARGET_BIN := ${addsuffix .exe,${TARGET_BIN}}
 endif
 
-CLI_VERSION ?= $(if $(shell git describe --tags),$(shell git describe --tags),"UnknownVersion")
-GIT_SHA := $(if $(shell git rev-parse HEAD),$(shell git rev-parse HEAD),"")
-BUILD_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
-
-.PHONY: all build clean help format test
-.SILENT: clean
+.PHONY: all build clean format help generate-ent test
+.SILENT: clean generate-ent
 
 #@ Tools
 help: # Display this help
-	@awk 'BEGIN {FS = ":.*#"; printf "\n${YELLOW}Usage: make <target>${NC}\n"} \
-		/^[a-zA-Z_0-9-]+:.*?#/ { printf "  ${CYAN}%-20s${NC} %s\n", $$1, $$2 } \
-		/^#@/ { printf "\n${BOLD}%s${NC}\n", substr($$0, 4) }' ${MAKEFILE} && echo
+	@awk 'BEGIN {FS = ":.*#"; printf "\n${YELLOW}Usage: make <target>${RESET}\n"} \
+		/^[a-zA-Z_0-9-]+:.*?#/ { printf "  ${CYAN}%-20s${RESET} %s\n", $$1, $$2 } \
+		/^#@/ { printf "\n${BOLD}%s${RESET}\n", substr($$0, 4) }' ${MAKEFILE} && echo
 
 clean: # Clean the working directory
 	${RM} -r build
@@ -70,27 +77,34 @@ lint-fix: # Fix linter findings
 
 #@ Build
 define gobuild
-	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o build/bomctl-${1}-${2}${3}
+	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} \
+	  go build -trimpath -o dist/bomctl-${1}-${2}${3} -ldflags="${LDFLAGS}"
 endef
 
-build-linux-amd: # Build for Linux on AMD64
+build-linux-amd: generate-ent # Build for Linux on AMD64
 	${call gobuild,linux,amd64}
 
-build-linux-arm: # Build for Linux on ARM
+build-linux-arm: generate-ent # Build for Linux on ARM
 	${call gobuild,linux,arm64}
 
-build-macos-intel: # Build for macOS on AMD64
+build-macos-intel: generate-ent # Build for macOS on AMD64
 	${call gobuild,darwin,amd64}
 
-build-macos-apple: # Build for macOS on ARM
+build-macos-apple: generate-ent # Build for macOS on ARM
 	${call gobuild,darwin,arm64}
 
-build-windows-amd: # Build for Windows on AMD64
+build-windows-amd: generate-ent # Build for Windows on AMD64
 	${call gobuild,windows,amd64,.exe}
 
-build-windows-arm: # Build for Windows on ARM
+build-windows-arm: generate-ent # Build for Windows on ARM
 	${call gobuild,windows,arm64,.exe}
 
-build-linux: build-linux-amd build-linux-arm # Build for Linux on AMD64 and ARM
+build-linux: generate-ent build-linux-amd build-linux-arm # Build for Linux on AMD64 and ARM
 
-build: build-linux-amd build-linux-arm build-macos-intel build-macos-apple build-windows-amd build-windows-arm ## Build the CLI
+build: generate-ent build-linux-amd build-linux-arm build-macos-intel build-macos-apple build-windows-amd build-windows-arm ## Build the CLI
+
+generate-ent: ## Generate ent database types from schema
+	printf "Generating ${CYAN}ent${RESET} database types with ${CYAN}go generate${RESET}..."
+	go generate ./internal/ent/generate.go
+	go fmt ./internal/ent
+	printf "${GREEN}DONE${RESET}\n"

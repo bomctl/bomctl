@@ -101,7 +101,10 @@ func (ExternalReference) Fields() []ent.Field {
 }
 
 func (ExternalReference) Edges() []ent.Edge {
-	return []ent.Edge{edge.To("hashes", HashesEntry.Type)}
+	return []ent.Edge{
+		edge.From("nodes", Node.Type).Ref("external_references"),
+		edge.To("hashes", HashesEntry.Type),
+	}
 }
 
 func (ExternalReference) Annotations() []schema.Annotation { return nil }

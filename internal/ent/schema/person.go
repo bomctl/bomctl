@@ -43,7 +43,7 @@ func (Person) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("metadata", Metadata.Type).Ref("authors").Unique(),
 		edge.From("node", Node.Type).Ref("suppliers").Ref("originators").Unique(),
-		edge.To("contacts", Person.Type).From("person").Unique(),
+		edge.To("contacts", Person.Type).Unique().From("person").Unique(),
 	}
 }
 

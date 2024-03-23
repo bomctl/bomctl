@@ -66,9 +66,12 @@
   "gitlens.showWelcomeOnInstall": false,
   "gitlens.showWhatsNewAfterUpgrades": false,
 
+  "git-graph.dialog.applyStash.reinstateIndex": true,
   "git-graph.dialog.fetchRemote.prune": true,
+  "git-graph.dialog.popStash.reinstateIndex": true,
   "git-graph.repository.commits.showSignatureStatus": true,
   "git-graph.repository.fetchAndPrune": true,
+  "git-graph.repository.fetchAndPruneTags": true,
   "git-graph.repository.sign.commits": true,
   "git-graph.repository.sign.tags": true,
 
