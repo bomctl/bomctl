@@ -3,6 +3,7 @@ module github.com/bomctl/bomctl
 go 1.21
 
 require (
+	entgo.io/ent v0.13.1
 	github.com/bom-squad/protobom v0.3.1-0.20240301165935-631d732bfcce
 	github.com/charmbracelet/log v0.3.1
 	github.com/glebarez/sqlite v1.10.0

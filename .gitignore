@@ -12,8 +12,9 @@
 !/.pre-commit-config.yaml
 
 # Whitelist patterns found anywhere in project
-!*.go
 !.gitignore
+!*.go
+!*.tmpl
 !CODE_OF_CONDUCT.md
 !COPYRIGHT.md
 !DEVELOPMENT.md
