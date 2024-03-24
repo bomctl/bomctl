@@ -24,14 +24,17 @@ package main
 import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
-	"github.com/charmbracelet/log"
+
+	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func main() {
+	logger := utils.NewLogger("ent")
+
 	if err := entc.Generate("./schema", &gen.Config{
 		Features:  []gen.Feature{gen.FeatureUpsert},
 		Templates: []*gen.Template{gen.MustParse(gen.NewTemplate("header").ParseFiles("template/header.tmpl"))},
 	}); err != nil {
-		log.Fatalf("running ent codegen: %v", err)
+		logger.Fatalf("running ent codegen: %v", err)
 	}
 }

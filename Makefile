@@ -56,8 +56,8 @@ ifeq (${OS},windows)
 	TARGET_BIN := ${addsuffix .exe,${TARGET_BIN}}
 endif
 
-.PHONY: all build clean format help generate-ent test
-.SILENT: clean generate-ent
+.PHONY: build clean describe-schemas format help generate-ent test
+.SILENT: clean describe-schemas generate-ent
 
 #@ Tools
 help: # Display this help
@@ -108,3 +108,6 @@ generate-ent: ## Generate ent database types from schema
 	go generate ./internal/ent/generate.go
 	go fmt ./internal/ent
 	printf "${GREEN}DONE${RESET}\n"
+
+describe-schemas: ## Print descriptions of generated ent schema types
+	go run -mod=mod entgo.io/ent/cmd/ent describe ./internal/ent/schema

@@ -129,7 +129,7 @@ var (
 	}
 	// MetadataColumns holds the columns for the "metadata" table.
 	MetadataColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "version", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "comment", Type: field.TypeString},
@@ -151,7 +151,7 @@ var (
 	}
 	// NodesColumns holds the columns for the "nodes" table.
 	NodesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"PACKAGE", "FILE"}},
 		{Name: "name", Type: field.TypeString},
 		{Name: "version", Type: field.TypeString},

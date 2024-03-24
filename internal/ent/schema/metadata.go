@@ -31,7 +31,7 @@ type Metadata struct {
 
 func (Metadata) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("id").Immutable(),
+		field.String("id").Unique().Immutable(),
 		field.String("version"),
 		field.String("name"),
 		field.String("comment"),

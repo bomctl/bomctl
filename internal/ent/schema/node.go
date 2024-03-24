@@ -31,7 +31,7 @@ type Node struct {
 
 func (Node) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("id"),
+		field.String("id").Unique().Immutable(),
 		field.Enum("type").Values("PACKAGE", "FILE"),
 		field.String("name"),
 		field.String("version"),
