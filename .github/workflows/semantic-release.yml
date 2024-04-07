@@ -19,7 +19,21 @@
 ---
 name: go-semantic-release
 on:
+  workflow_call:
+    inputs:
+      prerelease:
+        default: ${{ contains(fromJSON('["dev", "alpha"]'), github.ref_name) }}
+        required: true
+        type: boolean
+
+      should_publish:
+        default: ${{ contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x') }}
+        required: true
+        type: boolean
+
   push:
+    branches:
+      - "**"
 
   pull_request:
     branches:
@@ -27,10 +41,33 @@ on:
       - next
       - dev
       - alpha
+      - "[0-9].x"
+      - "[0-9].[0-9].x"
+      - "[0-9].[0-9].[0-9].x"
 
 jobs:
-  release:
+  dry-run:
     runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version: "1.21"
+          cache: false
+
+      - uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
+        with:
+          allow-initial-development-versions: true
+          dry: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{ inputs.prerelease }}
+
+  release:
+    if: ${{ inputs.should_publish }}
+    runs-on: ubuntu-latest
+    needs: dry-run
 
     permissions:
       contents: write
@@ -48,8 +85,11 @@ jobs:
           allow-initial-development-versions: true
           changelog-file: docs/CHANGELOG.md
           changelog-generator-opt: emojis=true
-          dry: ${{ !contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) && !endsWith(github.ref, '.x') }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           hooks: goreleaser
           prepend: true
-          prerelease: ${{ contains(fromJSON('["dev", "alpha"]'), github.ref_name) }}
+          prerelease: ${{ inputs.prerelease }}
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
