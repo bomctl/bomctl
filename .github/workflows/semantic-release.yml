@@ -45,6 +45,7 @@ jobs:
 
       - uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
         with:
+          allow-initial-development-versions: true
           changelog-file: docs/CHANGELOG.md
           changelog-generator-opt: emojis=true
           dry: ${{ !contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) && !endsWith(github.ref, '.x') }}
