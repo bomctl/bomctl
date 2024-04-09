@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      release-ver: ${{ steps.prerelease-tag.outputs.release-ver || steps.release-tag.outputs.release-ver }}
+      release-ver: ${{ steps.release-tag.outputs.release-ver }}
 
     steps:
       - name: Checkout code
@@ -61,25 +61,12 @@ jobs:
       - name: Install Semantic Version Util
         run: go install github.com/caarlos0/svu@a4642ead109ca37441f573f0118a4e79a7ac9a2f # v1.12.0
 
-      - name: Get current tag
-        id: current-tag
-        run: echo "current-tag=$(svu current)" >> "$GITHUB_OUTPUT"
-
-      - name: Get next prerelease version
-        if: (!inputs.should_publish && contains(steps.current-tag.outputs.current-tag, '-')) || inputs.prerelease
-        id: prerelease-tag
-        run: |
-          release_ver="$(svu prerelease --pre-release ${{ github.ref_name }})"
-          echo "New release version: ${release_ver}"
-          echo "release-ver=${release_ver}" >> "$GITHUB_OUTPUT"
-
       - name: Get next release version
-        if: (!inputs.prerelease)
         id: release-tag
         run: |
-          release_ver="$(svu next)"
-          echo "New release version: ${release_ver}"
-          echo "release-ver=${release_ver}" >> "$GITHUB_OUTPUT"
+          release_ver="$(svu ${{ inputs.prerelease && format('{0} {1} {2}', 'prerelease', '--pre-release', github.ref_name) || 'next' }})"
+          echo "New release version: $release_ver"
+          echo "release-ver=$release_ver" >> "$GITHUB_OUTPUT"
 
   release:
     if: inputs.should_publish
