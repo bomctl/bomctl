@@ -62,7 +62,11 @@ jobs:
       - name: Get next release version
         id: release-tag
         run: |
-          release_ver="$(svu ${{ inputs.prerelease && format('{0} {1} {2}', 'prerelease', '--pre-release', github.ref_name) || 'next' }})"
+          release_ver="$(svu next)"
+          if (! ${{ inputs.should_publish }} && [[ "$(svu current)" =~ .*(alpha|dev).* ]]) || ${{ inputs.prerelease }}; then
+            release_ver="$(svu prerelease --pre-release ${{ github.ref_name }})"
+          fi
+
           echo "New release version: $release_ver"
           echo "release-ver=$release_ver" >> "$GITHUB_OUTPUT"
 
