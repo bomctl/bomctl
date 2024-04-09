@@ -66,7 +66,7 @@ jobs:
         run: echo "current-tag=$(svu current)" >> "$GITHUB_OUTPUT"
 
       - name: Get next prerelease version
-        if: inputs.prerelease || contains(steps.current-tag.outputs.current-tag, '-')
+        if: (!inputs.should_publish && contains(steps.current-tag.outputs.current-tag, '-')) || inputs.prerelease
         id: prerelease-tag
         run: |
           release_ver="$(svu prerelease --pre-release ${{ github.ref_name }})"
@@ -74,7 +74,7 @@ jobs:
           echo "release-ver=${release_ver}" >> "$GITHUB_OUTPUT"
 
       - name: Get next release version
-        if: ( ! inputs.prerelease )
+        if: (!inputs.prerelease)
         id: release-tag
         run: |
           release_ver="$(svu next)"
