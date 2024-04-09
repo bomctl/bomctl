@@ -29,6 +29,7 @@ env:
 before:
   hooks:
     - go mod tidy
+    - .github/scripts/update-version.sh
 
 sboms:
   - artifacts: binary

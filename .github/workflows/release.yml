@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------
 # SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-# SPDX-FileName: .github/workflows/semantic-release.yml
+# SPDX-FileName: .github/workflows/release.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------
@@ -17,7 +17,8 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
-name: go-semantic-release
+name: goreleaser
+
 on:
   workflow_call:
     inputs:
@@ -35,10 +36,16 @@ on:
     branches:
       - "**"
 
+permissions:
+  contents: read
+
 jobs:
   dry-run:
     runs-on: ubuntu-latest
 
+    outputs:
+      release-ver: ${{ steps.release-tag.outputs.release-ver }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -49,31 +56,35 @@ jobs:
           go-version: "1.21"
           cache: false
 
-      - name: Run semantic-release dry-run
-        uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
-        with:
-          allow-initial-development-versions: true
-          dry: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ inputs.prerelease }}
+      - name: Install Semantic Version Util
+        run: go install github.com/caarlos0/svu@a4642ead109ca37441f573f0118a4e79a7ac9a2f # v1.12.0
+
+      - name: Get next release version
+        id: release-tag
+        run: |
+          release_ver="$(svu ${{ inputs.prerelease && format('{0} {1} {2}', 'prerelease', '--pre-release', github.ref_name) || 'next' }})"
+          echo "New release version: $release_ver"
+          echo "release-ver=$release_ver" >> "$GITHUB_OUTPUT"
 
   release:
     if: inputs.should_publish
     runs-on: ubuntu-latest
-    needs: dry-run
+    needs:
+      - dry-run
 
     permissions:
-      contents: write
+      contents: write # needed to write releases
 
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
-          go-version: "1.21"
-          cache: false
+          go-version: stable
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@e1523de7571e31dbe865fd2e80c5c7c23ae71eb4 # v3.4.0
@@ -81,16 +92,17 @@ jobs:
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@b6a39da80722a2cb0ef5d197531764a89b5d48c3 # v0.15.8
 
-      - name: Publish with semantic-release and GoReleaser
-        uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
+      - name: Create tag for new release
+        run: |
+          git tag ${{ needs.dry-run.outputs.release-ver }}
+          git push --tags
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
         with:
-          allow-initial-development-versions: true
-          changelog-file: docs/CHANGELOG.md
-          changelog-generator-opt: emojis=true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          hooks: goreleaser
-          prepend: true
-          prerelease: ${{ inputs.prerelease }}
+          distribution: goreleaser
+          version: latest
+          args: release --clean
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}

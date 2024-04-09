@@ -102,7 +102,6 @@
   "prettier.singleQuote": true,
 
   "shellformat.flag": "--binary-next-line --keep-padding --case-indent --space-redirects --indent=2",
-  "shellformat.useEditorConfig": true,
 
   "sqltools.autoConnectTo": ["bomctl"],
   "sqltools.connections": [

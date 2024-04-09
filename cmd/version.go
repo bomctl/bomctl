@@ -32,7 +32,7 @@ const (
 	VersionMinor = 1
 
 	// VersionPatch is for backwards-compatible bug fixes.
-	VersionPatch = 1
+	VersionPatch = 0
 
 	// VersionDev indicates development branch. Releases will be empty string.
 	VersionDev = "-alpha"
