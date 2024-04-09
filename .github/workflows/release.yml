@@ -63,7 +63,7 @@ jobs:
         id: release-tag
         run: |
           release_ver="$(svu next)"
-          if ([[ "${{ inputs.should_publish }}" != "true" ]] && [[ "$(svu current)" =~ .*(alpha|dev).* ]]) || ${{ inputs.prerelease }}; then
+          if ([[ "${{ inputs.should_publish }}" != "true" ]] && [[ "$(svu current)" =~ .*(alpha|dev).* ]]) || [[ "${{ inputs.prerelease }}" == "true" ]]; then
             release_ver="$(svu prerelease --pre-release ${{ github.ref_name }})"
           fi
 
