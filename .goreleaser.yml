@@ -29,6 +29,7 @@ env:
 before:
   hooks:
     - go mod tidy
+    - .github/scripts/update-version.sh
 
 sboms:
   - artifacts: binary
@@ -74,26 +75,7 @@ snapshot:
   name_template: SNAPSHOT-{{.ShortCommit}}
 
 changelog:
-  disable: false
-  use: github
-  sort: asc
-  abbrev: -1
-  groups:
-    - title: New features
-      regexp: ^.*?feat(\([[:word:]]+\))??!?:.+$
-      order: 0
-
-    - title: Bug fixes
-      regexp: ^.*?(bug|fix)(\([[:word:]]+\))??!?:.+$
-      order: 1
-
-    - title: Other changes
-      regexp: ^.*?(refactor|perf|test)(\([[:word:]]+\))??!?:.+$
-      order: 999
-
-  filters:
-    include:
-      - ^.*?(feat|bug|fix|refactor|perf|test)(\([[:word:]]+\))??!?:.+$
+  disable: true
 
 release:
   prerelease: auto

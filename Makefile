@@ -45,9 +45,9 @@ ifeq (${OS},windows)
 	TARGET_BIN := ${addsuffix .exe,${TARGET_BIN}}
 endif
 
-CLI_VERSION ?= $(if $(shell git describe --tags),$(shell git describe --tags),"UnknownVersion")
-GIT_SHA := $(if $(shell git rev-parse HEAD),$(shell git rev-parse HEAD),"")
-BUILD_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+CLI_VERSION ?= ${if ${shell git describe --tags},${shell git describe --tags},"UnknownVersion"}
+GIT_SHA := ${if ${shell git rev-parse HEAD},${shell git rev-parse HEAD},""}
+BUILD_DATE := ${shell date -u +'%Y-%m-%dT%H:%M:%SZ'}
 
 .PHONY: all build clean help format test
 .SILENT: clean
