@@ -17,8 +17,7 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
-name: goreleaser
-
+name: go-semantic-release
 on:
   workflow_call:
     inputs:
@@ -27,30 +26,25 @@ on:
         required: true
         type: boolean
 
-      should_publish:
-        default: ${{ contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x') }}
-        required: true
-        type: boolean
-
   push:
     branches:
-      - "**"
+      - main
+      - next
+      - dev
+      - alpha
+      - "[0-9].x"
+      - "[0-9].[0-9].x"
+      - "[0-9].[0-9].[0-9].x"
 
-permissions:
-  contents: read
+  pull_request:
 
 jobs:
   dry-run:
     runs-on: ubuntu-latest
 
-    outputs:
-      release-ver: ${{ steps.release-tag.outputs.release-ver }}
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
 
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
@@ -58,35 +52,43 @@ jobs:
           go-version: "1.21"
           cache: false
 
-      - name: Install Semantic Version Util
-        run: go install github.com/caarlos0/svu@a4642ead109ca37441f573f0118a4e79a7ac9a2f # v1.12.0
+      - name: Run go-semantic-release dry-run
+        id: next-version
+        uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
+        with:
+          allow-initial-development-versions: true
+          dry: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{ inputs.prerelease }}
 
-      - name: Get next release version
-        id: release-tag
+      - name: Display dry-run output
         run: |
-          release_ver="$(svu ${{ inputs.prerelease && format('{0} {1} {2}', 'prerelease', '--pre-release', github.ref_name) || 'next' }})"
-          echo "New release version: $release_ver"
-          echo "release-ver=$release_ver" >> "$GITHUB_OUTPUT"
+          echo "
+          major:      ${{ steps.next-version.outputs.version_major }}
+          minor:      ${{ steps.next-version.outputs.version_minor }}
+          patch:      ${{ steps.next-version.outputs.version_patch }}
+          prerelease: ${{ steps.next-version.outputs.version_prerelease }}
+
+          changelog:
+          ${{ steps.next-version.outputs.changelog }}"
 
   release:
-    if: inputs.should_publish
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs:
-      - dry-run
+    needs: dry-run
 
     permissions:
-      contents: write # needed to write releases
+      contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
 
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
-          go-version: stable
+          go-version: "1.21"
+          cache: false
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@e1523de7571e31dbe865fd2e80c5c7c23ae71eb4 # v3.4.0
@@ -94,17 +96,16 @@ jobs:
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@b6a39da80722a2cb0ef5d197531764a89b5d48c3 # v0.15.8
 
-      - name: Create tag for new release
-        run: |
-          git tag ${{ needs.dry-run.outputs.release-ver }}
-          git push --tags
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+      - name: Publish with go-semantic-release and GoReleaser
+        uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
+          allow-initial-development-versions: true
+          changelog-file: docs/CHANGELOG.md
+          changelog-generator-opt: emojis=true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          hooks: goreleaser
+          prepend: true
+          prerelease: ${{ inputs.prerelease }}
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
