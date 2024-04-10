@@ -50,24 +50,13 @@ jobs:
           cache: false
 
       - name: Run go-semantic-release dry-run
-        id: next-version
         uses: go-semantic-release/action@48d83acd958dae62e73701aad20a5b5844a3bf45 # v1.23.0
         with:
           allow-initial-development-versions: true
+          custom-arguments: --allow-maintained-version-on-default-branch
           dry: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: ${{ inputs.prerelease }}
-
-      - name: Display dry-run output
-        run: |
-          echo "
-          major:      ${{ steps.next-version.outputs.version_major }}
-          minor:      ${{ steps.next-version.outputs.version_minor }}
-          patch:      ${{ steps.next-version.outputs.version_patch }}
-          prerelease: ${{ steps.next-version.outputs.version_prerelease }}
-
-          changelog:
-          ${{ steps.next-version.outputs.changelog }}"
 
   release:
     if: inputs.should_publish
@@ -99,6 +88,7 @@ jobs:
           allow-initial-development-versions: true
           changelog-file: docs/CHANGELOG.md
           changelog-generator-opt: emojis=true
+          custom-arguments: --allow-maintained-version-on-default-branch
           github-token: ${{ secrets.GITHUB_TOKEN }}
           hooks: goreleaser
           prepend: true
