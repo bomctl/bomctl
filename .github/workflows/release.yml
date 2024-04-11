@@ -18,19 +18,8 @@
 # ------------------------------------------------------------------------
 ---
 name: go-semantic-release
+
 on:
-  workflow_call:
-    inputs:
-      prerelease:
-        default: ${{ contains(fromJSON('["dev", "alpha"]'), github.ref_name) }}
-        required: true
-        type: boolean
-
-      should_publish:
-        default: ${{ contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x') }}
-        required: true
-        type: boolean
-
   push:
     branches:
       - "**"
@@ -56,10 +45,10 @@ jobs:
           custom-arguments: --allow-maintained-version-on-default-branch
           dry: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ inputs.prerelease }}
+          prerelease: ${{ contains(fromJSON('["dev", "alpha"]'), github.ref_name) }}
 
   release:
-    if: inputs.should_publish
+    if: contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x')
     runs-on: ubuntu-latest
     needs: dry-run
 
@@ -92,7 +81,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           hooks: goreleaser
           prepend: true
-          prerelease: ${{ inputs.prerelease }}
+          prerelease: ${{ contains(fromJSON('["dev", "alpha"]'), github.ref_name) }}
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
