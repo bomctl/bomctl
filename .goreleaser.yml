@@ -50,7 +50,7 @@ builds:
       -X=github.com/bomctl/bomctl/cmd.VersionMajor={{.Major}}
       -X=github.com/bomctl/bomctl/cmd.VersionMinor={{.Minor}}
       -X=github.com/bomctl/bomctl/cmd.VersionPatch={{.Patch}}
-      -X=github.com/bomctl/bomctl/cmd.VersionDev={{.Dev}}
+      -X=github.com/bomctl/bomctl/cmd.VersionDev={{if .Prerelease}}-{{.Prerelease}}{{else}}{{end}}
       -X=github.com/bomctl/bomctl/cmd.BuildDate={{.Date}}
 
 signs:
