@@ -10,7 +10,6 @@
 !/.markdownlint.yml
 !/.markdownlintignore
 !/.pre-commit-config.yaml
-!/.semrelrc
 !/docs/CHANGELOG.md
 
 # Whitelist patterns found anywhere in project
