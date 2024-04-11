@@ -71,20 +71,12 @@ jobs:
 
           .github/scripts/semver-util.sh print
 
-      - name: Update version.go
-        if: fromJSON(env.should_publish)
-        run: |
-          sed -E --in-place \
-            --expression='s/^(\tVersionMajor = )[0-9]+$/\1${{ steps.next-version.outputs.next-major }}/' \
-            --expression='s/^(\tVersionMinor = )[0-9]+$/\1${{ steps.next-version.outputs.next-minor }}/' \
-            --expression='s/^(\tVersionPatch = )[0-9]+$/\1${{ steps.next-version.outputs.next-patch }}/' \
-            --expression='s/^(\tVersionDev = )".*"$/\1"-${{ steps.next-version.outputs.next-dev }}"/' \
-            cmd/version.go
-
       - name: Push tag for next release
         if: fromJSON(env.should_publish)
-        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d # v5.0.0
-        with:
-          commit_message: "chore(release): update version.go to ${{ steps.next-version.outputs.next-version }}"
-          file_pattern: cmd/version.go
-          tagging_message: ${{ steps.next-version.outputs.next-version }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          next_version="${{ steps.next-version.outputs.next-version }}"
+          git tag --annotate "${next_version}" --message="${next_version}"
+          git push --tags
