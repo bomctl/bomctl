@@ -24,22 +24,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
+var (
+	// BuildDate is the date and time this binary was built.
+	BuildDate string
+
 	// VersionMajor is for an API incompatible changes.
-	VersionMajor = 0
+	VersionMajor string
 
 	// VersionMinor is for functionality in a backwards-compatible manner.
-	VersionMinor = 1
+	VersionMinor string
 
 	// VersionPatch is for backwards-compatible bug fixes.
-	VersionPatch = 0
+	VersionPatch string
 
 	// VersionDev indicates development branch. Releases will be empty string.
-	VersionDev = "-alpha"
-)
+	VersionDev string
 
-// Version is the specification version that the package types support.
-var Version = fmt.Sprintf("%d.%d.%d%s", VersionMajor, VersionMinor, VersionPatch, VersionDev)
+	// Version is the specification version that the package types support.
+	Version = fmt.Sprintf("v%s.%s.%s%s (built on %s)",
+		VersionMajor,
+		VersionMinor,
+		VersionPatch,
+		VersionDev,
+		BuildDate,
+	)
+)
 
 func versionCmd() *cobra.Command {
 	versionCmd := &cobra.Command{

@@ -8,17 +8,39 @@ BASH := ${shell type -p bash}
 SHELL := ${BASH}
 MAKEFILE ?= ${abspath ${firstword ${MAKEFILE_LIST}}}
 
+# ANSI color escape codes
+BOLD   := \033[1m
+CYAN   := \033[36m
+YELLOW := \033[33m
+RESET  := \033[0m
+
 # Default system architecture
 ARCH ?= amd64
 OS ?= linux
 
-# ANSI color escape codes
-BOLD ?= \033[1m
-CYAN ?= \033[36m
-GREEN ?= \033[32m
-RED ?= \033[31m
-YELLOW ?= \033[33m
-NC ?= \033[0m # No Color
+VERSION := ${shell git describe --tags --abbrev=0}
+VERSION ?= undefined
+
+GIT_SHA := ${shell git rev-parse HEAD}
+GIT_SHA ?= undefined
+
+BUILD_DATE := ${shell date -u +'%Y-%m-%dT%H:%M:%SZ'}
+
+VERSION_PARTS := ${subst ., ,${firstword ${subst -, ,${VERSION:v%=%}}}}
+
+VERSION_MAJOR := ${word 1,${VERSION_PARTS}}
+VERSION_MINOR := ${word 2,${VERSION_PARTS}}
+VERSION_PATCH := ${word 3,${VERSION_PARTS}}
+
+VERSION_DEV := ${lastword ${subst -, ,${VERSION}}}
+VERSION_DEV := ${if ${VERSION_DEV},-${VERSION_DEV},}
+
+LDFLAGS := -s -w \
+  -X=github.com/bomctl/bomctl/cmd.VersionMajor=${VERSION_MAJOR} \
+  -X=github.com/bomctl/bomctl/cmd.VersionMinor=${VERSION_MINOR} \
+  -X=github.com/bomctl/bomctl/cmd.VersionPatch=${VERSION_PATCH} \
+  -X=github.com/bomctl/bomctl/cmd.VersionDev=${VERSION_DEV} \
+  -X=github.com/bomctl/bomctl/cmd.BuildDate=${BUILD_DATE}
 
 ifeq (${OS},Windows_NT)
 	OS := windows
@@ -45,18 +67,14 @@ ifeq (${OS},windows)
 	TARGET_BIN := ${addsuffix .exe,${TARGET_BIN}}
 endif
 
-CLI_VERSION ?= ${if ${shell git describe --tags},${shell git describe --tags},"UnknownVersion"}
-GIT_SHA := ${if ${shell git rev-parse HEAD},${shell git rev-parse HEAD},""}
-BUILD_DATE := ${shell date -u +'%Y-%m-%dT%H:%M:%SZ'}
-
 .PHONY: all build clean help format test
 .SILENT: clean
 
 #@ Tools
 help: # Display this help
-	@awk 'BEGIN {FS = ":.*#"; printf "\n${YELLOW}Usage: make <target>${NC}\n"} \
-		/^[a-zA-Z_0-9-]+:.*?#/ { printf "  ${CYAN}%-20s${NC} %s\n", $$1, $$2 } \
-		/^#@/ { printf "\n${BOLD}%s${NC}\n", substr($$0, 4) }' ${MAKEFILE} && echo
+	@awk 'BEGIN {FS = ":.*#"; printf "\n${YELLOW}Usage: make <target>${RESET}\n"} \
+		/^[a-zA-Z_0-9-]+:.*?#/ { printf "  ${CYAN}%-20s${RESET} %s\n", $$1, $$2 } \
+		/^#@/ { printf "\n${BOLD}%s${RESET}\n", substr($$0, 4) }' ${MAKEFILE} && echo
 
 clean: # Clean the working directory
 	${RM} -r build
@@ -70,7 +88,7 @@ lint-fix: # Fix linter findings
 
 #@ Build
 define gobuild
-	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o build/bomctl-${1}-${2}${3}
+	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o dist/bomctl-${1}-${2}${3} -ldflags="${LDFLAGS}"
 endef
 
 build-linux-amd: # Build for Linux on AMD64
