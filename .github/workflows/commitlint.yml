@@ -24,11 +24,11 @@ on:
     branches:
       - "**"
 
-  pull_request:
-
 jobs:
   lint:
-    if: ${{ !github.event.pull_request.merged }}
+    if: |
+      !startsWith(github.event.head_commit.message, 'Merge branch') &&
+      !startsWith(github.event.head_commit.message, 'Merge pull request')
 
     runs-on: ubuntu-latest
 
