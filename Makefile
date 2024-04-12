@@ -32,14 +32,14 @@ VERSION_MAJOR := ${word 1,${VERSION_PARTS}}
 VERSION_MINOR := ${word 2,${VERSION_PARTS}}
 VERSION_PATCH := ${word 3,${VERSION_PARTS}}
 
-VERSION_DEV := ${lastword ${subst -, ,${VERSION}}}
-VERSION_DEV := ${if ${VERSION_DEV},-${VERSION_DEV},}
+VERSION_PRE := ${word 2,${subst -, ,${VERSION}}}
+VERSION_PRE := ${if ${VERSION_PRE},-${VERSION_PRE},}
 
 LDFLAGS := -s -w \
   -X=github.com/bomctl/bomctl/cmd.VersionMajor=${VERSION_MAJOR} \
   -X=github.com/bomctl/bomctl/cmd.VersionMinor=${VERSION_MINOR} \
   -X=github.com/bomctl/bomctl/cmd.VersionPatch=${VERSION_PATCH} \
-  -X=github.com/bomctl/bomctl/cmd.VersionDev=${VERSION_DEV} \
+  -X=github.com/bomctl/bomctl/cmd.VersionPre=${VERSION_PRE} \
   -X=github.com/bomctl/bomctl/cmd.BuildDate=${BUILD_DATE}
 
 ifeq (${OS},Windows_NT)
@@ -77,7 +77,7 @@ help: # Display this help
 		/^#@/ { printf "\n${BOLD}%s${RESET}\n", substr($$0, 4) }' ${MAKEFILE} && echo
 
 clean: # Clean the working directory
-	${RM} -r build
+	${RM} -r dist
 	find ${PWD} -name "*.log" -exec ${RM} {} \;
 
 lint: # Lint Golang code files

@@ -31,17 +31,17 @@ before:
     - go mod tidy
 
 sboms:
-  - artifacts: binary
+  - artifacts: archive
     documents: [$artifact.cdx.json]
     cmd: syft
-    args: [$artifact, --output, cyclonedx-json=$document]
+    args: [scan, $artifact, --output, cyclonedx-json=$document]
 
 gomod:
+  mod: mod
   proxy: true
 
 builds:
-  - binary: "{{.ProjectName}}-{{.Os}}-{{.Arch}}"
-    no_unique_dist_dir: true
+  - binary: "{{.ProjectName}}"
     mod_timestamp: "{{.CommitTimestamp}}"
     flags: [-trimpath]
     goos: [linux, darwin, windows]
@@ -50,7 +50,7 @@ builds:
       -X=github.com/bomctl/bomctl/cmd.VersionMajor={{.Major}}
       -X=github.com/bomctl/bomctl/cmd.VersionMinor={{.Minor}}
       -X=github.com/bomctl/bomctl/cmd.VersionPatch={{.Patch}}
-      -X=github.com/bomctl/bomctl/cmd.VersionDev={{if .Prerelease}}-{{.Prerelease}}{{else}}{{end}}
+      -X=github.com/bomctl/bomctl/cmd.VersionPre={{with .Prerelease}}-{{.}}{{end}}
       -X=github.com/bomctl/bomctl/cmd.BuildDate={{.Date}}
 
 signs:
@@ -68,9 +68,11 @@ nfpms:
     formats: [apk, deb, rpm]
 
 archives:
-  - format: binary
-    name_template: "{{.Binary}}"
-    allow_different_binary_count: true
+  - name_template: "{{.ProjectName}}-{{.Os}}-{{.Arch}}"
+    strip_parent_binary_folder: true
+    format_overrides:
+      - goos: windows
+        format: zip
 
 checksum:
   name_template: "{{.ProjectName}}_checksums.txt"

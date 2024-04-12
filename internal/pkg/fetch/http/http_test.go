@@ -27,7 +27,7 @@ import (
 )
 
 func TestHTTPFetcherParse(t *testing.T) {
-	fetcher := &HTTPFetcher{}
+	fetcher := &Fetcher{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL

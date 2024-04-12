@@ -28,7 +28,7 @@ var (
 	// BuildDate is the date and time this binary was built.
 	BuildDate string
 
-	// VersionMajor is for an API incompatible changes.
+	// VersionMajor is for breaking API changes.
 	VersionMajor string
 
 	// VersionMinor is for functionality in a backwards-compatible manner.
@@ -37,15 +37,15 @@ var (
 	// VersionPatch is for backwards-compatible bug fixes.
 	VersionPatch string
 
-	// VersionDev indicates development branch. Releases will be empty string.
-	VersionDev string
+	// VersionPre indicates prerelease branch.
+	VersionPre string
 
 	// Version is the specification version that the package types support.
 	Version = fmt.Sprintf("v%s.%s.%s%s (built on %s)",
 		VersionMajor,
 		VersionMinor,
 		VersionPatch,
-		VersionDev,
+		VersionPre,
 		BuildDate,
 	)
 )
@@ -55,7 +55,7 @@ func versionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Show version",
 		Long:  "Print the version",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			fmt.Println("bomctl version", Version)
 		},
 	}

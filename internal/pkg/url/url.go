@@ -113,7 +113,7 @@ func (url *ParsedURL) String() string {
 	return string(urlBytes)
 }
 
-type URLParser interface {
+type Parser interface {
 	Parse(fetchURL string) *ParsedURL
 	RegExp() *regexp.Regexp
 }

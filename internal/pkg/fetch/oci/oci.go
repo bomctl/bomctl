@@ -45,9 +45,9 @@ var (
 	memStore         = memory.New()
 )
 
-type OCIFetcher struct{}
+type Fetcher struct{}
 
-func (of *OCIFetcher) RegExp() *regexp.Regexp {
+func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?P<scheme>oci|docker)(?:-archive)?:\/\/)?`,
@@ -59,9 +59,9 @@ func (of *OCIFetcher) RegExp() *regexp.Regexp {
 	)
 }
 
-func (of *OCIFetcher) Parse(fetchURL string) *url.ParsedURL {
+func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	results := map[string]string{}
-	pattern := of.RegExp()
+	pattern := fetcher.RegExp()
 	match := pattern.FindStringSubmatch(fetchURL)
 
 	for idx, name := range match {
@@ -84,7 +84,7 @@ func (of *OCIFetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (of *OCIFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
 	var (
 		document                           *sbom.Document
 		err                                error

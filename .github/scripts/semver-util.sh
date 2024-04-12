@@ -16,19 +16,24 @@ function usage {
 }
 
 function get_next {
-  local major minor patch dev version next_version
-  next_version="$(svu prerelease --pre-release alpha --strip-prefix)"
+  local current_branch
+  current_branch="$(git branch --show-current)"
 
-  # Split next_version string into components
-  IFS="-" read -r version dev <<< "${next_version#v}"
-  IFS="." read -r major minor patch <<< "$version"
-
-  echo "$major $minor $patch $dev"
+  if [[ $current_branch =~ ^alpha|dev$ ]]; then
+    svu prerelease --pre-release "$current_branch"
+  else
+    svu next
+  fi
 }
 
 function print_version {
-  local major minor patch dev
-  read -r major minor patch dev <<< "$(get_next)"
+  local next_version major minor patch pre
+
+  next_version="$(get_next)"
+
+  # Split next_version string into components
+  IFS="-" read -r version pre <<< "${next_version#v}"
+  IFS="." read -r major minor patch <<< "$version"
 
   release_info=(
     ""
@@ -38,7 +43,7 @@ function print_version {
     " ${BOLD}major${RESET} | ${GREEN}${major}${RESET}"
     " ${BOLD}minor${RESET} | ${GREEN}${minor}${RESET}"
     " ${BOLD}patch${RESET} | ${GREEN}${patch}${RESET}"
-    " ${BOLD}dev${RESET}   | ${YELLOW}${dev}${RESET}"
+    " ${BOLD}pre${RESET}   | ${YELLOW}${pre}${RESET}"
     "-------+---------"
     ""
   )

@@ -32,9 +32,9 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
-type GitFetcher struct{}
+type Fetcher struct{}
 
-func (gf *GitFetcher) RegExp() *regexp.Regexp {
+func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?:git\+)?(?P<scheme>https?|git|ssh):\/\/)?`,
@@ -46,9 +46,9 @@ func (gf *GitFetcher) RegExp() *regexp.Regexp {
 	)
 }
 
-func (gf *GitFetcher) Parse(fetchURL string) *url.ParsedURL {
+func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	results := map[string]string{}
-	pattern := gf.RegExp()
+	pattern := fetcher.RegExp()
 	match := pattern.FindStringSubmatch(fetchURL)
 
 	for idx, name := range match {
@@ -72,7 +72,7 @@ func (gf *GitFetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (gf *GitFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
 	// Create temp directory to clone into
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
 	if err != nil {

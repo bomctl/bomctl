@@ -33,11 +33,11 @@ import (
 
 var client = http.DefaultClient
 
-type HTTPFetcher struct {
+type Fetcher struct {
 	OutputFile string
 }
 
-func (hf *HTTPFetcher) RegExp() *regexp.Regexp {
+func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("%s%s%s%s",
 			`((?P<scheme>https?)://)`,
@@ -48,9 +48,9 @@ func (hf *HTTPFetcher) RegExp() *regexp.Regexp {
 	)
 }
 
-func (hf *HTTPFetcher) Parse(fetchURL string) *url.ParsedURL {
+func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	results := map[string]string{}
-	pattern := hf.RegExp()
+	pattern := fetcher.RegExp()
 	match := pattern.FindStringSubmatch(fetchURL)
 
 	for idx, name := range match {
@@ -69,7 +69,7 @@ func (hf *HTTPFetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (hf *HTTPFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
 	req, err := http.NewRequest("GET", parsedURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
@@ -91,8 +91,8 @@ func (hf *HTTPFetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sb
 	}
 
 	// Create the file if specified at the command line
-	if hf.OutputFile != "" {
-		out, err := os.Create(hf.OutputFile)
+	if fetcher.OutputFile != "" {
+		out, err := os.Create(fetcher.OutputFile)
 		if err != nil {
 			return nil, fmt.Errorf("%w", err)
 		}
