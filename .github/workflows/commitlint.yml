@@ -33,8 +33,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+
+      - name: Set up Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version: "1.21"
+          cache: false
+
       - name: Install commitlint
         run: go install github.com/conventionalcommit/commitlint@e9a606ce7074ac884ea091765be1651be18356d4 # v0.10.1
 
       - name: Lint commit message
-        run: echo ${{ github.event.head_commit.message }} | commitlint lint
+        run: commitlint lint <<< '${{ github.event.head_commit.message }}'

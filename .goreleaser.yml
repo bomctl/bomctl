@@ -58,7 +58,7 @@ signs:
     signature: $artifact.sig
     cmd: cosign
     args: [sign-blob, --output-signature=$artifact.sig, --key=env://COSIGN_PRIVATE_KEY, $artifact]
-    artifacts: binary
+    artifacts: checksum
 
 nfpms:
   - license: Apache License 2.0
@@ -69,7 +69,7 @@ nfpms:
 
 archives:
   - name_template: "{{.ProjectName}}-{{.Os}}-{{.Arch}}"
-    strip_parent_binary_folder: true
+    strip_binary_directory: true
     format_overrides:
       - goos: windows
         format: zip
