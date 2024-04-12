@@ -68,8 +68,7 @@ nfpms:
     formats: [apk, deb, rpm]
 
 archives:
-  - name_template: "{{.ProjectName}}-{{.Os}}-{{.Arch}}"
-    strip_binary_directory: true
+  - strip_binary_directory: true
     format_overrides:
       - goos: windows
         format: zip
