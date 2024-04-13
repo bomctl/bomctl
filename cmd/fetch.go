@@ -34,7 +34,7 @@ func fetchCmd() *cobra.Command {
 		PreRun: parsePositionalArgs,
 		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			var err error
 			logger = utils.NewLogger("fetch")
 
@@ -66,7 +66,7 @@ func fetchCmd() *cobra.Command {
 	return fetchCmd
 }
 
-func parsePositionalArgs(cmd *cobra.Command, args []string) {
+func parsePositionalArgs(_ *cobra.Command, args []string) {
 	for _, arg := range args {
 		sbomURLs = append(sbomURLs, arg)
 	}

@@ -23,8 +23,6 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
-      - cmd/version.go
 
 permissions:
   contents: read
@@ -58,18 +56,10 @@ jobs:
       - name: Get next release version
         id: next-version
         run: |
-          read -r major minor patch dev <<< "$(.github/scripts/semver-util.sh next)"
-
-          printf -v next_version "v%s.%s.%s" "$major" "$minor" "$patch"
-          [[ -n "$dev" ]] && next_version="${next_version}-${dev}"
+          next_version="$(.github/scripts/semver-util.sh next)"
+          .github/scripts/semver-util.sh print
 
           echo "next-version=${next_version}" >> "$GITHUB_OUTPUT"
-          echo "next-major=${major}" >> "$GITHUB_OUTPUT"
-          echo "next-minor=${minor}" >> "$GITHUB_OUTPUT"
-          echo "next-patch=${patch}" >> "$GITHUB_OUTPUT"
-          echo "next-dev=${dev}" >> "$GITHUB_OUTPUT"
-
-          .github/scripts/semver-util.sh print
 
       - name: Push tag for next release
         if: fromJSON(env.should_publish)

@@ -39,7 +39,7 @@ import (
 var errUnsupportedURL = errors.New("unsupported URL scheme")
 
 type Fetcher interface {
-	url.URLParser
+	url.Parser
 	Fetch(*url.ParsedURL, *url.BasicAuth) (*sbom.Document, error)
 }
 
@@ -48,15 +48,15 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 	logger := utils.NewLogger("fetch")
 
 	switch {
-	case (&oci.OCIFetcher{}).Parse(sbomURL) != nil:
+	case (&oci.Fetcher{}).Parse(sbomURL) != nil:
 		logger.Info("Fetching from OCI URL", "url", sbomURL)
-		fetcher = &oci.OCIFetcher{}
-	case (&git.GitFetcher{}).Parse(sbomURL) != nil:
+		fetcher = &oci.Fetcher{}
+	case (&git.Fetcher{}).Parse(sbomURL) != nil:
 		logger.Info("Fetching from Git URL", "url", sbomURL)
-		fetcher = &git.GitFetcher{}
-	case (&http.HTTPFetcher{}).Parse(sbomURL) != nil:
+		fetcher = &git.Fetcher{}
+	case (&http.Fetcher{}).Parse(sbomURL) != nil:
 		logger.Info("Fetching from HTTP URL", "url", sbomURL)
-		fetcher = &http.HTTPFetcher{OutputFile: outputFile}
+		fetcher = &http.Fetcher{OutputFile: outputFile}
 	default:
 		return fmt.Errorf("%w", errUnsupportedURL)
 	}
@@ -84,7 +84,7 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 	// Fetch externally referenced BOMs
 	var idx uint8
 	for _, ref := range utils.GetBOMReferences(document) {
-		idx += 1
+		idx++
 
 		if outputFile != "" {
 			// Matches base filename, excluding extension

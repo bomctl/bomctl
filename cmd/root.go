@@ -75,7 +75,7 @@ func rootCmd() *cobra.Command {
 		Use:     "bomctl",
 		Long:    "Simpler Software Bill of Materials management",
 		Version: Version,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
 			if verbose {
 				log.SetLevel(log.DebugLevel)
 			}

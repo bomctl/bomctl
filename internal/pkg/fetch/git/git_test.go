@@ -27,7 +27,7 @@ import (
 )
 
 func TestGitFetcherParse(t *testing.T) {
-	fetcher := &GitFetcher{}
+	fetcher := &Fetcher{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL

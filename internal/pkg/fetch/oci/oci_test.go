@@ -29,7 +29,7 @@ import (
 const testSHA string = "sha256:abcdef0123456789ABCDEF0123456789abcdef0123456789ABCDEF0123456789"
 
 func TestOCIFetcherParse(t *testing.T) {
-	fetcher := &OCIFetcher{}
+	fetcher := &Fetcher{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
