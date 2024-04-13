@@ -67,5 +67,5 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           next_version="${{ steps.next-version.outputs.next-version }}"
-          git tag --sign --annotate "${next_version}" --message="${next_version}"
+          git tag --annotate "${next_version}" --message="${next_version}"
           git push --tags
