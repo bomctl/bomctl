@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euxo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" &> /dev/null && pwd)"
 readonly SCRIPT_DIR
@@ -34,5 +34,5 @@ curl --fail --silent --location --request POST \
   --url https://api.github.com/repos/bomctl/bomctl/git/refs \
   --data '{
     "ref": "refs/tags/'"$NEXT_VERSION"'",
-    "sha": "'"$GITHUB_REF"'"
+    "sha": "'"$GITHUB_SHA"'"
   }'
