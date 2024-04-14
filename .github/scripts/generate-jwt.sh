@@ -40,5 +40,4 @@ signature=$(
 )
 
 # Create JWT
-JWT="${header_payload}"."${signature}"
-printf '%s\n' "$JWT"
+echo "${header_payload}"."${signature}"
