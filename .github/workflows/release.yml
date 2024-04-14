@@ -64,6 +64,7 @@ jobs:
       - name: Create tag for next release
         if: fromJSON(env.should_publish)
         env:
+          GORELEASER_BOT_RSA_PRIVATE_KEY: ${{ secrets.GORELEASER_BOT_RSA_PRIVATE_KEY }}
           NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
         run: |
           .github/scripts/tag-release.sh
