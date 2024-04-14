@@ -26,7 +26,24 @@ token="$(curl --fail --silent --location --request POST \
   --header "X-GitHub-Api-Version: 2022-11-28" \
   --url "https://api.github.com/app/installations/$installation_id/access_tokens" | jq --raw-output .token)"
 
-# Create a tag as reference
+# Create a tag
+curl --fail --silent --location --request POST \
+  --header "Accept: application/vnd.github+json" \
+  --header "Authorization: Bearer $token" \
+  --header "X-GitHub-Api-Version: 2022-11-28" \
+  --url https://api.github.com/repos/bomctl/bomctl/git/tags \
+  --data '{
+      "tag": "'"$NEXT_VERSION"'",
+      "message": "'"$NEXT_VERSION"'",
+      "object": "'"$GITHUB_SHA"'",
+      "type": "commit",
+      "tagger": {
+        "name": "bomctl-goreleaser-bot[bot]",
+        "email": "166692013+bomctl-goreleaser-bot[bot]@users.noreply.github.com"
+      }
+    }'
+
+# Create a reference to the tag
 curl --fail --silent --location --request POST \
   --header "Accept: application/vnd.github+json" \
   --header "Authorization: Bearer $token" \
