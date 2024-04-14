@@ -61,26 +61,9 @@ jobs:
 
           echo "next-version=${next_version}" >> "$GITHUB_OUTPUT"
 
-      - name: Configure git for tag signing
+      - name: Create tag for next release
         if: fromJSON(env.should_publish)
         env:
-          GORELEASER_BOT_OPENSSH_PUBLIC_KEY: ${{ secrets.GORELEASER_BOT_OPENSSH_PUBLIC_KEY }}
-          GORELEASER_BOT_OPENSSH_PRIVATE_KEY: ${{ secrets.GORELEASER_BOT_OPENSSH_PRIVATE_KEY }}
+          NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
         run: |
-          mkdir -p "$HOME/.ssh" && chmod -R u=rwx,go= "$_"
-          touch "$HOME/.ssh/bomctl-goreleaser-bot-key" && chmod u=rw,go= "$_" && echo "$GORELEASER_BOT_OPENSSH_PRIVATE_KEY" > "$_"
-          touch "$HOME/.ssh/bomctl-goreleaser-bot-key.pub" && chmod u=rw,go=r "$_" && echo "$GORELEASER_BOT_OPENSSH_PUBLIC_KEY" > "$_"
-          touch "$HOME/.ssh/allowed_signers" && chmod u=rw,go=r "$_" && echo "166692013+bomctl-goreleaser-bot[bot]@users.noreply.github.com namespaces=\"git\" $GORELEASER_BOT_OPENSSH_PUBLIC_KEY" > "$_"
-
-          git config user.name "bomctl-goreleaser-bot[bot]"
-          git config user.email "166692013+bomctl-goreleaser-bot[bot]@users.noreply.github.com"
-          git config tag.gpgSign true
-          git config gpg.format ssh
-          git config user.signingKey "$HOME/.ssh/bomctl-goreleaser-bot-key.pub"
-
-      - name: Push tag for next release
-        if: fromJSON(env.should_publish)
-        run: |
-          next_version="${{ steps.next-version.outputs.next-version }}"
-          git tag --sign --annotate "${next_version}" --message="${next_version}"
-          git push --tags
+          .github/scripts/tag-release.sh
