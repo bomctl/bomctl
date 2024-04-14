@@ -14,7 +14,9 @@ jwt=$("$SCRIPT_DIR/generate-jwt.sh")
 
 # Get ID of GitHub App installation
 installation_id="$(curl --fail --silent --location --request GET \
+  --header "Accept: application/vnd.github+json" \
   --header "Authorization: Bearer $jwt" \
+  --header "X-GitHub-Api-Version: 2022-11-28" \
   --url https://api.github.com/repos/bomctl/bomctl/installation | jq --raw-output .id)"
 
 # Get access token

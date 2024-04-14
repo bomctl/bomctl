@@ -8,6 +8,11 @@ now=$(date +%s)
 iat=$((now - 60))  # Issues 60 seconds in the past
 exp=$((now + 600)) # Expires 10 minutes in the future
 
+# Install OpenSSL if not installed
+if ! command -v openssl &> /dev/null; then
+  (apt-get update && apt-get install --yes openssl) &> /dev/null
+fi
+
 b64enc() { openssl base64 | tr -d '=' | tr '/+' '_-' | tr -d '\n'; }
 
 header_json='{
