@@ -32,22 +32,26 @@ token="$(curl --request POST "${curl_args[@]}" \
 curl --request POST --output /dev/null "${curl_args[@]}" \
   --header "Authorization: Bearer $token" \
   --url https://api.github.com/repos/bomctl/bomctl/git/tags \
-  --data '{
-      "tag": "'"$NEXT_VERSION"'",
-      "message": "'"$NEXT_VERSION"'",
-      "object": "'"$GITHUB_SHA"'",
-      "type": "commit",
-      "tagger": {
-        "name": "bomctl-goreleaser-bot[bot]",
-        "email": "166692013+bomctl-goreleaser-bot[bot]@users.noreply.github.com"
-      }
-    }'
+  --data "$(
+      printf '{
+        "tag": "%s",
+        "message": "%s",
+        "object": "%s",
+        "type": "commit",
+        "tagger": {
+          "name": "bomctl-goreleaser-bot[bot]",
+          "email": "166692013+bomctl-goreleaser-bot[bot]@users.noreply.github.com"
+        }
+      }' "${NEXT_VERSION}" "${NEXT_VERSION}" "${GITHUB_SHA}"
+  )"
 
 # Create a reference to the tag
 curl --request POST --output /dev/null "${curl_args[@]}" \
   --header "Authorization: Bearer $token" \
   --url https://api.github.com/repos/bomctl/bomctl/git/refs \
-  --data '{
-    "ref": "refs/tags/'"$NEXT_VERSION"'",
-    "sha": "'"$GITHUB_SHA"'"
-  }'
+  --data "$(
+      printf '{
+        "ref": "refs/tags/%s",
+        "sha": "%s"
+      }' "${NEXT_VERSION}" "${GITHUB_SHA}"
+  )"

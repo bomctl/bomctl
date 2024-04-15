@@ -13,31 +13,23 @@ if ! command -v openssl &> /dev/null; then
   (apt-get update && apt-get install --yes openssl) &> /dev/null
 fi
 
-b64enc() { openssl base64 | tr -d '=' | tr '/+' '_-' | tr -d '\n'; }
+function b64enc {
+  openssl base64 | tr --delete "=" | tr "/+" "_-" | tr --delete "\n"
+}
 
-header_json='{
-  "typ":"JWT",
-  "alg":"RS256"
-}'
+# Encode header
+header=$(printf '{"typ": "JWT", "alg": "RS256"}' | b64enc)
 
-# Header encode
-header=$(echo -n "${header_json}" | b64enc)
-
-payload_json='{
-  "iat":'"${iat}"',
-  "exp":'"${exp}"',
-  "iss":'"${APP_ID}"'
-}'
-
-# Payload encode
-payload=$(echo -n "${payload_json}" | b64enc)
+# Encode payload
+payload=$(printf '{"iat": "%s", "exp": "%s", "iss": "%s"}' $iat $exp $APP_ID | b64enc)
 
 # Signature
-header_payload="${header}"."${payload}"
+header_payload="${header}.${payload}"
 signature=$(
-  openssl dgst -sha256 -sign <(echo -n "$GORELEASER_BOT_RSA_PRIVATE_KEY") \
-    <(echo -n "${header_payload}") | b64enc
+  printf %s "${header_payload}" |
+    openssl dgst -sha256 -sign <(printf %s "${GORELEASER_BOT_RSA_PRIVATE_KEY}") |
+    b64enc
 )
 
 # Create JWT
-echo "${header_payload}"."${signature}"
+echo "${header_payload}.${signature}"
