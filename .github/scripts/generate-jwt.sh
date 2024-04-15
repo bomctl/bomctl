@@ -21,7 +21,7 @@ function b64enc {
 header=$(printf '{"typ": "JWT", "alg": "RS256"}' | b64enc)
 
 # Encode payload
-payload=$(printf '{"iat": "%s", "exp": "%s", "iss": "%s"}' $iat $exp $APP_ID | b64enc)
+payload=$(printf '{"iat": %d, "exp": %d, "iss": %d}' $iat $exp $APP_ID | b64enc)
 
 # Signature
 header_payload="${header}.${payload}"
