@@ -75,39 +75,46 @@ func (usv *URLSliceValue) String() string       { return fmt.Sprintf("%v", *usv)
 func (dv *DirectoryValue) Set(value string) error {
 	checkDirectory(value)
 	*dv = DirectoryValue(value)
+
 	return nil
 }
 
 func (dsv *DirectorySliceValue) Set(value string) error {
 	checkDirectory(value)
 	*dsv = append(*dsv, value)
+
 	return nil
 }
 
 func (efv *ExistingFileValue) Set(value string) error {
 	checkFile(value)
 	*efv = ExistingFileValue(value)
+
 	return nil
 }
 
 func (fsv *FileSliceValue) Set(value string) error {
 	checkFile(value)
 	*fsv = append(*fsv, value)
+
 	return nil
 }
 
 func (ofv *OutputFileValue) Set(value string) error {
 	*ofv = OutputFileValue(value)
+
 	return nil
 }
 
 func (uv *URLValue) Set(value string) error {
 	*uv = URLValue(value)
+
 	return nil
 }
 
 func (usv *URLSliceValue) Set(value string) error {
 	*usv = append(*usv, value)
+
 	return nil
 }
 

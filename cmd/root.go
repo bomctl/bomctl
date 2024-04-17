@@ -36,12 +36,14 @@ var (
 	verbose           bool
 )
 
+const readWriteExecuteUser = 0o700
+
 func initCache() {
 	if cache, err := os.UserCacheDir(); cacheDir == "" && err == nil {
 		cacheDir = filepath.Join(cache, "bomctl")
 	}
 
-	cobra.CheckErr(os.MkdirAll(cacheDir, os.FileMode(0o700)))
+	cobra.CheckErr(os.MkdirAll(cacheDir, os.FileMode(readWriteExecuteUser)))
 }
 
 func initConfig() {
@@ -52,7 +54,7 @@ func initConfig() {
 		cobra.CheckErr(err)
 
 		cfgDir = filepath.Join(cfgDir, "bomctl")
-		cobra.CheckErr(os.MkdirAll(cfgDir, os.FileMode(0o700)))
+		cobra.CheckErr(os.MkdirAll(cfgDir, os.FileMode(readWriteExecuteUser)))
 
 		viper.AddConfigPath(cfgDir)
 		viper.SetConfigType("yaml")

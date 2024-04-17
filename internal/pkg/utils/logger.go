@@ -24,11 +24,13 @@ import (
 	"github.com/charmbracelet/log"
 )
 
+const levelWidth = 5
+
 func NewLogger(prefix string) *log.Logger {
 	// Set displayed width of log level in messages to show full level name
 	styles := log.DefaultStyles()
 	for _, level := range []log.Level{log.DebugLevel, log.ErrorLevel, log.FatalLevel, log.InfoLevel, log.WarnLevel} {
-		styles.Levels[level] = styles.Levels[level].MaxWidth(5).Width(5)
+		styles.Levels[level] = styles.Levels[level].MaxWidth(levelWidth).Width(levelWidth)
 	}
 
 	logger := log.NewWithOptions(os.Stdout, log.Options{Prefix: prefix, Level: log.GetLevel()})
