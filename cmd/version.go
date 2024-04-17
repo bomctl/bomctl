@@ -56,7 +56,7 @@ func versionCmd() *cobra.Command {
 		Short: "Show version",
 		Long:  "Print the version",
 		Run: func(_ *cobra.Command, _ []string) {
-			fmt.Println("bomctl version", Version)
+			fmt.Println("bomctl version", Version) //nolint:forbidigo // Print to terminal and exit
 		},
 	}
 

@@ -47,6 +47,10 @@ var (
 
 type Fetcher struct{}
 
+func (fetcher *Fetcher) Name() string {
+	return "OCI"
+}
+
 func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
@@ -123,6 +127,7 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*s
 
 func createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*remote.Repository, error) {
 	repoPath := strings.Trim(parsedURL.Hostname, "/") + "/" + strings.Trim(parsedURL.Path, "/")
+
 	repo, err := remote.NewRepository(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("error creating OCI registry repository %s: %w", repoPath, err)
@@ -164,8 +169,10 @@ func getManifestChildren(manifestDescriptor *ocispec.Descriptor) ([]ocispec.Desc
 }
 
 func getSBOMDescriptor(successors []ocispec.Descriptor) (*ocispec.Descriptor, error) {
-	var sbomDescriptor ocispec.Descriptor
-	var sbomDigests []string
+	var (
+		sbomDescriptor ocispec.Descriptor
+		sbomDigests    []string
+	)
 
 	for _, s := range successors {
 		if slices.Contains([]string{

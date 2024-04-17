@@ -54,6 +54,7 @@ func CreateSchema(dbFile string) (*gorm.DB, error) {
 
 	if db != nil {
 		logger.Info("Database file already exists, will not recreate")
+
 		return db, nil
 	}
 

@@ -34,6 +34,10 @@ import (
 
 type Fetcher struct{}
 
+func (fetcher *Fetcher) Name() string {
+	return "Git"
+}
+
 func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
