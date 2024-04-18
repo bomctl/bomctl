@@ -24,6 +24,9 @@ on:
     branches:
       - "**"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   lint:
     if: |
@@ -46,4 +49,6 @@ jobs:
         run: go install github.com/conventionalcommit/commitlint@e9a606ce7074ac884ea091765be1651be18356d4 # v0.10.1
 
       - name: Lint commit message
-        run: commitlint lint <<< '${{ github.event.head_commit.message }}'
+        env:
+            COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: commitlint lint <<< "$COMMIT_MSG"
