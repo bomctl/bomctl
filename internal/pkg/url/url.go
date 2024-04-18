@@ -76,8 +76,10 @@ type ParsedURL struct {
 }
 
 func (url *ParsedURL) String() string {
-	var urlBytes []byte
-	pathSep := ""
+	var (
+		urlBytes []byte
+		pathSep  string
+	)
 
 	switch url.Scheme {
 	case "http", "https", "oci":

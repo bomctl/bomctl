@@ -17,38 +17,49 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+
 run:
   concurrency: 6
+  go: "1.21"
   timeout: 5m
 
 issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - forcetypeassert
+        - funlen
+        - goconst
+        - gocyclo
+
   # Maximum issues count per one linter.
   # Set to 0 to disable.
   # Default: 50
   max-issues-per-linter: 0
+
   # Maximum count of issues with the same text.
   # Set to 0 to disable.
   # Default: 3
   max-same-issues: 0
+
   new-from-rev: ""
-  exclude-rules:
-    - path: '(.+)_test\.go'
-      linters:
-        - funlen
-        - goconst
-        - gocyclo
 
 linters:
   disable-all: true
   enable:
     - asciicheck
     - bodyclose
+    - cyclop
     - dogsled
     - dupl
+    - durationcheck
     - errcheck
     - errorlint
     - exhaustive
     - exportloopref
+    - forbidigo
+    - forcetypeassert
     - funlen
     - gci
     - gochecknoinits
@@ -63,60 +74,81 @@ linters:
     - gofumpt
     - goheader
     - goimports
+    - gomnd
+    - gomoddirectives
     - gomodguard
     - goprintffuncname
     - gosec
     - gosimple
     - govet
+    - importas
     - ineffassign
     - lll
     - makezero
     - misspell
     - nakedret
     - nestif
+    - nilerr
+    - nlreturn
+    - noctx
+    - nolintlint
+    - prealloc
     - predeclared
+    - promlinter
     - revive
     - staticcheck
     - stylecheck
+    - tagliatelle
     - thelper
+    - tparallel
     - typecheck
     - unconvert
     - unparam
     - unused
+    - wastedassign
     - whitespace
     - wrapcheck
+    - wsl
 
 linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
+
   exhaustive:
     # https://golangci-lint.run/usage/linters/#exhaustive
     default-signifies-exhaustive: true
+
   govet:
     enable:
       - fieldalignment
+
   godox:
     keywords:
       - BUG
       - FIXME
       - HACK
+
   gci:
     sections:
       - standard
       - default
       - prefix(github.com/bomctl/bomctl)
+
   gocritic:
     enabled-checks:
       # Diagnostic
       - commentedOutCode
       - nilValReturn
+      - sloppyReassign
       - weakCond
       - octalLiteral
 
       # Performance
       - appendCombine
+      - equalFold
       - hugeParam
+      - indexAlloc
       - rangeExprCopy
       - rangeValCopy
 
@@ -125,10 +157,13 @@ linters-settings:
       - commentedOutImport
       - docStub
       - emptyFallthrough
+      - emptyStringTest
       - hexLiteral
       - methodExprCall
+      - stringXbytes
       - typeAssertChain
       - unlabelStmt
+      - yodaStyleExpr
 
       # Opinionated
       - builtinShadow
@@ -138,4 +173,9 @@ linters-settings:
       - paramTypeCombine
       - ptrToRefParam
       - typeUnparen
+      - unnamedResult
       - unnecessaryBlock
+
+  nolintlint:
+    require-explanation: true
+    require-specific: true

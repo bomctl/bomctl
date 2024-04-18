@@ -69,6 +69,7 @@ func parseFile(fileName string) *protobom.Document {
 
 func TestAddDocument(t *testing.T) {
 	var err error
+
 	db, err = CreateSchema(":memory:")
 	if err != nil {
 		t.FailNow()
@@ -102,6 +103,7 @@ func TestAddDocument(t *testing.T) {
 			err := AddDocument(data.document.(*mockDocument))
 			if data.expectedError != "" {
 				require.Errorf(t, err, data.expectedError, err)
+
 				return
 			}
 

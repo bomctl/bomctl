@@ -41,25 +41,18 @@ var errUnsupportedURL = errors.New("unsupported URL scheme")
 type Fetcher interface {
 	url.Parser
 	Fetch(*url.ParsedURL, *url.BasicAuth) (*sbom.Document, error)
+	Name() string
 }
 
 func Exec(sbomURL, outputFile string, useNetRC bool) error {
-	var fetcher Fetcher
 	logger := utils.NewLogger("fetch")
 
-	switch {
-	case (&oci.Fetcher{}).Parse(sbomURL) != nil:
-		logger.Info("Fetching from OCI URL", "url", sbomURL)
-		fetcher = &oci.Fetcher{}
-	case (&git.Fetcher{}).Parse(sbomURL) != nil:
-		logger.Info("Fetching from Git URL", "url", sbomURL)
-		fetcher = &git.Fetcher{}
-	case (&http.Fetcher{}).Parse(sbomURL) != nil:
-		logger.Info("Fetching from HTTP URL", "url", sbomURL)
-		fetcher = &http.Fetcher{OutputFile: outputFile}
-	default:
-		return fmt.Errorf("%w", errUnsupportedURL)
+	fetcher, err := getFetcher(sbomURL, outputFile)
+	if err != nil {
+		return err
 	}
+
+	logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
 
 	parsedURL := fetcher.Parse(sbomURL)
 	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
@@ -104,6 +97,19 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 	}
 
 	return nil
+}
+
+func getFetcher(sbomURL, outputFile string) (Fetcher, error) {
+	switch {
+	case (&oci.Fetcher{}).Parse(sbomURL) != nil:
+		return &oci.Fetcher{}, nil
+	case (&git.Fetcher{}).Parse(sbomURL) != nil:
+		return &git.Fetcher{}, nil
+	case (&http.Fetcher{}).Parse(sbomURL) != nil:
+		return &http.Fetcher{OutputFile: outputFile}, nil
+	default:
+		return nil, fmt.Errorf("%w", errUnsupportedURL)
+	}
 }
 
 func setNetRCAuth(hostname string, auth *url.BasicAuth) error {

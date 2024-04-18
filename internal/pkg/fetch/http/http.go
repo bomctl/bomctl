@@ -19,6 +19,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,6 +36,10 @@ var client = http.DefaultClient
 
 type Fetcher struct {
 	OutputFile string
+}
+
+func (fetcher *Fetcher) Name() string {
+	return "HTTP"
 }
 
 func (fetcher *Fetcher) RegExp() *regexp.Regexp {
@@ -70,7 +75,7 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 }
 
 func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
-	req, err := http.NewRequest("GET", parsedURL.String(), nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", parsedURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
