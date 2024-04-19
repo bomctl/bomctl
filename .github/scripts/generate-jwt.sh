@@ -4,7 +4,7 @@ set -euo pipefail
 
 readonly APP_ID="874590"
 
-now=$(date +%s)
+now=$(date --date="${UTC_NOW:-$(date --utc +"%Y-%m-%dT%H:%M:%SZ")}" +%s)
 iat=$((now - 60))  # Issues 60 seconds in the past
 exp=$((now + 600)) # Expires 10 minutes in the future
 
