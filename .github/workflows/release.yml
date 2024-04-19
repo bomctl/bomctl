@@ -38,21 +38,11 @@ jobs:
       SHOULD_PUBLISH: ${{ contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x') }}
 
     steps:
-      - name: Get GitHub App installation access token
-        id: app-token
-        env:
-          GORELEASER_BOT_RSA_PRIVATE_KEY: ${{ secrets.GORELEASER_BOT_RSA_PRIVATE_KEY }}
-        run: |
-          app_token=$(.github/scripts/get-app-token.sh)
-          echo "app-token=${app_token}" >> "$GITHUB_OUTPUT"
-
       - name: Checkout code
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
-        env:
-          APP_TOKEN: ${{ steps.app-token.outputs.app-token }}
         with:
           fetch-depth: 0
-          token: ${{ env.APP_TOKEN }}
+          ssh-key: ${{ secrets.GORELEASER_BOT_OPENSSH_PRIVATE_KEY }}
 
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
