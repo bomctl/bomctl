@@ -60,12 +60,22 @@ jobs:
 
           echo "next-version=${next_version}" >> "$GITHUB_OUTPUT"
 
-      - name: Push tag for next release
+      - name: Check if tag exists
         if: fromJSON(env.should_publish)
+        id: tag-exists
+        env:
+          NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
+        run: |
+          [[ -n $(git tag --list "$NEXT_VERSION") ]] && tag_exists="true" || tag_exists="false"
+          echo "tag-exists=${tag_exists}" >> "$GITHUB_OUTPUT"
+
+      - name: Push tag for next release
+        if: fromJSON(env.should_publish) && !fromJSON(steps.tag-exists.outputs.tag-exists)
+        env:
+          NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          next_version="${{ steps.next-version.outputs.next-version }}"
-          git tag --annotate "${next_version}" --message="${next_version}"
+          git tag --annotate "${NEXT_VERSION}" --message="${NEXT_VERSION}"
           git push --tags
