@@ -76,8 +76,12 @@ jobs:
           GIT_AUTHOR_EMAIL: ${{ github.event.pusher.email }}
           GIT_COMMITTER_NAME: bomctl-goreleaser-bot[bot]
           GIT_COMMITTER_EMAIL: 166692013+bomctl-goreleaser-bot[bot]@users.noreply.github.com
+          GORELEASER_BOT_OPENSSH_PUBLIC_KEY: ${{ secrets.GORELEASER_BOT_OPENSSH_PUBLIC_KEY }}
           NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
         run: |
-          git config --list --show-origin
-          git tag --sign --annotate "${NEXT_VERSION}" --message="${NEXT_VERSION}"
+          git config tag.gpgSign true
+          git config gpg.format ssh
+          git config user.signingKey "key::${GORELEASER_BOT_OPENSSH_PUBLIC_KEY}"
+
+          git tag --sign "${NEXT_VERSION}" --message="${NEXT_VERSION}"
           git push --tags
