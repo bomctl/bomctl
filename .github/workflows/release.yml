@@ -61,8 +61,17 @@ jobs:
 
           echo "next-version=${next_version}" >> "$GITHUB_OUTPUT"
 
-      - name: Create tag for next release
+      - name: Check if tag exists
         if: fromJSON(env.should_publish)
+        id: tag-exists
+        env:
+          NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
+        run: |
+          [[ -n $(git tag --list "$NEXT_VERSION") ]] && tag_exists="true" || tag_exists="false"
+          echo "tag-exists=${tag_exists}" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag for next release
+        if: fromJSON(env.should_publish) && !fromJSON(steps.tag-exists.outputs.tag-exists)
         env:
           GORELEASER_BOT_RSA_PRIVATE_KEY: ${{ secrets.GORELEASER_BOT_RSA_PRIVATE_KEY }}
           NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
