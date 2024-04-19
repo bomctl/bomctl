@@ -30,15 +30,16 @@ on:
       - dev
   pull_request:
 
-permissions:
-  contents: read
-  pull-requests: read
-  checks: write
+permissions: read-all
 
 jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+
+    permissions:
+        contents: write # needed to write releases
+
     steps:
       - name: Checkout code
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
