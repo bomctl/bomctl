@@ -71,7 +71,7 @@ jobs:
           echo "tag-exists=${tag_exists}" >> "$GITHUB_OUTPUT"
 
       - name: Push tag for next release
-        if: fromJSON(env.should_publish) && fromJSON(steps.tag-exists.outputs.tag-exists)
+        if: fromJSON(env.should_publish) && !fromJSON(steps.tag-exists.outputs.tag-exists)
         env:
           NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
         run: |
