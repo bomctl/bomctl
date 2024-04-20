@@ -44,7 +44,7 @@ var (
 	sbomURLs          URLSliceValue
 	useNetRC          bool
 	outputBomFormat   OutputBomFormatValue
-	outputBomEncoding OutputBomEncodingValue
+	outputBomEncoding OutputBomEncodingValue = "json"
 )
 
 var (

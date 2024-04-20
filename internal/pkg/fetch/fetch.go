@@ -29,9 +29,7 @@ import (
 	"github.com/jdx/go-netrc"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
@@ -114,10 +112,10 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 
 func getFetcher(sbomURL, outputFile string) (Fetcher, error) {
 	switch {
-	case (&oci.Fetcher{}).Parse(sbomURL) != nil:
-		return &oci.Fetcher{}, nil
-	case (&git.Fetcher{}).Parse(sbomURL) != nil:
-		return &git.Fetcher{}, nil
+	// case (&oci.Fetcher{}).Parse(sbomURL) != nil:
+	// 	return &oci.Fetcher{}, nil
+	// case (&git.Fetcher{}).Parse(sbomURL) != nil:
+	// 	return &git.Fetcher{}, nil
 	case (&http.Fetcher{}).Parse(sbomURL) != nil:
 		return &http.Fetcher{OutputFile: outputFile}, nil
 	default:
