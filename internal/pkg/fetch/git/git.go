@@ -25,6 +25,7 @@ import (
 	"regexp"
 
 	"github.com/bom-squad/protobom/pkg/sbom"
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 
@@ -76,11 +77,11 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, *format.Format, error) {
 	// Create temp directory to clone into
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
 	if err != nil {
-		return nil, fmt.Errorf("failed to create temp directory: %w", err)
+		return nil, nil, fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
 	defer os.RemoveAll(tmpDir)
@@ -107,20 +108,20 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*s
 	// Clone the repository into the temp directory
 	_, err = git.PlainClone(tmpDir, false, cloneOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
+		return nil, nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}
 
 	// Read the file specified in the URL fragment
 	sbomBytes, err := os.ReadFile(filepath.Join(tmpDir, parsedURL.Fragment))
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file %s: %w", parsedURL.Fragment, err)
+		return nil, nil, fmt.Errorf("failed to open file %s: %w", parsedURL.Fragment, err)
 	}
 
 	// Parse the file content
-	document, err := utils.ParseSBOMData(sbomBytes)
+	document, df, err := utils.ParseSBOMData(sbomBytes)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
+		return nil, nil, fmt.Errorf("error parsing SBOM file content: %w", err)
 	}
 
-	return document, nil
+	return document, df, nil
 }

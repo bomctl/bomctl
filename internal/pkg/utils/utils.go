@@ -20,9 +20,12 @@ package utils
 
 import (
 	"bytes"
+	"io"
 
 	"github.com/bom-squad/protobom/pkg/reader"
 	"github.com/bom-squad/protobom/pkg/sbom"
+	"github.com/bom-squad/protobom/pkg/writer"
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
 var sbomReader = reader.New()
@@ -41,8 +44,14 @@ func GetBOMReferences(document *sbom.Document) (refs []*sbom.ExternalReference) 
 }
 
 // Parse raw byte content and return SBOM document.
-func ParseSBOMData(data []byte) (document *sbom.Document, err error) {
+func ParseSBOMData(data []byte) (document *sbom.Document, df *format.Format, err error) {
 	bytesReader := bytes.NewReader(data)
+
+	df, err = format.Detect(bytesReader)
+	if err != nil {
+		return
+	}
+
 	document, err = sbomReader.ParseStream(bytesReader)
 
 	return
@@ -53,4 +62,35 @@ func ParseSBOMFile(filepath string) (document *sbom.Document, err error) {
 	document, err = sbomReader.ParseFile(filepath)
 
 	return
+}
+
+func GetConvertSBOMFormat(f, e string, df *format.Format) (*format.Format, error) {
+	if f == "" {
+		inverse, err := df.Inverse()
+		if err != nil {
+			return nil, err
+		}
+
+		return inverse, nil
+	}
+
+	format, err := format.Parse(f, e)
+	if err != nil {
+		return nil, err
+	}
+
+	return format, nil
+}
+
+func WriteSBOM(document *sbom.Document, targetFormat *format.Format, wr io.WriteCloser) error {
+	writer := writer.New(
+		writer.WithFormat(targetFormat.Format),
+	)
+
+	err := writer.WriteStream(document, wr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

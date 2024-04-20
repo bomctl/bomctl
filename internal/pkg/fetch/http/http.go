@@ -30,6 +30,7 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
 var client = http.DefaultClient
@@ -74,10 +75,10 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, *format.Format, error) {
 	req, err := http.NewRequestWithContext(context.Background(), "GET", parsedURL.String(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, nil, fmt.Errorf("%w", err)
 	}
 
 	auth.SetAuth(req)
@@ -85,21 +86,21 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*s
 	// Get the data
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, nil, fmt.Errorf("%w", err)
 	}
 
 	defer resp.Body.Close()
 
 	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, nil, fmt.Errorf("%w", err)
 	}
 
 	// Create the file if specified at the command line
 	if fetcher.OutputFile != "" {
 		out, err := os.Create(fetcher.OutputFile)
 		if err != nil {
-			return nil, fmt.Errorf("%w", err)
+			return nil, nil, fmt.Errorf("%w", err)
 		}
 
 		defer out.Close()
@@ -107,14 +108,14 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*s
 		// Write the response body to file
 		_, err = io.Copy(out, resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("%w", err)
+			return nil, nil, fmt.Errorf("%w", err)
 		}
 	}
 
-	document, err := utils.ParseSBOMData(respBytes)
+	document, df, err := utils.ParseSBOMData(respBytes)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, nil, fmt.Errorf("%w", err)
 	}
 
-	return document, nil
+	return document, df, nil
 }

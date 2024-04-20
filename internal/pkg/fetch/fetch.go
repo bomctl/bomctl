@@ -29,27 +29,26 @@ import (
 	"github.com/jdx/go-netrc"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
+	"github.com/charmbracelet/log"
 )
 
 var errUnsupportedURL = errors.New("unsupported URL scheme")
 
 type Fetcher interface {
 	url.Parser
-	Fetch(*url.ParsedURL, *url.BasicAuth) (*sbom.Document, error)
+	Fetch(*url.ParsedURL, *url.BasicAuth) (*sbom.Document, *format.Format, error)
 	Name() string
 }
 
-func Exec(sbomURL, outputFile string, useNetRC bool) error {
-	logger := utils.NewLogger("fetch")
-
+// Document fetches SBOM from the provided URL and returns the parsed Protobom document.
+func Document(sbomURL, outputFile string, useNetRC bool, logger *log.Logger) (*sbom.Document, *format.Format, error) {
 	fetcher, err := getFetcher(sbomURL, outputFile)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
@@ -59,14 +58,26 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 
 	if useNetRC {
 		if err := setNetRCAuth(parsedURL.Hostname, auth); err != nil {
-			return fmt.Errorf("%w", err)
+			return nil, nil, fmt.Errorf("%w", err)
 		}
 	}
 
-	document, err := fetcher.Fetch(parsedURL, auth)
+	document, df, err := fetcher.Fetch(parsedURL, auth)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w", err)
+	}
+
+	return document, df, nil
+}
+
+func Exec(sbomURL, outputFile string, useNetRC bool) error {
+	logger := utils.NewLogger("fetch")
+
+	document, df, err := Document(sbomURL, outputFile, useNetRC, logger)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
+	logger.Info("Detected SBOM '%s' format", df)
 
 	// Insert fetched document data into database.
 	err = db.AddDocument(document)
@@ -101,10 +112,10 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 
 func getFetcher(sbomURL, outputFile string) (Fetcher, error) {
 	switch {
-	case (&oci.Fetcher{}).Parse(sbomURL) != nil:
-		return &oci.Fetcher{}, nil
-	case (&git.Fetcher{}).Parse(sbomURL) != nil:
-		return &git.Fetcher{}, nil
+	// case (&oci.Fetcher{}).Parse(sbomURL) != nil:
+	// 	return &oci.Fetcher{}, nil
+	// case (&git.Fetcher{}).Parse(sbomURL) != nil:
+	// 	return &git.Fetcher{}, nil
 	case (&http.Fetcher{}).Parse(sbomURL) != nil:
 		return &http.Fetcher{OutputFile: outputFile}, nil
 	default:

@@ -28,19 +28,23 @@ import (
 )
 
 type (
-	DirectoryValue      string
-	ExistingFileValue   string
-	OutputFileValue     string
-	URLValue            string
-	DirectorySliceValue []string
-	FileSliceValue      []string
-	URLSliceValue       []string
+	DirectoryValue         string
+	ExistingFileValue      string
+	OutputFileValue        string
+	OutputBomFormatValue   string
+	OutputBomEncodingValue string
+	URLValue               string
+	DirectorySliceValue    []string
+	FileSliceValue         []string
+	URLSliceValue          []string
 )
 
 var (
-	outputFile OutputFileValue
-	sbomURLs   URLSliceValue
-	useNetRC   bool
+	outputFile        OutputFileValue
+	sbomURLs          URLSliceValue
+	useNetRC          bool
+	outputBomFormat   OutputBomFormatValue
+	outputBomEncoding OutputBomEncodingValue
 )
 
 var (
@@ -64,13 +68,16 @@ func checkFile(value string) {
 	}
 }
 
-func (dv *DirectoryValue) String() string       { return fmt.Sprintf("%v", *dv) }
-func (dsv *DirectorySliceValue) String() string { return fmt.Sprintf("%v", *dsv) }
-func (efv *ExistingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
-func (fsv *FileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
-func (ofv *OutputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
-func (uv *URLValue) String() string             { return fmt.Sprintf("%v", *uv) }
-func (usv *URLSliceValue) String() string       { return fmt.Sprintf("%v", *usv) }
+func (dv *DirectoryValue) String() string           { return fmt.Sprintf("%v", *dv) }
+func (dsv *DirectorySliceValue) String() string     { return fmt.Sprintf("%v", *dsv) }
+func (efv *ExistingFileValue) String() string       { return fmt.Sprintf("%v", *efv) }
+func (fsv *FileSliceValue) String() string          { return fmt.Sprintf("%v", *fsv) }
+func (ofv *OutputFileValue) String() string         { return fmt.Sprintf("%v", *ofv) }
+func (obfv *OutputBomFormatValue) String() string   { return fmt.Sprintf("%v", *obfv) }
+func (obev *OutputBomEncodingValue) String() string { return fmt.Sprintf("%v", *obev) }
+
+func (uv *URLValue) String() string       { return fmt.Sprintf("%v", *uv) }
+func (usv *URLSliceValue) String() string { return fmt.Sprintf("%v", *usv) }
 
 func (dv *DirectoryValue) Set(value string) error {
 	checkDirectory(value)
@@ -106,6 +113,18 @@ func (ofv *OutputFileValue) Set(value string) error {
 	return nil
 }
 
+func (obfv *OutputBomFormatValue) Set(value string) error {
+	*obfv = OutputBomFormatValue(value)
+
+	return nil
+}
+
+func (obev *OutputBomEncodingValue) Set(value string) error {
+	*obev = OutputBomEncodingValue(value)
+
+	return nil
+}
+
 func (uv *URLValue) Set(value string) error {
 	*uv = URLValue(value)
 
@@ -124,10 +143,13 @@ const (
 	valueTypeURL  string = "URL"
 )
 
-func (dv *DirectoryValue) Type() string       { return valueTypeDir }
-func (dsv *DirectorySliceValue) Type() string { return valueTypeDir }
-func (efv *ExistingFileValue) Type() string   { return valueTypeFile }
-func (fsv *FileSliceValue) Type() string      { return valueTypeFile }
-func (ofv *OutputFileValue) Type() string     { return valueTypeFile }
-func (uv *URLValue) Type() string             { return valueTypeURL }
-func (usv *URLSliceValue) Type() string       { return valueTypeURL }
+func (dv *DirectoryValue) Type() string           { return valueTypeDir }
+func (dsv *DirectorySliceValue) Type() string     { return valueTypeDir }
+func (efv *ExistingFileValue) Type() string       { return valueTypeFile }
+func (fsv *FileSliceValue) Type() string          { return valueTypeFile }
+func (ofv *OutputFileValue) Type() string         { return valueTypeFile }
+func (obfv *OutputBomFormatValue) Type() string   { return valueTypeFile }
+func (obev *OutputBomEncodingValue) Type() string { return valueTypeFile }
+
+func (uv *URLValue) Type() string       { return valueTypeURL }
+func (usv *URLSliceValue) Type() string { return valueTypeURL }

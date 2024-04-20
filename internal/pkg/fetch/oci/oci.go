@@ -37,6 +37,7 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
 var (
@@ -88,9 +89,10 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, *format.Format, error) {
 	var (
 		document                           *sbom.Document
+		df                                 *format.Format
 		err                                error
 		manifestDescriptor, sbomDescriptor *ocispec.Descriptor
 		repo                               *remote.Repository
@@ -99,30 +101,30 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*s
 	)
 
 	if repo, err = createRepository(parsedURL, auth); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if manifestDescriptor, err = fetchManifestDescriptor(repo, parsedURL.Tag); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if successors, err = getManifestChildren(manifestDescriptor); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if sbomDescriptor, err = getSBOMDescriptor(successors); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if sbomData, err = pullSBOM(sbomDescriptor); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	if document, err = utils.ParseSBOMData(sbomData); err != nil {
-		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
+	if document, df, err = utils.ParseSBOMData(sbomData); err != nil {
+		return nil, nil, fmt.Errorf("error parsing SBOM file content: %w", err)
 	}
 
-	return document, nil
+	return document, df, nil
 }
 
 func createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*remote.Repository, error) {
