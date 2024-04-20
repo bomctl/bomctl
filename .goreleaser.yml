@@ -36,6 +36,11 @@ sboms:
     cmd: syft
     args: [scan, $artifact, --output, cyclonedx-json=$document]
 
+  - artifacts: archive
+    documents: [$artifact.spdx.json]
+    cmd: syft
+    args: [scan, $artifact, --output, spdx-json=$document]
+
 gomod:
   mod: mod
   proxy: true
