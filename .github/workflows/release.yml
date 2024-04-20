@@ -34,14 +34,21 @@ jobs:
       contents: write # needed to push commit/tag
 
     env:
-      should_publish: ${{ contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x') }}
+      SHOULD_PUBLISH: ${{ contains(fromJSON('["main", "next", "dev", "alpha"]'), github.ref_name) || endsWith(github.ref, '.x') }}
 
     steps:
+      - name: Get GitHub App installation token
+        uses: actions/create-github-app-token@7bfa3a4717ef143a604ee0a99d859b8886a96d00 # v1.9.3
+        id: app-token
+        with:
+          app-id: ${{ vars.GORELEASER_BOT_APP_ID }}
+          private-key: ${{ secrets.GORELEASER_BOT_RSA_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
         with:
           fetch-depth: 0
-          token: ${{ secrets.GORELEASER_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
@@ -61,7 +68,7 @@ jobs:
           echo "next-version=${next_version}" >> "$GITHUB_OUTPUT"
 
       - name: Check if tag exists
-        if: fromJSON(env.should_publish)
+        if: fromJSON(env.SHOULD_PUBLISH)
         id: tag-exists
         env:
           NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
@@ -69,13 +76,18 @@ jobs:
           [[ -n $(git tag --list "$NEXT_VERSION") ]] && tag_exists="true" || tag_exists="false"
           echo "tag-exists=${tag_exists}" >> "$GITHUB_OUTPUT"
 
-      - name: Push tag for next release
-        if: fromJSON(env.should_publish) && !fromJSON(steps.tag-exists.outputs.tag-exists)
+      - name: Create tag for next release
+        if: fromJSON(env.SHOULD_PUBLISH) && !fromJSON(steps.tag-exists.outputs.tag-exists)
         env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
           NEXT_VERSION: ${{ steps.next-version.outputs.next-version }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          data=$(printf '{"ref": "refs/tags/%s", "sha": "%s"}' "${NEXT_VERSION}" "${GITHUB_SHA}")
 
-          git tag --annotate "${NEXT_VERSION}" --message="${NEXT_VERSION}"
-          git push --tags
+          curl --request POST --output /dev/null \
+            --fail --silent --show-error --location \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --header "Authorization: Bearer ${APP_TOKEN}" \
+            --url https://api.github.com/repos/bomctl/bomctl/git/refs \
+            --data "${data}"
