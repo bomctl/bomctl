@@ -17,7 +17,7 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
-name: Ensure valid pull request title
+name: check-pull-request-title
 
 on:
   pull_request:
