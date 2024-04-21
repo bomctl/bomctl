@@ -31,12 +31,14 @@ before:
     - go mod tidy
 
 sboms:
-  - artifacts: archive
+  - id: generate-cyclonedx
+    artifacts: archive
     documents: [$artifact.cdx.json]
     cmd: syft
     args: [scan, $artifact, --output, cyclonedx-json=$document]
 
-  - artifacts: archive
+  - id: generate-spdx
+    artifacts: archive
     documents: [$artifact.spdx.json]
     cmd: syft
     args: [scan, $artifact, --output, spdx-json=$document]
