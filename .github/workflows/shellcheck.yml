@@ -18,12 +18,17 @@
 # ------------------------------------------------------------------------
 ---
 name: shellcheck
-on:
-  push:
-    branches:
-      - "**"
 
-permissions: read-all
+on:
+  pull_request:
+    branches: main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
 
 jobs:
   shellcheck:

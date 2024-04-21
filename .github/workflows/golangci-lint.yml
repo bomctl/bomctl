@@ -23,14 +23,16 @@
 # ------------------------------------------------------------------------
 ---
 name: golangci-lint
+
 on:
   push:
-    branches:
-      - main
-      - dev
-  pull_request:
+    branches: main
 
-permissions: read-all
+  pull_request:
+    branches: main
+
+permissions:
+  contents: read
 
 jobs:
   golangci:
@@ -38,7 +40,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-        contents: write # needed to write releases
+      contents: read
+      pull-requests: read
+      checks: write
 
     steps:
       - name: Checkout code
@@ -47,7 +51,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
-          go-version: "1.21"
+          go-version-file: go.mod
           cache: false
 
       - name: Run golangci-lint
