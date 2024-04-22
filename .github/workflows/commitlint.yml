@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------
 # SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-# SPDX-FileName: .github/workflows/golangci-lint.yml
+# SPDX-FileName: .github/workflows/commitlint.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------
@@ -16,37 +16,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------
-# This workflow uses actions that are not certified by
-# GitHub. They are provided by a third-party and are
-# governed by separate terms of service, privacy policy,
-# and support documentation.
-# ------------------------------------------------------------------------
 ---
-name: golangci-lint
+name: check-pull-request-title
 
 on:
-  push:
-    branches: main
-
   pull_request:
     branches: main
     types:
       - opened
-      - reopened
+      - edited
       - synchronize
 
 permissions:
-  contents: read
+  pull-requests: read
 
 jobs:
-  golangci:
-    name: lint
+  check-title:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: read
-      checks: write
 
     steps:
       - name: Checkout code
@@ -58,8 +44,10 @@ jobs:
           go-version-file: go.mod
           cache: false
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@3cfe3a4abbb849e10058ce4af15d205b6da42804 # v4.0.0
-        with:
-          install-mode: goinstall
-          version: cd890db217def69d68cf1862504bb735c0333879 # v1.57.1
+      - name: Install commitlint
+        run: go install github.com/conventionalcommit/commitlint@e9a606ce7074ac884ea091765be1651be18356d4 # v0.10.1
+
+      - name: Run commitlint against title of pull request
+        env:
+          PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
+        run: commitlint lint <<< "${PULL_REQUEST_TITLE}"

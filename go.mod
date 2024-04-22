@@ -1,6 +1,6 @@
 module github.com/bomctl/bomctl
 
-go 1.21
+go 1.21.0
 
 require (
 	github.com/bom-squad/protobom v0.3.1-0.20240301165935-631d732bfcce

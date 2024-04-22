@@ -23,13 +23,15 @@
 # ------------------------------------------------------------------------
 ---
 name: Scorecard supply-chain security
+
 on:
   branch_protection_rule:
+
   schedule:
-    - cron: 43 20 * * 4
+    - cron: 0 0 * * 1
+
   push:
-    branches:
-      - main
+    branches: main
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -38,6 +40,7 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+
     permissions:
       security-events: write
       id-token: write
