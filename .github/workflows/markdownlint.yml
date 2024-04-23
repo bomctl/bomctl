@@ -1,0 +1,48 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 The Protobom Authors
+# SPDX-FileName: .github/workflows/markdownlint.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+name: markdownlint
+
+on:
+  push:
+    branches: main
+
+  pull_request:
+    branches: main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@b4c9feab76d8025d1e83c653fa3990936df0e6c8 # v16.0.0
+        with:
+          config: .markdownlint.yml
+          globs: "**/*.md"
