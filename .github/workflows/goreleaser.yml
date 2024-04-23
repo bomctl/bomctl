@@ -21,6 +21,7 @@ name: goreleaser
 
 on:
   push:
+    branches: main
     tags: v*
 
 permissions:
@@ -56,8 +57,9 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --clean ${{ env.SNAPSHOT }}
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPSHOT: ${{ github.ref_type != 'tag' && '--snapshot' || '' }}
