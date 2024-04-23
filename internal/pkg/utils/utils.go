@@ -64,21 +64,11 @@ func ParseSBOMFile(filepath string) (document *sbom.Document, err error) {
 	return
 }
 
-func GetConvertSBOMFormat(f, e string, df *format.Format) (*format.Format, error) {
-	if f == "" {
-		inverse, err := df.Inverse()
-		if err != nil {
-			return nil, err
-		}
-
-		return inverse, nil
-	}
-
+func ParseFormatFlags(f, e string) (*format.Format, error) {
 	format, err := format.Parse(f, e)
 	if err != nil {
 		return nil, err
 	}
-
 	return format, nil
 }
 

@@ -72,14 +72,14 @@ func Document(sbomURL, outputFile string, useNetRC bool, logger *log.Logger) (*s
 	return document, df, nil
 }
 
-func Exec(sbomURL, outputFile string, useNetRC bool) error {
+func Exec(sbomURL, outputFile, outputBomFormat, outputEncodingFormat string, useNetRC bool) error {
 	logger := utils.NewLogger("fetch")
 
-	document, df, err := Document(sbomURL, outputFile, useNetRC, logger)
+	document, detectedFormat, err := Document(sbomURL, outputFile, useNetRC, logger)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	logger.Info("Detected SBOM '%s' format", df)
+	logger.Info("Detected SBOM", "format", detectedFormat)
 
 	// Insert fetched document data into database.
 	err = db.AddDocument(document)
@@ -103,8 +103,27 @@ func Exec(sbomURL, outputFile string, useNetRC bool) error {
 			)
 		}
 
-		err := Exec(ref.Url, outputFile, useNetRC)
+		err := Exec(ref.Url, outputFile, outputBomFormat, outputEncodingFormat, useNetRC)
 		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
+	if outputFile != "" {
+		out, err := os.Create(outputFile)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		defer out.Close()
+
+		targetFormat, err := utils.ParseFormatFlags(outputBomFormat, outputEncodingFormat)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+		logger.Info("Exporting SBOM", "Format", targetFormat, "Path", outputFile)
+
+		if err := utils.WriteSBOM(document, targetFormat, out); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

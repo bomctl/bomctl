@@ -39,7 +39,7 @@ func fetchCmd() *cobra.Command {
 			logger = utils.NewLogger("fetch")
 
 			for _, url := range sbomURLs {
-				if err = fetch.Exec(url, outputFile.String(), useNetRC); err != nil {
+				if err = fetch.Exec(url, outputFile.String(), outputBomFormat.String(), outputBomEncoding.String(), useNetRC); err != nil {
 					logger.Error(err)
 				}
 			}
@@ -61,6 +61,18 @@ func fetchCmd() *cobra.Command {
 		"netrc",
 		false,
 		"Use .netrc file for authentication to remote hosts",
+	)
+	fetchCmd.Flags().VarP(
+		&outputBomFormat,
+		"format",
+		"f",
+		"the output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5]",
+	)
+	fetchCmd.Flags().VarP(
+		&outputBomEncoding,
+		"encoding",
+		"e",
+		"the output encoding [spdx: [text, json] cyclonedx: [json]",
 	)
 
 	return fetchCmd
