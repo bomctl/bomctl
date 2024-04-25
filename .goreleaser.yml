@@ -61,11 +61,26 @@ builds:
       -X=github.com/bomctl/bomctl/cmd.BuildDate={{.Date}}
 
 signs:
-  - id: cosign
-    signature: $artifact.sig
+  - id: checksum-keyless-signing
+    signature: "${artifact}-keyless.sig"
+    certificate: "${artifact}-keyless.pem"
     cmd: cosign
-    args: [sign-blob, --output-signature=$artifact.sig, --key=env://COSIGN_PRIVATE_KEY, $artifact]
+    args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: checksum
+
+  - id: binary-keyless-signing
+    signature: "${artifact}-keyless.sig"
+    certificate: "${artifact}-keyless.pem"
+    cmd: cosign
+    args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
+    artifacts: binary
+
+  - id: package-keyless-signing
+    signature: "${artifact}-keyless.sig"
+    certificate: "${artifact}-keyless.pem"
+    cmd: cosign
+    args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
+    artifacts: package
 
 nfpms:
   - license: Apache License 2.0

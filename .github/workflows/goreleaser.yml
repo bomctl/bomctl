@@ -33,6 +33,7 @@ jobs:
 
     permissions:
       contents: write # needed to write releases
+      id-token: write # needed for cosign
 
     steps:
       - name: Checkout code
@@ -47,7 +48,9 @@ jobs:
           cache: false
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@e1523de7571e31dbe865fd2e80c5c7c23ae71eb4 # v3.4.0
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        with:
+          cosign-release: v2.2.4
 
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@b6a39da80722a2cb0ef5d197531764a89b5d48c3 # v0.15.8
@@ -59,7 +62,12 @@ jobs:
           version: latest
           args: release --clean ${{ env.SNAPSHOT }}
         env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPSHOT: ${{ github.ref_type != 'tag' && '--snapshot' || '' }}
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
