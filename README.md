@@ -83,12 +83,13 @@ For each artifact there are two additional files:
 - `${artifact}-keyless.sig` - signature
 - `${artifact}-keyless.pem` - certificate
 
-You can then verify this artifact with cosign the signature and the certificate.
+You can then verify this artifact with cosign using the signature and the certificate.
 
 ``` shell
 cosign verify-blob --certificate ${artifact}-keyless.pem --signature ${artifact}-keyless.sig --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp 'https://github\.com/bomctl/bomctl/\.github/.+'  ${artifact}
-Verified OK
 ```
+
+If the result is `Verified OK`, the verification is successful.
 
 You can also look up the entry in the public Rekor instance using a sha256 hash.
 
