@@ -21,7 +21,7 @@
 
 run:
   concurrency: 6
-  go: "1.21"
+  go: "1.22.0"
   timeout: 5m
 
 issues:
@@ -92,6 +92,7 @@ linters:
     - nlreturn
     - noctx
     - nolintlint
+    - paralleltest
     - prealloc
     - predeclared
     - promlinter
@@ -99,6 +100,7 @@ linters:
     - staticcheck
     - stylecheck
     - tagliatelle
+    - testpackage
     - thelper
     - tparallel
     - typecheck
@@ -177,5 +179,15 @@ linters-settings:
       - unnecessaryBlock
 
   nolintlint:
-    require-explanation: true
+    allow-unused: false
     require-specific: true
+
+  revive:
+    rules:
+      - name: unused-parameter
+        severity: warning
+        disabled: false
+        exclude: [""]
+        arguments:
+          # Ignore all parameters beginning with "_"
+          - allowRegex: "^_"

@@ -16,18 +16,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package http
+package http_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func TestHTTPFetcherParse(t *testing.T) {
-	fetcher := &Fetcher{}
+	t.Parallel()
+
+	fetcher := &http.Fetcher{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -51,6 +54,8 @@ func TestHTTPFetcherParse(t *testing.T) {
 		},
 	} {
 		t.Run(data.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := fetcher.Parse(data.url)
 
 			assert.Equal(t, data.expected, actual, data.url)

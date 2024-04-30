@@ -16,20 +16,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package oci
+package oci_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 const testSHA string = "sha256:abcdef0123456789ABCDEF0123456789abcdef0123456789ABCDEF0123456789"
 
 func TestOCIFetcherParse(t *testing.T) {
-	fetcher := &Fetcher{}
+	t.Parallel()
+
+	fetcher := &oci.Fetcher{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -142,6 +145,8 @@ func TestOCIFetcherParse(t *testing.T) {
 		},
 	} {
 		t.Run(data.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := fetcher.Parse(data.url)
 
 			assert.Equal(t, data.expected, actual, data.url)
