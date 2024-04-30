@@ -63,6 +63,13 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 		results["scheme"] = "ssh"
 	}
 
+	// Ensure required map fields are present.
+	for _, required := range []string{"scheme", "hostname", "path", "gitRef", "fragment"} {
+		if value, ok := results[required]; !ok || value == "" {
+			return nil
+		}
+	}
+
 	return &url.ParsedURL{
 		Scheme:   results["scheme"],
 		Username: results["username"],

@@ -16,7 +16,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package db
+package db_test
 
 import (
 	"context"
@@ -30,11 +30,14 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
+
+	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 var (
 	sbomReader   = reader.New()
 	errConvertPB = errors.New("bomctl-test")
+	ctx          = context.Background()
 )
 
 type mockDocument struct {
@@ -68,9 +71,9 @@ func parseFile(fileName string) *protobom.Document {
 }
 
 func TestAddDocument(t *testing.T) {
-	var err error
+	t.Parallel()
 
-	db, err = CreateSchema(":memory:")
+	_, err := db.CreateSchema(":memory:")
 	if err != nil {
 		t.FailNow()
 	}
@@ -81,7 +84,7 @@ func TestAddDocument(t *testing.T) {
 	spdx := &mockDocument{Document: *parseFile("testdata/sbom.spdx.json")}
 
 	for _, data := range []struct {
-		document      PBToORMConverter
+		document      db.PBToORMConverter
 		expectedError string
 		name          string
 	}{
@@ -100,7 +103,9 @@ func TestAddDocument(t *testing.T) {
 		},
 	} {
 		t.Run(data.name, func(t *testing.T) {
-			err := AddDocument(data.document.(*mockDocument))
+			t.Parallel()
+
+			err := db.AddDocument(data.document.(*mockDocument))
 			if data.expectedError != "" {
 				require.Errorf(t, err, data.expectedError, err)
 
@@ -113,6 +118,8 @@ func TestAddDocument(t *testing.T) {
 }
 
 func TestCreateSchema(t *testing.T) {
+	t.Parallel()
+
 	for _, data := range []struct {
 		expectedDB    *gorm.DB
 		expectedDSN   string
@@ -134,21 +141,22 @@ func TestCreateSchema(t *testing.T) {
 		},
 	} {
 		t.Run(data.name, func(t *testing.T) {
-			db = nil
-			db, err := CreateSchema(data.dbFile)
+			t.Parallel()
+
+			db1, err := db.CreateSchema(data.dbFile)
 
 			if data.expectedDSN != "" {
-				require.Equal(t, data.expectedDSN, db.Dialector.(*sqlite.Dialector).DSN)
+				require.Equal(t, data.expectedDSN, db1.Dialector.(*sqlite.Dialector).DSN)
 
 				// Test idempotence.
-				db2, err := CreateSchema(data.dbFile)
+				db2, err := db.CreateSchema(data.dbFile)
 				if err != nil {
 					t.FailNow()
 				}
 
-				require.Equal(t, db, db2)
+				require.Equal(t, db1, db2)
 			} else {
-				require.Nil(t, db)
+				require.Nil(t, db1)
 				require.Errorf(t, err, data.expectedError, data.dbFile, err)
 			}
 		})
