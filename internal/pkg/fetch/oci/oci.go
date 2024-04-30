@@ -56,9 +56,9 @@ func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?P<scheme>oci|docker)(?:-archive)?:\/\/)?`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`((?P<hostname>[^@\/?#:]+))(?::(?P<port>\d+))?`,
-			`(?:[\/:](?P<path>[^:@]+))`,
-			`((?::(?P<tag>[^@]+))|(?:@(?P<digest>sha256:[A-Fa-f0-9]{64})))`,
+			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
+			`(?:\/(?P<path>[^:@]+))`,
+			`((?::(?P<tag>[^@]+))|(?:@(?P<digest>sha256:[A-Fa-f0-9]{64})))?`,
 		),
 	)
 }
@@ -72,8 +72,27 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 		results[pattern.SubexpNames()[idx]] = name
 	}
 
-	if results["scheme"] == "docker" {
+	if results["scheme"] == "docker" || results["scheme"] == "" {
 		results["scheme"] = "oci"
+	}
+
+	// Ensure required map fields are present.
+	for _, required := range []string{"scheme", "hostname", "path"} {
+		if value, ok := results[required]; !ok || value == "" {
+			return nil
+		}
+	}
+
+	// One and only one of `tag` or `digest` must be present.
+	tag, ok := results["tag"]
+	hasTag := ok && tag != ""
+
+	digest, ok := results["digest"]
+	hasDigest := ok && digest != ""
+
+	// If both `tag` and `digest` are present, or neither are.
+	if hasTag == hasDigest {
+		return nil
 	}
 
 	return &url.ParsedURL{
