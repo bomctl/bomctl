@@ -94,7 +94,7 @@ func rootCmd() *cobra.Command {
 		fmt.Sprintf("cache directory [defaults:\n\t%s\n\t%s\n\t%s",
 			"Unix:    $HOME/.cache/bomctl",
 			"Darwin:  $HOME/Library/Caches/bomctl",
-			"Windows: %LocalAppData%\bomctl]",
+			"Windows: %LocalAppData%\\bomctl]",
 		),
 	)
 
@@ -102,7 +102,7 @@ func rootCmd() *cobra.Command {
 		fmt.Sprintf("config file [defaults:\n\t%s\n\t%s\n\t%s",
 			"Unix:    $HOME/.config/bomctl/bomctl.yaml",
 			"Darwin:  $HOME/Library/Application Support/bomctl/bomctl.yml",
-			"Windows: %AppData%\bomctl\bomctl.yml]",
+			"Windows: %AppData%\\bomctl\\bomctl.yml]",
 		),
 	)
 
