@@ -33,7 +33,11 @@ Here's a step-by-step guide for submitting a pull request:
 1. __Clone the Fork__: Clone your forked repository to your local machine.
 1. __Create a Branch__: Create a new branch for your changes. Use a descriptive branch name that reflects the nature of your contribution.
 1. __Make Changes__: Make your changes to the codebase and write unit tests for any new features you introduce.
-1. __Use Pre-Commit__: Use [pre-commit](https://pre-commit.com/) to ensure the bomctl project standards are met.
+1. __Validate Changes__: Run the following commands or [pre-commit](https://pre-commit.com/) to to ensure the bomctl project standards are met.
+    * golangci-lint (`make lint` or `make lint-fix`)
+    * `go mod tidy`
+    * `go test ./...`
+    * `go generate ./...` and ensure any modified files are committed
 1. __Commit Changes__: Commit your changes with clear and concise commit messages following the [conventional commit format](https://www.conventionalcommits.org/).
 1. __Push Changes__: Push your changes to your forked repository on GitHub.
 1. __Open a Pull Request__: Open a pull request from your branch to the main branch of the upstream repository.
