@@ -29,7 +29,7 @@ Here's a step-by-step guide for submitting a pull request:
 1. __Create a Branch__: Create a new branch for your changes. Use a descriptive branch name that reflects the nature of your contribution.
 1. __Make Changes__: Make your changes to the codebase and write unit tests for any new features you introduce.
 1. __Use Pre-Commit__: Use [pre-commit](https://pre-commit.com/) to ensure the bomctl project standards are met.
-1. __Commit Changes__: Commit your changes with clear and concise commit messages following the [convention commit format](https://www.conventionalcommits.org/).
+1. __Commit Changes__: Commit your changes with clear and concise commit messages following the [conventional commit format](https://www.conventionalcommits.org/).
 1. __Push Changes__: Push your changes to your forked repository on GitHub.
 1. __Open a Pull Request__: Open a pull request from your branch to the main branch of the upstream repository.
 1. __Address Reviews__: Respond to any feedback or requests for changes from the project maintainers.
