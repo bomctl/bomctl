@@ -8,8 +8,13 @@ The bomctl project is under the Open Source Security Foundation (OpenSSF) Securi
 
 Before diving in, here are a few things to keep in mind:
 
-* __License__: The bomctl project is licensed under the [Apache 2.0 license](LICENSE). By contributing, you agree to abide by the terms of this license. You can find the license file in the repository root directory.
-* __Code of Conduct__: We have a Code of Conduct that outlines the expectations for respectful and professional behavior in our community. Please review the [Code of Conduct](CODE_OF_CONDUCT.md) before contributing
+### License
+
+The bomctl project is licensed under the [Apache 2.0 license](LICENSE). By contributing, you agree to abide by the terms of this license. You can find the license file in the repository root directory.
+
+### Code of Conduct
+
+We have a Code of Conduct that outlines the expectations for respectful and professional behavior in our community. Please review the [Code of Conduct](CODE_OF_CONDUCT.md) before contributing
 
 ## How to Contribute
 
