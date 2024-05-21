@@ -17,6 +17,7 @@
 !*.go
 !.gitignore
 !CODE_OF_CONDUCT.md
+!CODEOWNERS
 !CONTRIBUTING.md
 !COPYRIGHT.md
 !DEVELOPMENT.md
