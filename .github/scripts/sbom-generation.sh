@@ -11,11 +11,9 @@ function usage {
   exit 1
 }
 
-if [[ $# -ne 3 ]]; then
-  usage
-else
-  syft scan "${1}" --output "${2}-json=syft-${3}"
+if [[ $# -ne 3 ]]; then usage; fi
 
-  # Use jq to merge additional metadata into the sboms
-  jq -s '.[0] * .[1]' "syft-${3}" "../.github/sbom_metadata/metadata.${2}.json" > "${3}"
-fi
+syft scan "${1}" --output "${2}-json=syft-${3}"
+
+# Use jq to merge additional metadata into the sboms
+jq --slurp '.[0] * .[1]' "syft-${3}" "../.github/sbom_metadata/metadata.${2}.json" > "${3}"
