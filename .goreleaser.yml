@@ -34,14 +34,14 @@ sboms:
   - id: generate-cyclonedx
     artifacts: archive
     documents: [$artifact.cdx.json]
-    cmd: syft
-    args: [scan, $artifact, --output, cyclonedx-json=$document]
+    cmd: ../.github/scripts/sbom-generation.sh
+    args: [$artifact, cyclonedx, $document]
 
   - id: generate-spdx
     artifacts: archive
     documents: [$artifact.spdx.json]
-    cmd: syft
-    args: [scan, $artifact, --output, spdx-json=$document]
+    cmd: ../.github/scripts/sbom-generation.sh
+    args: [$artifact, spdx, $document]
 
 gomod:
   mod: mod

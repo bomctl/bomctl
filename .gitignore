@@ -12,6 +12,8 @@
 !/.markdownlintignore
 !/.pre-commit-config.yaml
 !/docs/CHANGELOG.md
+!/.github/sbom_metadata/metadata.cyclonedx.json
+!/.github/sbom_metadata/metadata.spdx.json
 
 # Whitelist patterns found anywhere in project
 !*.go
