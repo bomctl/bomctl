@@ -83,6 +83,7 @@ func TestOCIFetcherParse(t *testing.T) {
 			name: "no scheme",
 			url:  "registry.acme.com/example/image:1.2.3",
 			expected: &url.ParsedURL{
+				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
 				Tag:      "1.2.3",
@@ -139,9 +140,14 @@ func TestOCIFetcherParse(t *testing.T) {
 			},
 		},
 		{
-			name:     "assert git URL with no scheme not parseable by OCIFetcher",
+			name:     "git SCP-like form",
 			url:      "username:password@github.com:bomctl/bomctl.git",
-			expected: &url.ParsedURL{},
+			expected: nil,
+		},
+		{
+			name:     "missing tag and digest",
+			url:      "oci://username:password@registry.acme.com/example/image",
+			expected: nil,
 		},
 	} {
 		t.Run(data.name, func(t *testing.T) {
