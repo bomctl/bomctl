@@ -56,6 +56,15 @@ jobs:
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@b6a39da80722a2cb0ef5d197531764a89b5d48c3 # v0.15.8
 
+      - name: Get GitHub App installation token
+        uses: actions/create-github-app-token@7bfa3a4717ef143a604ee0a99d859b8886a96d00 # v1.9.3
+        id: app-token
+        with:
+          app-id: ${{ vars.GORELEASER_BOT_APP_ID }}
+          private-key: ${{ secrets.GORELEASER_BOT_RSA_PRIVATE_KEY }}
+          owner: bomctl
+          repositories: homebrew-bomctl
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
         with:
@@ -64,6 +73,7 @@ jobs:
           args: release --clean ${{ env.SNAPSHOT }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           SNAPSHOT: ${{ github.ref_type != 'tag' && '--snapshot' || '' }}
 
       - name: Attest Archives
