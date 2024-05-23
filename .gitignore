@@ -11,6 +11,16 @@
 !/.markdownlint.yml
 !/.markdownlintignore
 !/.pre-commit-config.yaml
+!/.github/PULL_REQUEST_TEMPLATE.md
+!/.github/sbom_metadata/metadata.cyclonedx.json
+!/.github/sbom_metadata/metadata.spdx.json
+!/.github/scripts/*.sh
+!/.github/workflows/*.yml
+!/.vscode/extensions.json
+!/.vscode/header.code-snippets
+!/.vscode/launch.json
+!/.vscode/settings.json
+!/.vscode/tasks.json
 !/docs/CHANGELOG.md
 
 # Whitelist patterns found anywhere in project
@@ -28,5 +38,6 @@
 !Makefile
 !README.md
 !SECURITY.md
+!testdata/
 
 !*/
