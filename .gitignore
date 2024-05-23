@@ -22,7 +22,6 @@
 !/.vscode/settings.json
 !/.vscode/tasks.json
 !/docs/CHANGELOG.md
-!/internal/pkg/db/testdata/sbom.*.json
 
 # Whitelist patterns found anywhere in project
 !*.go
@@ -38,5 +37,6 @@
 !Makefile
 !README.md
 !SECURITY.md
+!testdata/
 
 !*/
