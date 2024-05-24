@@ -81,17 +81,25 @@ TBD
 
 TBD
 
-## Verifying Releases
+## Verifying Integrity
+
+### Verifying Container Images
+
+Bomctl container images can be [found here](https://hub.docker.com/repository/docker/bomctl/bomctl/general) and are signed
+using keyless signing with cosign.
+
+You can then verify this container image with cosign.
+
+``` shell
+cosign verify --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp 'https://github\.com/bomctl/bomctl/\.github/.+'  bomctl/bomctl:latest
+```
+
+### Verifying Releases
 
 Bomctl releases can be [found here](https://github.com/bomctl/bomctl/releases) and are signed
 using keyless signing with cosign.
 
-For each artifact there are two additional files:
-
-- `${artifact}-keyless.sig` - signature
-- `${artifact}-keyless.pem` - certificate
-
-You can then verify this artifact with cosign using the signature and the certificate.
+You can then verify this artifact with cosign.
 
 ``` shell
 cosign verify-blob --certificate ${artifact}-keyless.pem --signature ${artifact}-keyless.sig --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp 'https://github\.com/bomctl/bomctl/\.github/.+'  ${artifact}
