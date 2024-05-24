@@ -64,9 +64,9 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
 
   - image_templates:
-      - "bomctl/bomctl:{{ .Version }}-arm64v8"
-      - "bomctl/bomctl:v{{ .Major }}-arm64v8"
-      - "bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-arm64v8"
+      - bomctl/bomctl:{{ .Version }}-arm64v8
+      - bomctl/bomctl:v{{ .Major }}-arm64v8
+      - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-arm64v8
     goarch: arm64
     dockerfile: Dockerfile
     use: buildx
