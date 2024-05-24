@@ -61,7 +61,7 @@ dockers:
       - --label=org.opencontainers.image.source=https://github.com/bomctl/bomctl
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.licenses=MIT
+      - --label=org.opencontainers.image.licenses=Apache-2.0
 
   - image_templates:
       - "bomctl/bomctl:{{ .Version }}-arm64v8"
@@ -77,7 +77,7 @@ dockers:
       - --label=org.opencontainers.image.source=https://github.com/bomctl/bomctl
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.licenses=MIT
+      - --label=org.opencontainers.image.licenses=Apache-2.0
 
 docker_manifests:
   - name_template: bomctl/bomctl:{{ .Version }}
