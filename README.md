@@ -96,7 +96,7 @@ cosign verify --certificate-oidc-issuer https://token.actions.githubusercontent.
 
 ### Verifying Releases
 
-Bomctl releases can be [found here](https://github.com/bomctl/bomctl/releases) and are signed
+`bomctl` releases can be found [here](https://github.com/bomctl/bomctl/releases) and are signed
 using keyless signing with cosign.
 
 You can then verify this artifact with cosign.
