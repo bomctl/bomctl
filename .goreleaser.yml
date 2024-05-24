@@ -49,9 +49,9 @@ builds:
 
 dockers:
   - image_templates:
-      - "bomctl/bomctl:{{ .Version }}-amd64"
-      - "bomctl/bomctl:v{{ .Major }}-amd64"
-      - "bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-amd64"
+      - bomctl/bomctl:{{ .Version }}-amd64
+      - bomctl/bomctl:v{{ .Major }}-amd64
+      - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-amd64
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
