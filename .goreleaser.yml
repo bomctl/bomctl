@@ -62,22 +62,22 @@ builds:
 
 signs:
   - id: checksum-keyless-signing
-    signature: "${artifact}-keyless.sig"
-    certificate: "${artifact}-keyless.pem"
+    signature: ${artifact}-keyless.sig
+    certificate: ${artifact}-keyless.pem
     cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: checksum
 
   - id: binary-keyless-signing
-    signature: "${artifact}-keyless.sig"
-    certificate: "${artifact}-keyless.pem"
+    signature: ${artifact}-keyless.sig
+    certificate: ${artifact}-keyless.pem
     cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: binary
 
   - id: package-keyless-signing
-    signature: "${artifact}-keyless.sig"
-    certificate: "${artifact}-keyless.pem"
+    signature: ${artifact}-keyless.sig
+    certificate: ${artifact}-keyless.pem
     cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: package

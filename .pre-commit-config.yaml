@@ -37,7 +37,8 @@ repos:
         args: [--markdown-linebreak-ext=md]
 
   - repo: https://github.com/awslabs/git-secrets
-    rev: 5357e18bc27b42a827b6780564ea873a72ca1f01 # master branch as of 6/20/2023. Most recent tag (1.3.0) does not contain pre-commit hooks
+    # master branch as of 6/20/2023. Most recent tag (1.3.0) does not contain pre-commit hooks
+    rev: 5357e18bc27b42a827b6780564ea873a72ca1f01
     hooks:
       - id: git-secrets
 

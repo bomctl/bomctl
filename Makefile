@@ -68,7 +68,7 @@ ifeq (${OS},windows)
 endif
 
 .PHONY: all build clean help format test
-.SILENT: clean
+.SILENT: clean lint-go lint-go-fix lint-markdown lint-markdown-fix lint-yaml
 
 #@ Tools
 help: # Display this help
@@ -80,11 +80,31 @@ clean: # Clean the working directory
 	${RM} -r dist
 	find ${PWD} -name "*.log" -exec ${RM} {} \;
 
-lint: # Lint Golang code files
-	golangci-lint run --verbose
+define run-lint
+	if command -v ${1} &> /dev/null; then \
+	  printf "Running ${CYAN}${1} ${2}${RESET}\n\n"; \
+	  ${1} ${2}; \
+	else \
+	  printf "${YELLOW}${1} not found, please install and run the command again.${RESET}\n"; \
+	fi
+endef
 
-lint-fix: # Fix linter findings
-	golangci-lint run --fix --verbose
+lint: lint-go lint-markdown lint-yaml # Lint Golang code, markdown, and YAML files
+
+lint-go: # Lint Golang code files
+	${call run-lint,golangci-lint,run --verbose}
+
+lint-go-fix: # Fix golangci-lint findings
+	${call run-lint,golangci-lint,run --fix --verbose}
+
+lint-markdown: # Lint markdown files
+	${call run-lint,markdownlint-cli2,.}
+
+lint-markdown-fix: # Fix markdown lint findings
+	${call run-lint,markdownlint-cli2,. --fix}
+
+lint-yaml: # Lint YAML files
+	${call run-lint,yamllint,.}
 
 #@ Build
 define gobuild
