@@ -30,19 +30,6 @@ before:
   hooks:
     - go mod tidy
 
-sboms:
-  - id: generate-cyclonedx
-    artifacts: archive
-    documents: [$artifact.cdx.json]
-    cmd: ../.github/scripts/sbom-generation.sh
-    args: [$artifact, cyclonedx, $document]
-
-  - id: generate-spdx
-    artifacts: archive
-    documents: [$artifact.spdx.json]
-    cmd: ../.github/scripts/sbom-generation.sh
-    args: [$artifact, spdx, $document]
-
 gomod:
   mod: mod
   proxy: true
@@ -59,6 +46,69 @@ builds:
       -X=github.com/bomctl/bomctl/cmd.VersionPatch={{.Patch}}
       -X=github.com/bomctl/bomctl/cmd.VersionPre={{with .Prerelease}}-{{.}}{{end}}
       -X=github.com/bomctl/bomctl/cmd.BuildDate={{.Date}}
+
+dockers:
+  - image_templates:
+      - "bomctl/bomctl:{{ .Version }}-amd64"
+      - "bomctl/bomctl:v{{ .Major }}-amd64"
+      - "bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-amd64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/bomctl/bomctl
+      - --label=org.opencontainers.image.source=https://github.com/bomctl/bomctl
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+
+  - image_templates:
+      - "bomctl/bomctl:{{ .Version }}-arm64v8"
+      - "bomctl/bomctl:v{{ .Major }}-arm64v8"
+      - "bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-arm64v8"
+    goarch: arm64
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - --platform=linux/arm64/v8
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/bomctl/bomctl
+      - --label=org.opencontainers.image.source=https://github.com/bomctl/bomctl
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+
+docker_manifests:
+  - name_template: bomctl/bomctl:{{ .Version }}
+    image_templates:
+      - bomctl/bomctl:{{ .Version }}-amd64
+      - bomctl/bomctl:{{ .Version }}-arm64v8
+  - name_template: bomctl/bomctl:v{{ .Major }}
+    image_templates:
+      - bomctl/bomctl:v{{ .Major }}-amd64
+      - bomctl/bomctl:v{{ .Major }}-arm64v8
+  - name_template: bomctl/bomctl:v{{ .Major }}.{{ .Minor }}
+    image_templates:
+      - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-amd64
+      - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-arm64v8
+  - name_template: bomctl/bomctl:latest
+    image_templates:
+      - bomctl/bomctl:{{ .Version }}-amd64
+      - bomctl/bomctl:{{ .Version }}-arm64v8
+
+sboms:
+  - id: generate-cyclonedx
+    artifacts: archive
+    documents: [$artifact.cdx.json]
+    cmd: ../.github/scripts/sbom-generation.sh
+    args: [$artifact, cyclonedx, $document]
+
+  - id: generate-spdx
+    artifacts: archive
+    documents: [$artifact.spdx.json]
+    cmd: ../.github/scripts/sbom-generation.sh
+    args: [$artifact, spdx, $document]
 
 signs:
   - id: checksum-keyless-signing
@@ -78,9 +128,12 @@ signs:
   - id: package-keyless-signing
     signature: "${artifact}-keyless.sig"
     certificate: "${artifact}-keyless.pem"
-    cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: package
+
+docker_signs:
+  - artifacts: all
+    args: [sign, $artifact]
 
 nfpms:
   - license: Apache License 2.0
