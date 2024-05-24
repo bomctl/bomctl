@@ -85,7 +85,7 @@ TBD
 
 ### Verifying Container Images
 
-Bomctl container images can be [found here](https://hub.docker.com/repository/docker/bomctl/bomctl/general) and are signed
+Container images for `bomctl` can be found [here](https://hub.docker.com/r/bomctl/bomctl) and are signed
 using keyless signing with cosign.
 
 You can then verify this container image with cosign.
