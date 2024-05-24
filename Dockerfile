@@ -12,6 +12,6 @@ ARG NONROOT_UID=65532
 # https://edu.chainguard.dev/chainguard/chainguard-images/reference/static/overview/#users
 USER ${NONROOT_UID}:${NONROOT_UID}
 
-COPY --chown=${NONROOT_UID}:${NONROOT_UID} "bomctl" /bomctl
+COPY --chown=${NONROOT_UID}:${NONROOT_UID} bomctl /bomctl
 
 ENTRYPOINT ["/bomctl"]
