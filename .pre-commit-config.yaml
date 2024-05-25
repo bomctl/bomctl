@@ -59,3 +59,9 @@ repos:
     rev: v1.55.2
     hooks:
       - id: golangci-lint-full
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [--strict]
