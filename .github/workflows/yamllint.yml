@@ -39,9 +39,7 @@ jobs:
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
       - name: Install yamllint
-        run: |
-          apt-get update
-          apt-get install --yes yamllint
+        run: pip install yamllint
 
       - name: Lint YAML files
         run: yamllint .
