@@ -40,19 +40,6 @@ brews:
     description: Format agnostic SBOM tooling
     license: Apache License 2.0
 
-sboms:
-  - id: generate-cyclonedx
-    artifacts: archive
-    documents: [$artifact.cdx.json]
-    cmd: ../.github/scripts/sbom-generation.sh
-    args: [$artifact, cyclonedx, $document]
-
-  - id: generate-spdx
-    artifacts: archive
-    documents: [$artifact.spdx.json]
-    cmd: ../.github/scripts/sbom-generation.sh
-    args: [$artifact, spdx, $document]
-
 gomod:
   mod: mod
   proxy: true
