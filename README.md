@@ -33,6 +33,14 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 brew tap bomctl/bomctl && brew install bomctl
 ```
 
+### Container Images
+
+Container images for bomctl can be found on [Docker Hub](https://hub.docker.com/r/bomctl/bomctl).
+
+``` shell
+docker run bomctl/bomctl:latest --help
+```
+
 ## Commands
 
 ### Fetch (Implemented)
@@ -81,17 +89,25 @@ TBD
 
 TBD
 
-## Verifying Releases
+## Verifying Integrity
 
-Bomctl releases can be [found here](https://github.com/bomctl/bomctl/releases) and are signed
+### Verifying Container Images
+
+Container images for `bomctl` can be found [here](https://hub.docker.com/r/bomctl/bomctl) and are signed
 using keyless signing with cosign.
 
-For each artifact there are two additional files:
+You can then verify this container image with cosign.
 
-- `${artifact}-keyless.sig` - signature
-- `${artifact}-keyless.pem` - certificate
+``` shell
+cosign verify --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp 'https://github\.com/bomctl/bomctl/\.github/.+'  bomctl/bomctl:latest
+```
 
-You can then verify this artifact with cosign using the signature and the certificate.
+### Verifying Releases
+
+`bomctl` releases can be found [here](https://github.com/bomctl/bomctl/releases) and are signed
+using keyless signing with cosign.
+
+You can then verify this artifact with cosign.
 
 ``` shell
 cosign verify-blob --certificate ${artifact}-keyless.pem --signature ${artifact}-keyless.sig --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp 'https://github\.com/bomctl/bomctl/\.github/.+'  ${artifact}
