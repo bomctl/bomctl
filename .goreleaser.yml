@@ -59,7 +59,7 @@ builds:
 
 dockers:
   - image_templates:
-      - bomctl/bomctl:{{ .Version }}-amd64
+      - bomctl/bomctl:v{{ .Version }}-amd64
       - bomctl/bomctl:v{{ .Major }}-amd64
       - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-amd64
     dockerfile: Dockerfile
@@ -69,12 +69,12 @@ dockers:
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.url=https://github.com/bomctl/bomctl
       - --label=org.opencontainers.image.source=https://github.com/bomctl/bomctl
-      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.version=v{{ .Version }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
 
   - image_templates:
-      - bomctl/bomctl:{{ .Version }}-arm64v8
+      - bomctl/bomctl:v{{ .Version }}-arm64v8
       - bomctl/bomctl:v{{ .Major }}-arm64v8
       - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-arm64v8
     goarch: arm64
@@ -85,15 +85,15 @@ dockers:
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.url=https://github.com/bomctl/bomctl
       - --label=org.opencontainers.image.source=https://github.com/bomctl/bomctl
-      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.version=v{{ .Version }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
 
 docker_manifests:
-  - name_template: bomctl/bomctl:{{ .Version }}
+  - name_template: bomctl/bomctl:v{{ .Version }}
     image_templates:
-      - bomctl/bomctl:{{ .Version }}-amd64
-      - bomctl/bomctl:{{ .Version }}-arm64v8
+      - bomctl/bomctl:v{{ .Version }}-amd64
+      - bomctl/bomctl:v{{ .Version }}-arm64v8
   - name_template: bomctl/bomctl:v{{ .Major }}
     image_templates:
       - bomctl/bomctl:v{{ .Major }}-amd64
@@ -104,8 +104,8 @@ docker_manifests:
       - bomctl/bomctl:v{{ .Major }}.{{ .Minor }}-arm64v8
   - name_template: bomctl/bomctl:latest
     image_templates:
-      - bomctl/bomctl:{{ .Version }}-amd64
-      - bomctl/bomctl:{{ .Version }}-arm64v8
+      - bomctl/bomctl:v{{ .Version }}-amd64
+      - bomctl/bomctl:v{{ .Version }}-arm64v8
 
 sboms:
   - id: generate-cyclonedx
