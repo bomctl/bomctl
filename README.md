@@ -25,7 +25,15 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 - [OpenSSF Security Tooling Working Group Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/94897563315?password=7f03d8e7-7bc9-454e-95bd-6e1e09cb3b0b) - Every two weeks on Friday, 8am Pacific
 - [SBOM Tooling Working Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/92103679564?password=c351279a-5cec-44a4-ab5b-e4342da0e43f) - Every Monday, 2pm Pacific
 
-## Container Images
+## Installation
+
+### Homebrew
+
+```shell
+brew tap bomctl/bomctl && brew install bomctl
+```
+
+### Container Images
 
 Container images for bomctl can be found on [Docker Hub](https://hub.docker.com/r/bomctl/bomctl).
 

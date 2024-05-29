@@ -5,7 +5,6 @@
 !/.commitlint.yaml
 !/.editorconfig
 !/.gitattributes
-!/.gitlab-ci.yml
 !/.golangci.yml
 !/.goreleaser.yml
 !/.markdownlint.yml
@@ -21,6 +20,7 @@
 !/.vscode/launch.json
 !/.vscode/settings.json
 !/.vscode/tasks.json
+!/.yamllint
 !/docs/CHANGELOG.md
 
 # Whitelist patterns found anywhere in project

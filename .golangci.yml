@@ -21,7 +21,7 @@
 
 run:
   concurrency: 6
-  go: "1.22.0"
+  go: 1.22.0
   timeout: 5m
 
 issues:
@@ -190,4 +190,4 @@ linters-settings:
         exclude: [""]
         arguments:
           # Ignore all parameters beginning with "_"
-          - allowRegex: "^_"
+          - allowRegex: ^_

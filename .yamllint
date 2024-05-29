@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------
 # SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-# SPDX-FileName: .markdownlint.yml
+# SPDX-FileName: .yamllint
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------
@@ -17,11 +17,30 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
-# MD013/line-length - Line length
-MD013: false
+extends: default
 
-# MD033/no-inline-html - Inline HTML
-MD033: false
+ignore-from-file: .gitignore
 
-# MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
-MD041: false
+locale: en_US.UTF-8
+
+rules:
+  comments:
+    min-spaces-from-content: 1
+
+  braces:
+    forbid: non-empty
+
+  indentation:
+    spaces: 2
+
+  line-length:
+    level: warning
+    max: 120
+
+  quoted-strings:
+    quote-type: double
+    required: only-when-needed
+    check-keys: true
+
+  truthy:
+    check-keys: false

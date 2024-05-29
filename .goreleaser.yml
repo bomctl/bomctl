@@ -30,6 +30,29 @@ before:
   hooks:
     - go mod tidy
 
+brews:
+  - repository:
+      owner: bomctl
+      name: homebrew-bomctl
+      branch: "{{ .ProjectName }}-{{ .Tag }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/bomctl/bomctl
+    description: Format agnostic SBOM tooling
+    license: Apache License 2.0
+
+sboms:
+  - id: generate-cyclonedx
+    artifacts: archive
+    documents: [$artifact.cdx.json]
+    cmd: ../.github/scripts/sbom-generation.sh
+    args: [$artifact, cyclonedx, $document]
+
+  - id: generate-spdx
+    artifacts: archive
+    documents: [$artifact.spdx.json]
+    cmd: ../.github/scripts/sbom-generation.sh
+    args: [$artifact, spdx, $document]
+
 gomod:
   mod: mod
   proxy: true
@@ -112,22 +135,22 @@ sboms:
 
 signs:
   - id: checksum-keyless-signing
-    signature: "${artifact}-keyless.sig"
-    certificate: "${artifact}-keyless.pem"
+    signature: ${artifact}-keyless.sig
+    certificate: ${artifact}-keyless.pem
     cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: checksum
 
   - id: binary-keyless-signing
-    signature: "${artifact}-keyless.sig"
-    certificate: "${artifact}-keyless.pem"
+    signature: ${artifact}-keyless.sig
+    certificate: ${artifact}-keyless.pem
     cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: binary
 
   - id: package-keyless-signing
-    signature: "${artifact}-keyless.sig"
-    certificate: "${artifact}-keyless.pem"
+    signature: ${artifact}-keyless.sig
+    certificate: ${artifact}-keyless.pem
     cmd: cosign
     args: [sign-blob, --output-signature=$signature, --output-certificate=$certificate, $artifact]
     artifacts: package
