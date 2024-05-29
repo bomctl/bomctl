@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------
 # SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-# SPDX-FileName: .markdownlint.yml
+# SPDX-FileName: .github/workflows/yamllint.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------
@@ -17,11 +17,29 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
-# MD013/line-length - Line length
-MD013: false
+name: yamllint
 
-# MD033/no-inline-html - Inline HTML
-MD033: false
+on:
+  pull_request:
+    branches: main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
-# MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
-MD041: false
+permissions:
+  contents: read
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML files
+        run: yamllint .
