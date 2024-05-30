@@ -31,11 +31,37 @@ before:
     - go mod tidy
 
 brews:
-  - repository:
+  - name: "{{ .ProjectName }}"
+    repository:
       owner: bomctl
       name: homebrew-bomctl
       branch: "{{ .ProjectName }}-{{ .Tag }}"
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+        base:
+          branch: main
+          owner: bomctl
+          name: homebrew-bomctl
+    commit_msg_template: "build(release): upgrade {{ .ProjectName }} to {{ .Tag }}"
+    homepage: https://github.com/bomctl/bomctl
+    description: Format agnostic SBOM tooling
+    license: Apache License 2.0
+
+  # NOTE: Using .Version instead of .Tag here because homebrew can't handle versions with a 'v'
+  - name: "{{ .ProjectName }}@{{ .Version }}"
+    repository:
+      owner: bomctl
+      name: homebrew-bomctl
+      branch: "{{ .ProjectName }}-{{ .Tag }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+        base:
+          branch: main
+          owner: bomctl
+          name: homebrew-bomctl
+    commit_msg_template: "build(release): {{ .ProjectName }}@{{ .Tag }}"
     homepage: https://github.com/bomctl/bomctl
     description: Format agnostic SBOM tooling
     license: Apache License 2.0
