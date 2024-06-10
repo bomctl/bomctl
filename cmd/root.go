@@ -26,8 +26,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 var (
@@ -80,12 +78,6 @@ func rootCmd() *cobra.Command {
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
 			if verbose {
 				log.SetLevel(log.DebugLevel)
-			}
-
-			_, err := db.CreateSchema(filepath.Join(cacheDir, "bomctl.db"))
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "database creation: %w", err)
-				os.Exit(1)
 			}
 		},
 	}

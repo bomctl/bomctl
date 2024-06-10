@@ -19,113 +19,82 @@
 package db
 
 import (
-	"context"
 	"fmt"
+	"path/filepath"
 
-	protobom "github.com/bom-squad/protobom/pkg/sbom"
 	"github.com/charmbracelet/log"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-
-	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/protobom/storage/backends/ent"
+	"github.com/spf13/viper"
 )
 
-// Enable SQLite foreign key support.
-const dsnParams string = "?_pragma=foreign_keys(1)"
+const DatabaseFile string = "bomctl.db"
 
 var (
-	ctx    = context.Background()
-	db     *gorm.DB
-	logger *log.Logger
+	backend *ent.Backend
+	logger  *log.Logger
 )
 
-type ORMToPBConverter interface {
-	ToPB(context.Context) (protobom.Document, error)
-}
-
-type PBToORMConverter interface {
-	ToORM(context.Context) (protobom.DocumentORM, error)
-}
-
-// Create database and initialize schema.
-func CreateSchema(dbFile string) (*gorm.DB, error) {
-	logger = utils.NewLogger("")
-
-	if db != nil {
-		logger.Info("Database file already exists, will not recreate")
-
-		return db, nil
-	}
-
-	logger.Info("Initializing database")
-	logger.Debug("Connection string", "dbFile", dbFile, "dsnParams", dsnParams)
-
-	var err error
-
-	db, err = gorm.Open(sqlite.Open(dbFile + dsnParams))
-	if err != nil {
-		return nil, fmt.Errorf("error opening database file %s: %w", dbFile, err)
-	}
-
-	// Create database tables from model definitions.
-	models := []interface{}{
-		&protobom.DocumentORM{},
-		&protobom.DocumentTypeORM{},
-		&protobom.EdgeORM{},
-		&protobom.ExternalReferenceORM{},
-		&protobom.MetadataORM{},
-		&protobom.NodeListORM{},
-		&protobom.NodeORM{},
-		&protobom.PersonORM{},
-		&protobom.ToolORM{},
-	}
-
-	for _, model := range models {
-		err := db.AutoMigrate(model)
-		if err != nil {
-			return nil, fmt.Errorf("failed to migrate %T: %w", model, err)
+// AddDocument adds the protobom Document to the database.
+func AddDocument(document *sbom.Document) error {
+	if backend == nil {
+		if err := initBackend(); err != nil {
+			return fmt.Errorf("initBackend: %w", err)
 		}
 	}
 
-	return db, nil
-}
-
-// Insert protobom Document into `documents` table.
-func AddDocument(document PBToORMConverter) error {
-	documentORM, err := document.ToORM(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to convert protobuf models to gorm: %w", err)
+	if err := backend.Store(document, nil); err != nil {
+		return fmt.Errorf("failed to store document: %w", err)
 	}
-
-	session := db.Session(&gorm.Session{Context: ctx})
-	tx := session.Begin()
-	tx.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Create(&documentORM.Metadata)
-	tx.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Create(&documentORM.NodeList)
-	tx.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Create(&documentORM)
-	tx.Commit()
 
 	return nil
 }
 
-func GetDocumentByID(id uint32) *protobom.Document {
-	documentORM := &protobom.DocumentORM{}
-
-	db.Where(&protobom.DocumentORM{Id: id}).First(&documentORM)
-	db.Where(&protobom.MetadataORM{DocumentId: &id}).First(&documentORM.Metadata)
-	db.Where(&protobom.NodeListORM{DocumentId: &id}).First(&documentORM.NodeList)
-
-	db.Where(&protobom.DocumentTypeORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.DocumentTypes)
-	db.Where(&protobom.PersonORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.Authors)
-	db.Where(&protobom.ToolORM{MetadataId: &documentORM.Metadata.Id}).Find(&documentORM.Metadata.Tools)
-
-	db.Where(&protobom.NodeORM{NodeListId: &documentORM.NodeList.Id}).Find(&documentORM.NodeList.Nodes)
-	db.Where(&protobom.EdgeORM{NodeListId: &documentORM.NodeList.Id}).Find(&documentORM.NodeList.Edges)
-
-	document, err := documentORM.ToPB(ctx)
-	if err != nil {
-		return nil
+// GetDocumentByID retrieves a protobom Document with the specified ID from the database.
+func GetDocumentByID(id string) (*sbom.Document, error) {
+	if backend == nil {
+		if err := initBackend(); err != nil {
+			return nil, fmt.Errorf("initBackend: %w", err)
+		}
 	}
 
-	return &document
+	document, err := backend.Retrieve(id, nil)
+	if err != nil {
+		logger.Warn("Document could not be retrieved", "id", id, "err", err)
+
+		return nil, fmt.Errorf("failed to retrieve document: %w", err)
+	}
+
+	return document, nil
+}
+
+// GetExternalReferencesByID returns all ExternalReferences of type "BOM" in an SBOM document.
+func GetExternalReferencesByID(id string) (refs []*sbom.ExternalReference) {
+	refs = []*sbom.ExternalReference{}
+
+	document, err := GetDocumentByID(id)
+	if err != nil {
+		return
+	}
+
+	for _, node := range document.GetNodeList().GetNodes() {
+		for _, ref := range node.GetExternalReferences() {
+			if ref.Type == sbom.ExternalReference_BOM {
+				refs = append(refs, ref)
+			}
+		}
+	}
+
+	return
+}
+
+func initBackend() error {
+	cacheDir := viper.GetString("cache_dir")
+	backend = ent.NewBackend().WithDatabaseFile(filepath.Join(cacheDir, DatabaseFile))
+
+	if err := backend.InitClient(); err != nil {
+		return fmt.Errorf("failed to initialize client: %w", err)
+	}
+
+	return nil
 }

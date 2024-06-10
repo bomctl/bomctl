@@ -25,8 +25,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/bom-squad/protobom/pkg/sbom"
 	"github.com/jdx/go-netrc"
+	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
