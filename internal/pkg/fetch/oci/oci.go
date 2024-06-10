@@ -26,8 +26,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/bom-squad/protobom/pkg/sbom"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/protobom/protobom/pkg/sbom"
 	oras "oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/memory"

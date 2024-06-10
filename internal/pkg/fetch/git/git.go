@@ -24,9 +24,9 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/bom-squad/protobom/pkg/sbom"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
 	"github.com/bomctl/bomctl/internal/pkg/utils"

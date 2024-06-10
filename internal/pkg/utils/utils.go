@@ -21,8 +21,8 @@ package utils
 import (
 	"bytes"
 
-	"github.com/bom-squad/protobom/pkg/reader"
-	"github.com/bom-squad/protobom/pkg/sbom"
+	"github.com/protobom/protobom/pkg/reader"
+	"github.com/protobom/protobom/pkg/sbom"
 )
 
 var sbomReader = reader.New()
