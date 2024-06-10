@@ -8,7 +8,7 @@ require (
 	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/protobom/protobom v0.4.2
-	github.com/protobom/storage v0.0.0-20240606011355-e51eadb35164
+	github.com/protobom/storage v0.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.9.0
