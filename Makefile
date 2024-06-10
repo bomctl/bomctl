@@ -4,8 +4,6 @@
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # -------------------------------------------------------
-BASH := ${shell type -p bash}
-SHELL := ${BASH}
 MAKEFILE ?= ${abspath ${firstword ${MAKEFILE_LIST}}}
 
 # ANSI color escape codes
@@ -67,8 +65,7 @@ ifeq (${OS},windows)
 	TARGET_BIN := ${addsuffix .exe,${TARGET_BIN}}
 endif
 
-.PHONY: all build clean help format test
-.SILENT: clean lint-go lint-go-fix lint-markdown lint-markdown-fix lint-yaml
+.PHONY: all
 
 #@ Tools
 help: # Display this help
@@ -76,12 +73,49 @@ help: # Display this help
 		/^[a-zA-Z_0-9-]+:.*?#/ { printf "  ${CYAN}%-20s${RESET} %s\n", $$1, $$2 } \
 		/^#@/ { printf "\n${BOLD}%s${RESET}\n", substr($$0, 4) }' ${MAKEFILE_LIST} && echo
 
+.PHONY: clean
 clean: # Clean the working directory
-	${RM} -r dist
-	find ${PWD} -name "*.log" -exec ${RM} {} \;
+	@${RM} -r dist
+	@find ${PWD} -name "*.log" -exec ${RM} {} \;
 
+#@ Build
+define gobuild
+	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o dist/bomctl-${1}-${2}${3} -ldflags="${LDFLAGS}"
+endef
+
+.PHONY: build-linux-amd
+build-linux-amd: # Build for Linux on AMD64
+	${call gobuild,linux,amd64}
+
+.PHONY: build-linux-arm
+build-linux-arm: # Build for Linux on ARM
+	${call gobuild,linux,arm64}
+
+.PHONY: build-macos-intel
+build-macos-intel: # Build for macOS on AMD64
+	${call gobuild,darwin,amd64}
+
+.PHONY: build-macos-apple
+build-macos-apple: # Build for macOS on ARM
+	${call gobuild,darwin,arm64}
+
+.PHONY: build-windows-amd
+build-windows-amd: # Build for Windows on AMD64
+	${call gobuild,windows,amd64,.exe}
+
+.PHONY: build-windows-arm
+build-windows-arm: # Build for Windows on ARM
+	${call gobuild,windows,arm64,.exe}
+
+.PHONY: build-linux
+build-linux: build-linux-amd build-linux-arm # Build for Linux on AMD64 and ARM
+
+.PHONY: build
+build: build-linux-amd build-linux-arm build-macos-intel build-macos-apple build-windows-amd build-windows-arm ## Build the CLI
+
+#@ Lint
 define run-lint
-	if command -v ${1} &> /dev/null; then \
+	@if command -v ${1} &> /dev/null; then \
 	  printf "Running ${CYAN}${1} ${2}${RESET}\n\n"; \
 	  ${1} ${2}; \
 	else \
@@ -89,46 +123,33 @@ define run-lint
 	fi
 endef
 
-lint: lint-go lint-markdown lint-yaml # Lint Golang code, markdown, and YAML files
-
+.PHONY: lint-go
 lint-go: # Lint Golang code files
 	${call run-lint,golangci-lint,run --verbose}
 
+.PHONY: lint-go-fix
 lint-go-fix: # Fix golangci-lint findings
 	${call run-lint,golangci-lint,run --fix --verbose}
 
+.PHONY: lint-markdown
 lint-markdown: # Lint markdown files
 	${call run-lint,markdownlint-cli2,.}
 
+.PHONY: lint-markdown-fix
 lint-markdown-fix: # Fix markdown lint findings
 	${call run-lint,markdownlint-cli2,. --fix}
 
+.PHONY: lint-yaml
 lint-yaml: # Lint YAML files
 	${call run-lint,yamllint,.}
 
-#@ Build
-define gobuild
-	CGO_ENABLED=0 GOOS=${1} GOARCH=${2} go build -trimpath -o dist/bomctl-${1}-${2}${3} -ldflags="${LDFLAGS}"
-endef
+.PHONY: lint
+lint: lint-go lint-markdown lint-yaml # Lint Golang code, markdown, and YAML files
 
-build-linux-amd: # Build for Linux on AMD64
-	${call gobuild,linux,amd64}
+#@ Test
+.PHONY: test-unit
+test-unit: # Run unit tests
+	go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
 
-build-linux-arm: # Build for Linux on ARM
-	${call gobuild,linux,arm64}
-
-build-macos-intel: # Build for macOS on AMD64
-	${call gobuild,darwin,amd64}
-
-build-macos-apple: # Build for macOS on ARM
-	${call gobuild,darwin,arm64}
-
-build-windows-amd: # Build for Windows on AMD64
-	${call gobuild,windows,amd64,.exe}
-
-build-windows-arm: # Build for Windows on ARM
-	${call gobuild,windows,arm64,.exe}
-
-build-linux: build-linux-amd build-linux-arm # Build for Linux on AMD64 and ARM
-
-build: build-linux-amd build-linux-arm build-macos-intel build-macos-apple build-windows-amd build-windows-arm ## Build the CLI
+.PHONY: test
+test: test-unit # Run all tests

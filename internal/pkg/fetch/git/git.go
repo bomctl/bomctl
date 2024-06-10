@@ -43,7 +43,7 @@ func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?:git\+)?(?P<scheme>https?|git|ssh):\/\/)?`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`((?P<hostname>[^@\/?#:]+))(?::(?P<port>\d+))?`,
+			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
 			`(?:[\/:](?P<path>[^@#]+\.git)@?)`,
 			`((?:@(?P<gitRef>[^#]+))(?:#(?P<fragment>.*)))?`,
 		),
