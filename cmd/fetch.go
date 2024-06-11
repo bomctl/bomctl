@@ -43,6 +43,10 @@ func fetchCmd() *cobra.Command {
 			logger = utils.NewLogger("fetch")
 
 			if string(outputFile) != "" {
+				if len(sbomURLs) > 1 {
+					logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
+				}
+
 				if output, err = os.Create(string(outputFile)); err != nil {
 					logger.Fatal("error creating output file", "outputFile", outputFile)
 				}
