@@ -35,11 +35,27 @@ func fetchCmd() *cobra.Command {
 		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Run: func(_ *cobra.Command, _ []string) {
-			var err error
+			var (
+				err    error
+				output *os.File
+			)
+
 			logger = utils.NewLogger("fetch")
 
+			if string(outputFile) != "" {
+				if len(sbomURLs) > 1 {
+					logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
+				}
+
+				if output, err = os.Create(string(outputFile)); err != nil {
+					logger.Fatal("error creating output file", "outputFile", outputFile)
+				}
+
+				defer output.Close()
+			}
+
 			for _, url := range sbomURLs {
-				if err = fetch.Exec(url, outputFile.String(), useNetRC); err != nil {
+				if err = fetch.Fetch(url, output, useNetRC); err != nil {
 					logger.Error(err)
 				}
 			}

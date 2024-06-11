@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/protobom/protobom/pkg/sbom"
 	oras "oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/memory"
@@ -36,7 +35,6 @@ import (
 	"oras.land/oras-go/v2/registry/remote/retry"
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 var (
@@ -107,9 +105,8 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
 	var (
-		document                           *sbom.Document
 		err                                error
 		manifestDescriptor, sbomDescriptor *ocispec.Descriptor
 		repo                               *remote.Repository
@@ -137,11 +134,7 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*s
 		return nil, err
 	}
 
-	if document, err = utils.ParseSBOMData(sbomData); err != nil {
-		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
-	}
-
-	return document, nil
+	return sbomData, nil
 }
 
 func createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*remote.Repository, error) {
