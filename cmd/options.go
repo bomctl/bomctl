@@ -38,12 +38,6 @@ type (
 )
 
 var (
-	outputFile OutputFileValue
-	sbomURLs   URLSliceValue
-	useNetRC   bool
-)
-
-var (
 	errDirNotFound  = errors.New("not a directory or does not exist")
 	errFileNotFound = errors.New("not a file or does not exist")
 )

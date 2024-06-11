@@ -28,86 +28,71 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/charmbracelet/log"
 	"github.com/jdx/go-netrc"
 	"github.com/protobom/protobom/pkg/reader"
+	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 var errUnsupportedURL = errors.New("unsupported URL scheme")
 
-type Fetcher interface {
-	url.Parser
-	Fetch(*url.ParsedURL, *url.BasicAuth) ([]byte, error)
-	Name() string
-}
+type (
+	Fetcher interface {
+		url.Parser
+		Fetch(*url.ParsedURL, *url.BasicAuth) ([]byte, error)
+		Name() string
+	}
 
-func Fetch(sbomURL string, outputFile *os.File, useNetRC bool) error { //nolint:cyclop,funlen
-	logger := utils.NewLogger("fetch")
+	FetchOptions struct {
+		Logger     *log.Logger
+		OutputFile *os.File
+		CacheDir   string
+		ConfigFile string
+		UseNetRC   bool
+	}
+)
 
-	fetcher, err := NewFetcher(sbomURL)
+func Fetch(sbomURL string, opts *FetchOptions) error {
+	document, err := fetchDocument(sbomURL, opts)
 	if err != nil {
 		return err
 	}
 
-	logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
+	backend := db.NewBackend()
+	backend.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
 
-	parsedURL := fetcher.Parse(sbomURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
-
-	if useNetRC {
-		if err := setNetRCAuth(parsedURL.Hostname, auth); err != nil {
-			return fmt.Errorf("%w", err)
-		}
-	}
-
-	sbomData, err := fetcher.Fetch(parsedURL, auth)
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	if outputFile != nil {
-		// Write the SBOM document bytes to file.
-		if _, err = io.Copy(outputFile, bytes.NewReader(sbomData)); err != nil {
-			return fmt.Errorf("failed to write %s: %w", outputFile.Name(), err)
-		}
-	}
-
-	sbomReader := reader.New()
-
-	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
-	if err != nil {
-		return fmt.Errorf("error parsing SBOM file content: %w", err)
+	if err := backend.InitClient(); err != nil {
+		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
 
 	// Insert fetched document data into database.
-	err = db.AddDocument(document)
-	if err != nil {
-		return fmt.Errorf("%w", err)
+	if err := backend.AddDocument(document); err != nil {
+		return fmt.Errorf("error adding document: %w", err)
 	}
 
-	if outputFile == nil || outputFile.Name() == "" {
+	if opts.OutputFile == nil || opts.OutputFile.Name() == "" {
 		return nil
 	}
 
 	// Fetch externally referenced BOMs
 	var idx uint8
-	for _, ref := range utils.GetBOMReferences(document) {
+	for _, ref := range backend.GetExternalReferencesByID(document.Metadata.Id) {
 		idx++
 
-		refOutput, err := getRefFile(outputFile)
+		refOutput, err := getRefFile(opts.OutputFile)
 		if err != nil {
 			return err
 		}
 
 		defer refOutput.Close()
 
-		if err := Fetch(ref.Url, refOutput, useNetRC); err != nil {
+		if err := Fetch(ref.Url, opts); err != nil {
 			return err
 		}
 	}
@@ -123,6 +108,45 @@ func NewFetcher(sbomURL string) (Fetcher, error) {
 	}
 
 	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
+}
+
+func fetchDocument(sbomURL string, opts *FetchOptions) (*sbom.Document, error) {
+	fetcher, err := NewFetcher(sbomURL)
+	if err != nil {
+		return nil, err
+	}
+
+	opts.Logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
+
+	parsedURL := fetcher.Parse(sbomURL)
+	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+
+	if opts.UseNetRC {
+		if err := setNetRCAuth(parsedURL.Hostname, auth); err != nil {
+			return nil, err
+		}
+	}
+
+	sbomData, err := fetcher.Fetch(parsedURL, auth)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch from %s: %w", sbomURL, err)
+	}
+
+	if opts.OutputFile != nil {
+		// Write the SBOM document bytes to file.
+		if _, err = io.Copy(opts.OutputFile, bytes.NewReader(sbomData)); err != nil {
+			return nil, fmt.Errorf("failed to write %s: %w", opts.OutputFile.Name(), err)
+		}
+	}
+
+	sbomReader := reader.New()
+
+	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
+	if err != nil {
+		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
+	}
+
+	return document, nil
 }
 
 func getRefFile(parentFile *os.File) (*os.File, error) {

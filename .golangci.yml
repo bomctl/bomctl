@@ -30,6 +30,7 @@ issues:
       linters:
         - forcetypeassert
         - funlen
+        - gochecknoglobals
         - goconst
         - gocyclo
 
@@ -62,6 +63,7 @@ linters:
     - forcetypeassert
     - funlen
     - gci
+    - gochecknoglobals
     - gochecknoinits
     - gocognit
     - goconst

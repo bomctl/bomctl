@@ -28,23 +28,23 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	cacheDir, cfgFile string
-	logger            *log.Logger
-	verbose           bool
-)
-
 const readWriteExecuteUser = 0o700
 
 func initCache() {
+	cacheDir := viper.GetString("cache_dir")
+
 	if cache, err := os.UserCacheDir(); cacheDir == "" && err == nil {
 		cacheDir = filepath.Join(cache, "bomctl")
+		viper.Set("cache_dir", cacheDir)
 	}
 
 	cobra.CheckErr(os.MkdirAll(cacheDir, os.FileMode(readWriteExecuteUser)))
 }
 
 func initConfig() {
+	cacheDir := viper.GetString("cache_dir")
+	cfgFile := viper.GetString("config_file")
+
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -69,6 +69,8 @@ func initConfig() {
 }
 
 func rootCmd() *cobra.Command {
+	var verbose bool
+
 	cobra.OnInitialize(initCache, initConfig)
 
 	rootCmd := &cobra.Command{
@@ -82,7 +84,7 @@ func rootCmd() *cobra.Command {
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
+	rootCmd.PersistentFlags().String("cache-dir", "",
 		fmt.Sprintf("cache directory [defaults:\n\t%s\n\t%s\n\t%s",
 			"Unix:    $HOME/.cache/bomctl",
 			"Darwin:  $HOME/Library/Caches/bomctl",
@@ -90,7 +92,7 @@ func rootCmd() *cobra.Command {
 		),
 	)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
+	rootCmd.PersistentFlags().String("config", "",
 		fmt.Sprintf("config file [defaults:\n\t%s\n\t%s\n\t%s",
 			"Unix:    $HOME/.config/bomctl/bomctl.yaml",
 			"Darwin:  $HOME/Library/Application Support/bomctl/bomctl.yml",
@@ -99,6 +101,11 @@ func rootCmd() *cobra.Command {
 	)
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable debug output")
+
+	// Bind flags to their associated viper configurations.
+	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
+	cobra.CheckErr(viper.BindPFlag("config_file", rootCmd.PersistentFlags().Lookup("config")))
+	cobra.CheckErr(viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose")))
 
 	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(versionCmd())

@@ -37,11 +37,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var (
-	ctx              = context.Background()
-	errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
-	memStore         = memory.New()
-)
+var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
 
 type Fetcher struct{}
 
@@ -118,11 +114,14 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]
 		return nil, err
 	}
 
-	if manifestDescriptor, err = fetchManifestDescriptor(repo, parsedURL.Tag); err != nil {
+	ctx := context.Background()
+	memStore := memory.New()
+
+	if manifestDescriptor, err = fetchManifestDescriptor(ctx, memStore, repo, parsedURL.Tag); err != nil {
 		return nil, err
 	}
 
-	if successors, err = getManifestChildren(manifestDescriptor); err != nil {
+	if successors, err = getManifestChildren(ctx, memStore, manifestDescriptor); err != nil {
 		return nil, err
 	}
 
@@ -130,7 +129,7 @@ func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]
 		return nil, err
 	}
 
-	if sbomData, err = pullSBOM(sbomDescriptor); err != nil {
+	if sbomData, err = pullSBOM(ctx, memStore, sbomDescriptor); err != nil {
 		return nil, err
 	}
 
@@ -159,7 +158,9 @@ func createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*remote.Re
 	return repo, nil
 }
 
-func fetchManifestDescriptor(repo *remote.Repository, tag string) (*ocispec.Descriptor, error) {
+func fetchManifestDescriptor(
+	ctx context.Context, memStore *memory.Store, repo *remote.Repository, tag string,
+) (*ocispec.Descriptor, error) {
 	manifestDescriptor, err := oras.Copy(ctx, repo, tag, memStore, tag,
 		oras.CopyOptions{CopyGraphOptions: oras.CopyGraphOptions{FindSuccessors: nil}},
 	)
@@ -170,7 +171,9 @@ func fetchManifestDescriptor(repo *remote.Repository, tag string) (*ocispec.Desc
 	return &manifestDescriptor, nil
 }
 
-func getManifestChildren(manifestDescriptor *ocispec.Descriptor) ([]ocispec.Descriptor, error) {
+func getManifestChildren(
+	ctx context.Context, memStore *memory.Store, manifestDescriptor *ocispec.Descriptor,
+) ([]ocispec.Descriptor, error) {
 	// Get all "children" of the manifest
 	successors, err := content.Successors(ctx, memStore, *manifestDescriptor)
 	if err != nil {
@@ -212,7 +215,7 @@ func getSBOMDescriptor(successors []ocispec.Descriptor) (*ocispec.Descriptor, er
 	return &sbomDescriptor, nil
 }
 
-func pullSBOM(sbomDescriptor *ocispec.Descriptor) ([]byte, error) {
+func pullSBOM(ctx context.Context, memStore *memory.Store, sbomDescriptor *ocispec.Descriptor) ([]byte, error) {
 	sbomData, err := content.FetchAll(ctx, memStore, *sbomDescriptor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch SBOM data: %w", err)
