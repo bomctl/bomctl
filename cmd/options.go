@@ -35,10 +35,14 @@ type (
 	DirectorySliceValue []string
 	FileSliceValue      []string
 	URLSliceValue       []string
+	SBOMIDSliceValue    []string
 )
 
 var (
 	outputFile OutputFileValue
+	format     string
+	encoding   string
+	sbomIDs    SBOMIDSliceValue
 	sbomURLs   URLSliceValue
 	useNetRC   bool
 )
