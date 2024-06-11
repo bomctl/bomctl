@@ -43,12 +43,9 @@ func fetchCmd() *cobra.Command {
 			logger = utils.NewLogger("fetch")
 
 			if string(outputFile) != "" {
-				out, err := os.Create(string(outputFile))
-				if err != nil {
+				if output, err = os.Create(string(outputFile)); err != nil {
 					logger.Fatal("error creating output file", "outputFile", outputFile)
 				}
-
-				output = out
 
 				defer output.Close()
 			}
