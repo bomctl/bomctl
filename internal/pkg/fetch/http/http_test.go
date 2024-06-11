@@ -27,7 +27,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func TestHTTPFetcherParse(t *testing.T) {
+func TestFetcher_Parse(t *testing.T) {
 	t.Parallel()
 
 	fetcher := &http.Fetcher{}
@@ -38,12 +38,12 @@ func TestHTTPFetcherParse(t *testing.T) {
 		url      string
 	}{
 		{
-			name:     "HTTP hostname only",
+			name:     "HTTP scheme and hostname only",
 			url:      "http://example.acme.com",
 			expected: &url.ParsedURL{Scheme: "http", Hostname: "example.acme.com"},
 		},
 		{
-			name:     "HTTPS hostname only",
+			name:     "HTTPS scheme and hostname only",
 			url:      "https://example.acme.com",
 			expected: &url.ParsedURL{Scheme: "https", Hostname: "example.acme.com"},
 		},
@@ -51,6 +51,11 @@ func TestHTTPFetcherParse(t *testing.T) {
 			name:     "HTTPS username@hostname",
 			url:      "https://user@example.acme.com",
 			expected: &url.ParsedURL{Scheme: "https", Username: "user", Hostname: "example.acme.com"},
+		},
+		{
+			name:     "HTTP hostname only",
+			url:      "example.acme.com",
+			expected: nil,
 		},
 	} {
 		t.Run(data.name, func(t *testing.T) {

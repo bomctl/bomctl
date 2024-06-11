@@ -47,7 +47,7 @@ func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 		fmt.Sprintf("%s%s%s%s",
 			`((?P<scheme>https?)://)`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?`,
+			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
 			`(/?(?P<path>[^@?#]*))(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
 		),
 	)
@@ -60,6 +60,13 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 
 	for idx, name := range match {
 		results[pattern.SubexpNames()[idx]] = name
+	}
+
+	// Ensure required map fields are present.
+	for _, required := range []string{"scheme", "hostname"} {
+		if value, ok := results[required]; !ok || value == "" {
+			return nil
+		}
 	}
 
 	return &url.ParsedURL{

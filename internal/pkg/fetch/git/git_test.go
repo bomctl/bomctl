@@ -27,7 +27,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func TestGitFetcherParse(t *testing.T) {
+func TestFetcher_Parse(t *testing.T) {
 	t.Parallel()
 
 	fetcher := &git.Fetcher{}
