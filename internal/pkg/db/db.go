@@ -20,29 +20,40 @@ package db
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
-	"github.com/spf13/viper"
+
+	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 const DatabaseFile string = "bomctl.db"
 
-var (
-	backend *ent.Backend
-	logger  *log.Logger
-)
-
-// AddDocument adds the protobom Document to the database.
-func AddDocument(document *sbom.Document) error {
-	if backend == nil {
-		if err := initBackend(); err != nil {
-			return fmt.Errorf("initBackend: %w", err)
-		}
+type (
+	Backend struct {
+		*ent.Backend
+		Logger *log.Logger
 	}
 
+	Option func(*Backend)
+)
+
+func NewBackend(opts ...Option) *Backend {
+	backend := &Backend{
+		Backend: ent.NewBackend(),
+		Logger:  utils.NewLogger("db"),
+	}
+
+	for _, opt := range opts {
+		opt(backend)
+	}
+
+	return backend
+}
+
+// AddDocument adds the protobom Document to the database.
+func (backend *Backend) AddDocument(document *sbom.Document) error {
 	if err := backend.Store(document, nil); err != nil {
 		return fmt.Errorf("failed to store document: %w", err)
 	}
@@ -51,16 +62,10 @@ func AddDocument(document *sbom.Document) error {
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
-func GetDocumentByID(id string) (*sbom.Document, error) {
-	if backend == nil {
-		if err := initBackend(); err != nil {
-			return nil, fmt.Errorf("initBackend: %w", err)
-		}
-	}
-
+func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	document, err := backend.Retrieve(id, nil)
 	if err != nil {
-		logger.Warn("Document could not be retrieved", "id", id, "err", err)
+		backend.Logger.Warn("Document could not be retrieved", "id", id, "err", err)
 
 		return nil, fmt.Errorf("failed to retrieve document: %w", err)
 	}
@@ -69,10 +74,10 @@ func GetDocumentByID(id string) (*sbom.Document, error) {
 }
 
 // GetExternalReferencesByID returns all ExternalReferences of type "BOM" in an SBOM document.
-func GetExternalReferencesByID(id string) (refs []*sbom.ExternalReference) {
+func (backend *Backend) GetExternalReferencesByID(id string) (refs []*sbom.ExternalReference) {
 	refs = []*sbom.ExternalReference{}
 
-	document, err := GetDocumentByID(id)
+	document, err := backend.GetDocumentByID(id)
 	if err != nil {
 		return
 	}
@@ -86,15 +91,4 @@ func GetExternalReferencesByID(id string) (refs []*sbom.ExternalReference) {
 	}
 
 	return
-}
-
-func initBackend() error {
-	cacheDir := viper.GetString("cache_dir")
-	backend = ent.NewBackend().WithDatabaseFile(filepath.Join(cacheDir, DatabaseFile))
-
-	if err := backend.InitClient(); err != nil {
-		return fmt.Errorf("failed to initialize client: %w", err)
-	}
-
-	return nil
 }

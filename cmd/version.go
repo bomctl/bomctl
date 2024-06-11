@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+//nolint:gochecknoglobals
 var (
 	// BuildDate is the date and time this binary was built.
 	BuildDate string
