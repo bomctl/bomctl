@@ -30,7 +30,7 @@ There are many ways to contribute to the bomctl project:
 Here's a step-by-step guide for making a contribution:
 
 1. __Identify Issue__: Find an existing issue you want to work or submit a new issue describing your proposed change.
-1. __Claim Issue__: Assign yourself to the issue if possible, or leave a comment on the issue stating your intent to work it. 
+1. __Claim Issue__: Assign yourself to the issue if possible, or leave a comment on the issue stating your intent to work it.
 1. __Fork the Repository__: Fork the bomctl repository on GitHub to your own account. This allows you to make changes to the codebase without affecting the original project.
 1. __Clone the Fork__: Clone your forked repository to your local machine.
 1. __Create a Branch__: Create a new branch for your changes. Use a descriptive branch name that reflects the nature of your contribution.
