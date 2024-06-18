@@ -1,0 +1,42 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+# SPDX-FileName: .github/workflows/dependency-review.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@72eb03d02c7872a771aacd928f3123ac62ad6d3a # v4.3.3
