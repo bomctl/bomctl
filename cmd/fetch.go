@@ -43,13 +43,14 @@ func fetchCmd() *cobra.Command {
 		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		PreRun: func(_ *cobra.Command, args []string) {
-			for _, arg := range args {
-				sbomURLs = append(sbomURLs, arg)
-			}
+			sbomURLs = append(sbomURLs, args...)
 		},
-		Run: func(_ *cobra.Command, _ []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
+			cfgFile, err := cmd.Flags().GetString("config")
+			cobra.CheckErr(err)
+
 			opts.CacheDir = viper.GetString("cache_dir")
-			opts.ConfigFile = viper.GetString("config_file")
+			opts.ConfigFile = cfgFile
 
 			if string(outputFile) != "" {
 				if len(sbomURLs) > 1 {

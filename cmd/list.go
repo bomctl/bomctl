@@ -61,10 +61,13 @@ func listCmd() *cobra.Command {
 		PreRun: func(_ *cobra.Command, args []string) {
 			documentIDs = append(documentIDs, args...)
 		},
-		Run: func(_ *cobra.Command, _ []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
+			verbosity, err := cmd.Flags().GetCount("verbose")
+			cobra.CheckErr(err)
+
 			backend := db.NewBackend(func(b *db.Backend) {
 				b.Options.DatabaseFile = filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)
-				b.Options.Debug = viper.GetInt("verbose") >= minDebugLevel
+				b.Options.Debug = verbosity >= minDebugLevel
 				b.Logger = utils.NewLogger("list")
 			})
 

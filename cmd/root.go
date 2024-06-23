@@ -76,8 +76,11 @@ func rootCmd() *cobra.Command {
 		Use:     "bomctl",
 		Long:    "Simpler Software Bill of Materials management",
 		Version: Version,
-		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			if viper.GetInt("verbose") > 0 {
+		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+			verbosity, err := cmd.Flags().GetCount("verbose")
+			cobra.CheckErr(err)
+
+			if verbosity > 0 {
 				log.SetLevel(log.DebugLevel)
 			}
 		},
@@ -103,8 +106,6 @@ func rootCmd() *cobra.Command {
 
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
-	cobra.CheckErr(viper.BindPFlag("config_file", rootCmd.PersistentFlags().Lookup("config")))
-	cobra.CheckErr(viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose")))
 
 	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(listCmd())
