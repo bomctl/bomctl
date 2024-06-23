@@ -38,15 +38,15 @@ func fetchCmd() *cobra.Command {
 	sbomURLs := URLSliceValue{}
 
 	fetchCmd := &cobra.Command{
-		Use:  "fetch [flags] SBOM_URL...",
-		Args: cobra.MinimumNArgs(1),
+		Use:   "fetch [flags] SBOM_URL...",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		PreRun: func(_ *cobra.Command, args []string) {
 			for _, arg := range args {
 				sbomURLs = append(sbomURLs, arg)
 			}
 		},
-		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Run: func(_ *cobra.Command, _ []string) {
 			opts.CacheDir = viper.GetString("cache_dir")
 			opts.ConfigFile = viper.GetString("config_file")

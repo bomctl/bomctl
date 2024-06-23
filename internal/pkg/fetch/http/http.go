@@ -37,10 +37,10 @@ func (fetcher *Fetcher) Name() string {
 func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("%s%s%s%s",
-			`((?P<scheme>https?)://)`,
+			`((?P<scheme>https?):\/\/)`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
 			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
-			`(/?(?P<path>[^@?#]*))(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
+			`(\/?(?P<path>[^@?#]*))(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
 		),
 	)
 }

@@ -42,7 +42,6 @@ func initCache() {
 }
 
 func initConfig() {
-	cacheDir := viper.GetString("cache_dir")
 	cfgFile := viper.GetString("config_file")
 
 	if cfgFile != "" {
@@ -57,20 +56,20 @@ func initConfig() {
 		viper.AddConfigPath(cfgDir)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("bomctl")
+		viper.SetConfigType("yaml")
 	}
 
+	viper.SetEnvPrefix("bomctl")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 
-	viper.SetDefault("cache_dir", cacheDir)
+	cobra.CheckErr(os.MkdirAll(viper.GetString("cache_dir"), os.FileMode(readWriteExecuteUser)))
 }
 
 func rootCmd() *cobra.Command {
-	var verbose bool
-
 	cobra.OnInitialize(initCache, initConfig)
 
 	rootCmd := &cobra.Command{
@@ -78,7 +77,7 @@ func rootCmd() *cobra.Command {
 		Long:    "Simpler Software Bill of Materials management",
 		Version: Version,
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			if verbose {
+			if viper.GetInt("verbose") > 0 {
 				log.SetLevel(log.DebugLevel)
 			}
 		},
@@ -100,7 +99,7 @@ func rootCmd() *cobra.Command {
 		),
 	)
 
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable debug output")
+	rootCmd.PersistentFlags().CountP("verbose", "v", "Enable debug output")
 
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
@@ -108,6 +107,7 @@ func rootCmd() *cobra.Command {
 	cobra.CheckErr(viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose")))
 
 	rootCmd.AddCommand(fetchCmd())
+	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd

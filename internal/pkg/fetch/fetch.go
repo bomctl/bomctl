@@ -40,7 +40,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var errUnsupportedURL = errors.New("unsupported URL scheme")
+var errUnsupportedURL = errors.New("failed to parse URL; see `bomctl fetch --help` for valid URL patterns")
 
 type (
 	Fetcher interface {
@@ -82,7 +82,13 @@ func Fetch(sbomURL string, opts *FetchOptions) error {
 
 	// Fetch externally referenced BOMs
 	var idx uint8
-	for _, ref := range backend.GetExternalReferencesByID(document.Metadata.Id) {
+
+	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
+	if err != nil {
+		return fmt.Errorf("error getting external references: %w", err)
+	}
+
+	for _, ref := range extRefs {
 		idx++
 
 		refOutput, err := getRefFile(opts.OutputFile)
