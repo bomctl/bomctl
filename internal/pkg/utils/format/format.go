@@ -71,22 +71,14 @@ func Parse(fs string, encoding string) (formats.Format, error) {
 		return formats.EmptyFormat,
 			fmt.Errorf("unknown encoding: %s", encoding)
 	}
-	f, ok := fm[s]
-	if !ok {
+	switch f, ok := fm[s]; {
+	case !ok:
 		return formats.EmptyFormat, fmt.Errorf("unknown format: %s", fs)
-	}
-
-	if f == formats.SPDXFORMAT {
-		if encoding == formats.JSON {
-			return DefaultSPDXJSONVersion, nil
-		}
-
-		if encoding == formats.TEXT {
-			return DefaultSPDXTVVersion, nil
-		}
-	}
-
-	if f == formats.CDXFORMAT {
+	case f == formats.SPDXFORMAT && encoding == formats.JSON:
+		return DefaultSPDXJSONVersion, nil
+	case f == formats.SPDXFORMAT && encoding == formats.TEXT:
+		return DefaultSPDXTVVersion, nil
+	case f == formats.CDXFORMAT:
 		return DefaultCycloneDXVersion, nil
 	}
 
