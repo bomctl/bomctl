@@ -56,7 +56,6 @@ func initConfig() {
 		viper.AddConfigPath(cfgDir)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("bomctl")
-		viper.SetConfigType("yaml")
 	}
 
 	viper.SetEnvPrefix("bomctl")
