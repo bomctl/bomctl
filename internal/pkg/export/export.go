@@ -42,7 +42,6 @@ type (
 )
 
 func Export(sbomID string, opts *ExportOptions) error {
-	// func Exec(sbomID, outputFile, fs, encoding string) error {
 	logger := utils.NewLogger("export")
 
 	logger.Info(fmt.Sprintf("Saving %s SBOM ID", sbomID))
