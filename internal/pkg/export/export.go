@@ -61,8 +61,16 @@ func Export(sbomID string, opts *ExportOptions) error {
 		writer.WithFormat(parsedFormat),
 	)
 
-	if err := writer.WriteFile(document, opts.OutputFile.Name()); err != nil {
-		return fmt.Errorf("%w", err)
+	if opts.OutputFile != nil {
+		// Write the SBOM document bytes to file.
+		if err := writer.WriteFile(document, opts.OutputFile.Name()); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	} else {
+		// Write the SBOM document bytes to stdout.
+		if err := writer.WriteStream(document, os.Stdout); err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
 
 	return nil
