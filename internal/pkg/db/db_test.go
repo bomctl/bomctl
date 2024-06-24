@@ -34,6 +34,7 @@ import (
 
 type dbSuite struct {
 	suite.Suite
+	backend   *db.Backend
 	documents []*sbom.Document
 }
 
@@ -53,9 +54,18 @@ func (dbs *dbSuite) SetupSuite() {
 
 		dbs.documents = append(dbs.documents, doc)
 	}
+
+	dbs.backend = db.NewBackend()
+	dbs.backend.Options.DatabaseFile = db.DatabaseFile
+
+	if err := dbs.backend.InitClient(); err != nil {
+		dbs.T().Fatalf("%v", err)
+	}
 }
 
 func (dbs *dbSuite) TearDownSuite() {
+	dbs.backend.CloseClient()
+
 	if _, err := os.Stat(db.DatabaseFile); err == nil {
 		if err := os.Remove(db.DatabaseFile); err != nil {
 			dbs.T().Logf("Error removing database file %s", db.DatabaseFile)
@@ -65,7 +75,7 @@ func (dbs *dbSuite) TearDownSuite() {
 
 func (dbs *dbSuite) TestAddDocument() {
 	for _, document := range dbs.documents {
-		if err := db.AddDocument(document); err != nil {
+		if err := dbs.backend.AddDocument(document); err != nil {
 			dbs.Fail("failed storing document", "id", document.Metadata.Id)
 		}
 	}
@@ -73,7 +83,7 @@ func (dbs *dbSuite) TestAddDocument() {
 
 func (dbs *dbSuite) TestGetDocumentByID() {
 	for _, document := range dbs.documents {
-		retrieved, err := db.GetDocumentByID(document.Metadata.Id)
+		retrieved, err := dbs.backend.GetDocumentByID(document.Metadata.Id)
 		if err != nil {
 			dbs.Fail("failed retrieving document", "id", document.Metadata.Id)
 		}

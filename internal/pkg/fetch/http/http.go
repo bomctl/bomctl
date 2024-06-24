@@ -23,20 +23,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 
-	"github.com/protobom/protobom/pkg/sbom"
-
 	"github.com/bomctl/bomctl/internal/pkg/url"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
-var client = http.DefaultClient
-
-type Fetcher struct {
-	OutputFile string
-}
+type Fetcher struct{}
 
 func (fetcher *Fetcher) Name() string {
 	return "HTTP"
@@ -47,7 +39,7 @@ func (fetcher *Fetcher) RegExp() *regexp.Regexp {
 		fmt.Sprintf("%s%s%s%s",
 			`((?P<scheme>https?)://)`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`(?P<hostname>[^@/?#:]*)(?::(?P<port>\d+)?)?`,
+			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
 			`(/?(?P<path>[^@?#]*))(\?(?P<query>[^#]*))?(#(?P<fragment>.*))?`,
 		),
 	)
@@ -62,6 +54,13 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 		results[pattern.SubexpNames()[idx]] = name
 	}
 
+	// Ensure required map fields are present.
+	for _, required := range []string{"scheme", "hostname"} {
+		if value, ok := results[required]; !ok || value == "" {
+			return nil
+		}
+	}
+
 	return &url.ParsedURL{
 		Scheme:   results["scheme"],
 		Username: results["username"],
@@ -74,47 +73,25 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*sbom.Document, error) {
+func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
 	req, err := http.NewRequestWithContext(context.Background(), "GET", parsedURL.String(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("failed creating request to %s: %w", parsedURL.String(), err)
 	}
 
 	auth.SetAuth(req)
 
-	// Get the data
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("failed request to %s: %w", parsedURL.String(), err)
 	}
 
 	defer resp.Body.Close()
 
-	respBytes, err := io.ReadAll(resp.Body)
+	sbomData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("error reading response: %w", err)
 	}
 
-	// Create the file if specified at the command line
-	if fetcher.OutputFile != "" {
-		out, err := os.Create(fetcher.OutputFile)
-		if err != nil {
-			return nil, fmt.Errorf("%w", err)
-		}
-
-		defer out.Close()
-
-		// Write the response body to file
-		_, err = io.Copy(out, resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("%w", err)
-		}
-	}
-
-	document, err := utils.ParseSBOMData(respBytes)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-
-	return document, nil
+	return sbomData, nil
 }

@@ -31,20 +31,13 @@ type (
 	DirectoryValue      string
 	ExistingFileValue   string
 	OutputFileValue     string
+	FormatStringValue   string
+	FormatEncodingValue string
 	URLValue            string
 	DirectorySliceValue []string
 	FileSliceValue      []string
 	URLSliceValue       []string
 	SBOMIDSliceValue    []string
-)
-
-var (
-	outputFile OutputFileValue
-	format     string
-	encoding   string
-	sbomIDs    SBOMIDSliceValue
-	sbomURLs   URLSliceValue
-	useNetRC   bool
 )
 
 var (
@@ -73,8 +66,11 @@ func (dsv *DirectorySliceValue) String() string { return fmt.Sprintf("%v", *dsv)
 func (efv *ExistingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
 func (fsv *FileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
 func (ofv *OutputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
-func (uv *URLValue) String() string             { return fmt.Sprintf("%v", *uv) }
-func (usv *URLSliceValue) String() string       { return fmt.Sprintf("%v", *usv) }
+func (ofv *FormatStringValue) String() string   { return fmt.Sprintf("%v", *ofv) }
+func (ofv *FormatEncodingValue) String() string { return fmt.Sprintf("%v", *ofv) }
+
+func (uv *URLValue) String() string       { return fmt.Sprintf("%v", *uv) }
+func (usv *URLSliceValue) String() string { return fmt.Sprintf("%v", *usv) }
 
 func (dv *DirectoryValue) Set(value string) error {
 	checkDirectory(value)
@@ -110,6 +106,18 @@ func (ofv *OutputFileValue) Set(value string) error {
 	return nil
 }
 
+func (ofv *FormatStringValue) Set(value string) error {
+	*ofv = FormatStringValue(value)
+
+	return nil
+}
+
+func (ofv *FormatEncodingValue) Set(value string) error {
+	*ofv = FormatEncodingValue(value)
+
+	return nil
+}
+
 func (uv *URLValue) Set(value string) error {
 	*uv = URLValue(value)
 
@@ -123,9 +131,10 @@ func (usv *URLSliceValue) Set(value string) error {
 }
 
 const (
-	valueTypeDir  string = "DIRECTORY"
-	valueTypeFile string = "FILE"
-	valueTypeURL  string = "URL"
+	valueTypeDir    string = "DIRECTORY"
+	valueTypeFile   string = "FILE"
+	valueTypeURL    string = "URL"
+	valueTypeString string = "STRING"
 )
 
 func (dv *DirectoryValue) Type() string       { return valueTypeDir }
@@ -133,5 +142,7 @@ func (dsv *DirectorySliceValue) Type() string { return valueTypeDir }
 func (efv *ExistingFileValue) Type() string   { return valueTypeFile }
 func (fsv *FileSliceValue) Type() string      { return valueTypeFile }
 func (ofv *OutputFileValue) Type() string     { return valueTypeFile }
+func (fsv *FormatStringValue) Type() string   { return valueTypeString }
+func (fev *FormatEncodingValue) Type() string { return valueTypeString }
 func (uv *URLValue) Type() string             { return valueTypeURL }
 func (usv *URLSliceValue) Type() string       { return valueTypeURL }

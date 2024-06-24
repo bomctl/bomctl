@@ -16,7 +16,7 @@ The bomctl project is licensed under the [Apache 2.0 license](LICENSE). By contr
 
 We have a Code of Conduct that outlines the expectations for respectful and professional behavior in our community. Please review the [Code of Conduct](CODE_OF_CONDUCT.md) before contributing
 
-## How to Contribute
+## Ways to Contribute
 
 There are many ways to contribute to the bomctl project:
 
@@ -25,10 +25,12 @@ There are many ways to contribute to the bomctl project:
 * __Testing__: Write unit tests or integration tests to improve the project's code coverage and stability.
 * __Reporting Issues__: If you find a bug or have a suggestion for improvement, report it as an issue on the project's GitHub repository.
 
-## Making a Pull Request
+## Steps to Contribute
 
-Here's a step-by-step guide for submitting a pull request:
+Here's a step-by-step guide for making a contribution:
 
+1. __Identify Issue__: Find an existing issue you want to work or submit a new issue describing your proposed change.
+1. __Claim Issue__: Assign yourself to the issue if possible, or leave a comment on the issue stating your intent to work it.
 1. __Fork the Repository__: Fork the bomctl repository on GitHub to your own account. This allows you to make changes to the codebase without affecting the original project.
 1. __Clone the Fork__: Clone your forked repository to your local machine.
 1. __Create a Branch__: Create a new branch for your changes. Use a descriptive branch name that reflects the nature of your contribution.

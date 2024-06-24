@@ -24,8 +24,9 @@
 !/docs/CHANGELOG.md
 
 # Whitelist patterns found anywhere in project
-!*.go
 !.gitignore
+!*.go
+!**/testdata/*
 !CODE_OF_CONDUCT.md
 !CODEOWNERS
 !CONTRIBUTING.md
@@ -38,6 +39,5 @@
 !Makefile
 !README.md
 !SECURITY.md
-!testdata/
 
 !*/
