@@ -47,7 +47,7 @@ func Test_Parse(t *testing.T) {
 				return
 			}
 
-			if !cmp.Equal(got, tt.want) {
+			if string(got) != string(tt.want) {
 				t.Errorf("Parse() = %v, want %v", got, tt.want)
 			}
 		})
