@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-// SPDX-FileName: internal/pkg/save/save.go
+// SPDX-FileName: internal/pkg/export/export.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package save
+package export
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ import (
 )
 
 func Exec(sbomID, outputFile, fs, encoding string) error {
-	logger := utils.NewLogger("save")
+	logger := utils.NewLogger("export")
 
 	logger.Info(fmt.Sprintf("Saving %s SBOM ID", sbomID))
 

@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-// SPDX-FileName: cmd/save.go
+// SPDX-FileName: cmd/export.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -23,23 +23,23 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bomctl/bomctl/internal/pkg/save"
+	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
-func saveCmd() *cobra.Command {
-	saveCmd := &cobra.Command{
-		Use:    "save [flags] SBOM_ID...",
+func exportCmd() *cobra.Command {
+	exportCmd := &cobra.Command{
+		Use:    "export [flags] SBOM_ID...",
 		Args:   cobra.MinimumNArgs(1),
-		PreRun: parseSavePositionalArgs,
-		Short:  "Save SBOM file(s) from Storage",
-		Long:   "Save SBOM file(s) from Storage to Filesystem",
+		PreRun: parseExportPositionalArgs,
+		Short:  "Export SBOM file(s) from Storage",
+		Long:   "Export SBOM file(s) from Storage to Filesystem",
 		Run: func(_ *cobra.Command, _ []string) {
 			var err error
-			logger = utils.NewLogger("save")
+			logger = utils.NewLogger("export")
 
 			for _, sbomID := range sbomIDs {
-				if err = save.Exec(sbomID, outputFile.String(), format, encoding); err != nil {
+				if err = export.Exec(sbomID, outputFile.String(), format, encoding); err != nil {
 					logger.Error(err)
 				}
 			}
@@ -50,24 +50,24 @@ func saveCmd() *cobra.Command {
 		},
 	}
 
-	saveCmd.Flags().StringVarP(
+	exportCmd.Flags().StringVarP(
 		&format,
 		"format",
 		"f",
 		"",
 		"output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5]")
 
-	saveCmd.Flags().StringVarP(
+	exportCmd.Flags().StringVarP(
 		&encoding,
 		"encoding",
 		"e",
 		"json",
 		"the output encoding [spdx: [text, json] cyclonedx: [json]")
 
-	return saveCmd
+	return exportCmd
 }
 
-func parseSavePositionalArgs(_ *cobra.Command, args []string) {
+func parseExportPositionalArgs(_ *cobra.Command, args []string) {
 	for _, arg := range args {
 		sbomIDs = append(sbomIDs, arg)
 	}

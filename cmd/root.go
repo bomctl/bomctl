@@ -101,7 +101,7 @@ func rootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable debug output")
 
 	rootCmd.AddCommand(fetchCmd())
-	rootCmd.AddCommand(saveCmd())
+	rootCmd.AddCommand(exportCmd())
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd
