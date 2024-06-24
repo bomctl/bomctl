@@ -20,25 +20,40 @@ package export
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
+	"github.com/charmbracelet/log"
 
 	"github.com/protobom/protobom/pkg/writer"
 )
 
-func Exec(sbomID, outputFile, fs, encoding string) error {
+type (
+	ExportOptions struct {
+		Logger       *log.Logger
+		OutputFile   *os.File
+		FormatString string
+		Encoding     string
+		CacheDir     string
+		ConfigFile   string
+	}
+)
+
+func Export(sbomID string, opts *ExportOptions) error {
+	// func Exec(sbomID, outputFile, fs, encoding string) error {
 	logger := utils.NewLogger("export")
 
 	logger.Info(fmt.Sprintf("Saving %s SBOM ID", sbomID))
+	backend := db.NewBackend()
 
-	document, err := db.GetDocumentByID(sbomID)
+	document, err := backend.GetDocumentByID(sbomID)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	parsedFormat, err := format.Parse(fs, encoding)
+	parsedFormat, err := format.Parse(opts.FormatString, opts.Encoding)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -47,7 +62,7 @@ func Exec(sbomID, outputFile, fs, encoding string) error {
 		writer.WithFormat(parsedFormat),
 	)
 
-	if err := writer.WriteFile(document, outputFile); err != nil {
+	if err := writer.WriteFile(document, opts.OutputFile.Name()); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
