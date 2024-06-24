@@ -43,9 +43,7 @@ func exportCmd() *cobra.Command {
 		Use:  "export [flags] SBOM_URL...",
 		Args: cobra.MinimumNArgs(1),
 		PreRun: func(_ *cobra.Command, args []string) {
-			for _, arg := range args {
-				sbomIDs = append(sbomIDs, arg)
-			}
+			sbomIDs = append(sbomIDs, args...)
 		},
 		Short: "Export SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:  "Export SBOM file(s) from HTTP(S), OCI, or Git URLs",
