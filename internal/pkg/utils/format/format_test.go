@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
-	"github.com/google/go-cmp/cmp"
 	"github.com/protobom/protobom/pkg/formats"
 )
 
@@ -34,7 +33,7 @@ func Test_Parse(t *testing.T) {
 			name:     "Parse spdx json format",
 			fs:       "spdx",
 			encoding: formats.JSON,
-			want:     format.DefaultSPDXJSONVersion,
+			want:     format.DefaultSPDXJSONVersion(),
 			wantErr:  false,
 		},
 	}

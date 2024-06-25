@@ -8,12 +8,24 @@ import (
 	"github.com/protobom/protobom/pkg/formats"
 )
 
-var (
-	DefaultEncoding         = formats.JSON
-	DefaultSPDXJSONVersion  = formats.SPDX23JSON
-	DefaultSPDXTVVersion    = formats.SPDX23TV
-	DefaultCycloneDXVersion = formats.CDX15JSON
-	JSONFormatMap           = map[string]formats.Format{
+func DefaultSPDXJSONVersion() formats.Format {
+	return formats.SPDX23JSON
+}
+
+func DefaultSPDXTVVersion() formats.Format {
+	return formats.SPDX23TV
+}
+
+func DefaultCycloneDXVersion() formats.Format {
+	return formats.CDX15JSON
+}
+
+func DefaultEncoding() string {
+	return formats.JSON
+}
+
+func JSONFormatMap() map[string]formats.Format {
+	return map[string]formats.Format{
 		"spdx":     formats.SPDXFORMAT,
 		"spdx-2.2": formats.SPDX22JSON,
 		"spdx-2.3": formats.SPDX23JSON,
@@ -26,26 +38,27 @@ var (
 		"cyclonedx-1.4": formats.CDX14JSON,
 		"cyclonedx-1.5": formats.CDX15JSON,
 	}
+}
 
-	TVFormatMap = map[string]formats.Format{
+func TVFormatMap() map[string]formats.Format {
+	return map[string]formats.Format{
 		"spdx":     formats.SPDXFORMAT,
 		"spdx-2.2": formats.SPDX22TV,
 		"spdx-2.3": formats.SPDX23TV,
 	}
+}
 
-	XMLFormatMap = map[string]formats.Format{}
-
-	JSONEncoding = formats.JSON
-	TEXTEncoding = formats.TEXT
-	SPDX         = formats.SPDXFORMAT
-	CDX          = formats.CDXFORMAT
-
-	EncodingMap = map[string]string{
+func EncodingMap() map[string]string {
+	return map[string]string{
 		"json": formats.JSON,
 		"xml":  formats.XML,
 		"text": formats.TEXT,
 	}
-)
+}
+
+func XMLFormatMap() map[string]formats.Format {
+	return map[string]formats.Format{}
+}
 
 type Format struct {
 	formats.Format
@@ -62,11 +75,11 @@ func Parse(fs string, encoding string) (formats.Format, error) {
 
 	switch encoding {
 	case formats.JSON:
-		fm = JSONFormatMap
+		fm = JSONFormatMap()
 	case formats.TEXT:
-		fm = TVFormatMap
+		fm = TVFormatMap()
 	case formats.XML:
-		fm = XMLFormatMap
+		fm = XMLFormatMap()
 	default:
 		return formats.EmptyFormat,
 			fmt.Errorf("unknown encoding: %s", encoding)
@@ -75,12 +88,12 @@ func Parse(fs string, encoding string) (formats.Format, error) {
 	case !ok:
 		return formats.EmptyFormat, fmt.Errorf("unknown format: %s", fs)
 	case f == formats.SPDXFORMAT && encoding == formats.JSON:
-		return DefaultSPDXJSONVersion, nil
+		return DefaultSPDXJSONVersion(), nil
 	case f == formats.SPDXFORMAT && encoding == formats.TEXT:
-		return DefaultSPDXTVVersion, nil
+		return DefaultSPDXTVVersion(), nil
 	case f == formats.CDXFORMAT:
-		return DefaultCycloneDXVersion, nil
+		return DefaultCycloneDXVersion(), nil
+	default:
+		return f, nil
 	}
-
-	return f, nil
 }
