@@ -2,26 +2,28 @@
 *
 
 # Whitelist patterns anchored to project root
+!/.adr-dir
 !/.commitlint.yaml
 !/.editorconfig
 !/.gitattributes
-!/.golangci.yml
-!/.goreleaser.yml
-!/.markdownlint.yml
-!/.markdownlintignore
-!/.pre-commit-config.yaml
 !/.github/PULL_REQUEST_TEMPLATE.md
 !/.github/sbom_metadata/metadata.cyclonedx.json
 !/.github/sbom_metadata/metadata.spdx.json
 !/.github/scripts/*.sh
 !/.github/workflows/*.yml
+!/.golangci.yml
+!/.goreleaser.yml
+!/.markdownlint.yml
+!/.markdownlintignore
+!/.pre-commit-config.yaml
+!/.vscode/adr.code-snippets
 !/.vscode/extensions.json
 !/.vscode/header.code-snippets
 !/.vscode/launch.json
 !/.vscode/settings.json
 !/.vscode/tasks.json
 !/.yamllint
-!/docs/CHANGELOG.md
+!/docs/**/*.md
 
 # Whitelist patterns found anywhere in project
 !.gitignore
