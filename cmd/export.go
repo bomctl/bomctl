@@ -28,6 +28,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
 const (
@@ -41,8 +42,8 @@ func exportCmd() *cobra.Command {
 	}
 
 	outputFile := OutputFileValue("")
-	formatString := FormatStringValue("")
-	formatEncoding := FormatEncodingValue("json")
+	formatString := FormatStringValue(format.DefaultFormatString())
+	formatEncoding := FormatEncodingValue(format.DefaultEncoding())
 
 	exportCmd := &cobra.Command{
 		Use:   "export [flags] SBOM_URL...",
@@ -53,8 +54,8 @@ func exportCmd() *cobra.Command {
 			documentIDs = append(documentIDs, args...)
 		},
 		Run: func(cmd *cobra.Command, _ []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
+			// verbosity, err := cmd.Flags().GetCount("verbose")
+			// cobra.CheckErr(err)
 
 			cfgFile, err := cmd.Flags().GetString("config")
 			cobra.CheckErr(err)
@@ -65,9 +66,13 @@ func exportCmd() *cobra.Command {
 
 			backend := db.NewBackend(func(b *db.Backend) {
 				b.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
-				b.Options.Debug = verbosity >= minDebugLevel
+				// b.Options.Debug = verbosity >= minDebugLevel
 				b.Logger = utils.NewLogger("export")
 			})
+
+			if err := backend.InitClient(); err != nil {
+				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
+			}
 
 			if string(outputFile) != "" {
 				if len(documentIDs) > 1 {

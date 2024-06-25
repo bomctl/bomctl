@@ -24,6 +24,10 @@ func DefaultEncoding() string {
 	return formats.JSON
 }
 
+func DefaultFormatString() string {
+	return "cyclonedx-1.5"
+}
+
 func JSONFormatMap() map[string]formats.Format {
 	return map[string]formats.Format{
 		"spdx":     formats.SPDXFORMAT,
@@ -69,7 +73,6 @@ func Parse(fs string, encoding string) (formats.Format, error) {
 	if fs == "" {
 		return formats.EmptyFormat, errors.New("no format specified")
 	}
-
 	s := strings.ToLower(fs)
 	var fm map[string]formats.Format
 

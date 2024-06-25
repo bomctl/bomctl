@@ -44,13 +44,12 @@ type (
 func Export(sbomID string, opts *ExportOptions, backend *db.Backend) error {
 	logger := utils.NewLogger("export")
 
-	logger.Info(fmt.Sprintf("Saving %s SBOM ID", sbomID))
+	logger.Info(fmt.Sprintf("Exporting %s SBOM ID", sbomID))
 
 	document, err := backend.GetDocumentByID(sbomID)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
 	parsedFormat, err := format.Parse(opts.FormatString, opts.Encoding)
 	if err != nil {
 		return fmt.Errorf("%w", err)
