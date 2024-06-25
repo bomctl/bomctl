@@ -54,6 +54,7 @@ type (
 		OutputFile *os.File
 		CacheDir   string
 		ConfigFile string
+		Debug      bool
 		UseNetRC   bool
 	}
 )
@@ -66,10 +67,13 @@ func Fetch(sbomURL string, opts *FetchOptions) error {
 
 	backend := db.NewBackend()
 	backend.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
+	backend.Options.Debug = opts.Debug
 
 	if err := backend.InitClient(); err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
+
+	defer backend.CloseClient()
 
 	// Insert fetched document data into database.
 	if err := backend.AddDocument(document); err != nil {

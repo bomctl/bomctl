@@ -73,6 +73,8 @@ func listCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
 			}
 
+			defer backend.CloseClient()
+
 			documents, err := backend.GetDocumentsByID(documentIDs...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)

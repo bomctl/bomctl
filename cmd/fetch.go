@@ -52,6 +52,11 @@ func fetchCmd() *cobra.Command {
 			opts.CacheDir = viper.GetString("cache_dir")
 			opts.ConfigFile = cfgFile
 
+			verbosity, err := cmd.Flags().GetCount("verbose")
+			cobra.CheckErr(err)
+
+			opts.Debug = verbosity >= minDebugLevel
+
 			if string(outputFile) != "" {
 				if len(sbomURLs) > 1 {
 					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
@@ -75,18 +80,8 @@ func fetchCmd() *cobra.Command {
 		},
 	}
 
-	fetchCmd.Flags().VarP(
-		&outputFile,
-		"output-file",
-		"o",
-		"Path to output file",
-	)
-	fetchCmd.Flags().BoolVar(
-		&opts.UseNetRC,
-		"netrc",
-		false,
-		"Use .netrc file for authentication to remote hosts",
-	)
+	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
+	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
 
 	return fetchCmd
 }
