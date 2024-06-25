@@ -28,7 +28,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-const readWriteExecuteUser = 0o700
+const (
+	minDebugLevel        = 2
+	readWriteExecuteUser = 0o700
+)
 
 func initCache() {
 	cacheDir := viper.GetString("cache_dir")
@@ -42,7 +45,6 @@ func initCache() {
 }
 
 func initConfig() {
-	cacheDir := viper.GetString("cache_dir")
 	cfgFile := viper.GetString("config_file")
 
 	if cfgFile != "" {
@@ -59,26 +61,28 @@ func initConfig() {
 		viper.SetConfigName("bomctl")
 	}
 
+	viper.SetEnvPrefix("bomctl")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 
-	viper.SetDefault("cache_dir", cacheDir)
+	cobra.CheckErr(os.MkdirAll(viper.GetString("cache_dir"), os.FileMode(readWriteExecuteUser)))
 }
 
 func rootCmd() *cobra.Command {
-	var verbose bool
-
 	cobra.OnInitialize(initCache, initConfig)
 
 	rootCmd := &cobra.Command{
 		Use:     "bomctl",
 		Long:    "Simpler Software Bill of Materials management",
 		Version: Version,
-		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			if verbose {
+		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+			verbosity, err := cmd.Flags().GetCount("verbose")
+			cobra.CheckErr(err)
+
+			if verbosity > 0 {
 				log.SetLevel(log.DebugLevel)
 			}
 		},
@@ -100,14 +104,13 @@ func rootCmd() *cobra.Command {
 		),
 	)
 
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable debug output")
+	rootCmd.PersistentFlags().CountP("verbose", "v", "Enable debug output")
 
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
-	cobra.CheckErr(viper.BindPFlag("config_file", rootCmd.PersistentFlags().Lookup("config")))
-	cobra.CheckErr(viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose")))
 
 	rootCmd.AddCommand(fetchCmd())
+	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd

@@ -72,23 +72,3 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 
 	return document, nil
 }
-
-// GetExternalReferencesByID returns all ExternalReferences of type "BOM" in an SBOM document.
-func (backend *Backend) GetExternalReferencesByID(id string) (refs []*sbom.ExternalReference) {
-	refs = []*sbom.ExternalReference{}
-
-	document, err := backend.GetDocumentByID(id)
-	if err != nil {
-		return
-	}
-
-	for _, node := range document.GetNodeList().GetNodes() {
-		for _, ref := range node.GetExternalReferences() {
-			if ref.Type == sbom.ExternalReference_BOM {
-				refs = append(refs, ref)
-			}
-		}
-	}
-
-	return
-}

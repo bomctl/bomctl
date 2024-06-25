@@ -38,18 +38,24 @@ func fetchCmd() *cobra.Command {
 	sbomURLs := URLSliceValue{}
 
 	fetchCmd := &cobra.Command{
-		Use:  "fetch [flags] SBOM_URL...",
-		Args: cobra.MinimumNArgs(1),
-		PreRun: func(_ *cobra.Command, args []string) {
-			for _, arg := range args {
-				sbomURLs = append(sbomURLs, arg)
-			}
-		},
+		Use:   "fetch [flags] SBOM_URL...",
+		Args:  cobra.MinimumNArgs(1),
 		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Run: func(_ *cobra.Command, _ []string) {
+		PreRun: func(_ *cobra.Command, args []string) {
+			sbomURLs = append(sbomURLs, args...)
+		},
+		Run: func(cmd *cobra.Command, _ []string) {
+			cfgFile, err := cmd.Flags().GetString("config")
+			cobra.CheckErr(err)
+
 			opts.CacheDir = viper.GetString("cache_dir")
-			opts.ConfigFile = viper.GetString("config_file")
+			opts.ConfigFile = cfgFile
+
+			verbosity, err := cmd.Flags().GetCount("verbose")
+			cobra.CheckErr(err)
+
+			opts.Debug = verbosity >= minDebugLevel
 
 			if string(outputFile) != "" {
 				if len(sbomURLs) > 1 {
@@ -74,18 +80,8 @@ func fetchCmd() *cobra.Command {
 		},
 	}
 
-	fetchCmd.Flags().VarP(
-		&outputFile,
-		"output-file",
-		"o",
-		"Path to output file",
-	)
-	fetchCmd.Flags().BoolVar(
-		&opts.UseNetRC,
-		"netrc",
-		false,
-		"Use .netrc file for authentication to remote hosts",
-	)
+	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
+	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
 
 	return fetchCmd
 }
