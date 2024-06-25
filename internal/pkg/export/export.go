@@ -41,11 +41,10 @@ type (
 	}
 )
 
-func Export(sbomID string, opts *ExportOptions) error {
+func Export(sbomID string, opts *ExportOptions, backend *db.Backend) error {
 	logger := utils.NewLogger("export")
 
 	logger.Info(fmt.Sprintf("Saving %s SBOM ID", sbomID))
-	backend := db.NewBackend()
 
 	document, err := backend.GetDocumentByID(sbomID)
 	if err != nil {
