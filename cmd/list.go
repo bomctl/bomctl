@@ -41,8 +41,6 @@ const (
 	columnWidthVersion  = 10
 	columnWidthNumNodes = 10
 
-	minDebugLevel = 2
-
 	paddingHorizontal = 1
 	paddingVertical   = 0
 

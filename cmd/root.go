@@ -28,7 +28,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-const readWriteExecuteUser = 0o700
+const (
+	minDebugLevel        = 2
+	readWriteExecuteUser = 0o700
+)
 
 func initCache() {
 	cacheDir := viper.GetString("cache_dir")
