@@ -110,6 +110,7 @@ func rootCmd() *cobra.Command {
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
 
 	rootCmd.AddCommand(fetchCmd())
+	rootCmd.AddCommand(exportCmd())
 	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(versionCmd())
 
