@@ -75,7 +75,7 @@ type ParsedURL struct {
 	Digest   string
 }
 
-func (url *ParsedURL) String() string {
+func (url *ParsedURL) String() string { //nolint:cyclop
 	var (
 		urlBytes []byte
 		pathSep  string
@@ -110,6 +110,14 @@ func (url *ParsedURL) String() string {
 
 	if url.Fragment != "" {
 		urlBytes = append(urlBytes, fmt.Sprintf("#%s", url.Fragment)...)
+	}
+
+	if url.Tag != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf(":%s", url.Tag)...)
+	}
+
+	if url.Digest != "" {
+		urlBytes = append(urlBytes, fmt.Sprintf("@%s", url.Digest)...)
 	}
 
 	return string(urlBytes)

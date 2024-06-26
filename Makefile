@@ -133,11 +133,11 @@ lint-go-fix: # Fix golangci-lint findings
 
 .PHONY: lint-markdown
 lint-markdown: # Lint markdown files
-	${call run-lint,markdownlint-cli2,.}
+	${call run-lint,markdownlint-cli2,'**/*.md'}
 
 .PHONY: lint-markdown-fix
 lint-markdown-fix: # Fix markdown lint findings
-	${call run-lint,markdownlint-cli2,. --fix}
+	${call run-lint,markdownlint-cli2,'**/*.md' --fix}
 
 .PHONY: lint-yaml
 lint-yaml: # Lint YAML files

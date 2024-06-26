@@ -31,10 +31,6 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
-const (
-	minDebugLevel = 2
-)
-
 func exportCmd() *cobra.Command {
 	documentIDs := []string{}
 	opts := &export.ExportOptions{
@@ -54,25 +50,11 @@ func exportCmd() *cobra.Command {
 			documentIDs = append(documentIDs, args...)
 		},
 		Run: func(cmd *cobra.Command, _ []string) {
-			// verbosity, err := cmd.Flags().GetCount("verbose")
-			// cobra.CheckErr(err)
-
 			cfgFile, err := cmd.Flags().GetString("config")
 			cobra.CheckErr(err)
-			opts.CacheDir = viper.GetString("cache_dir")
-			opts.ConfigFile = cfgFile
-			opts.FormatString = string(formatString)
-			opts.Encoding = string(formatEncoding)
 
-			backend := db.NewBackend(func(b *db.Backend) {
-				b.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
-				// b.Options.Debug = verbosity >= minDebugLevel
-				b.Logger = utils.NewLogger("export")
-			})
-
-			if err := backend.InitClient(); err != nil {
-				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
-			}
+			initOpts(opts, cfgFile, string(formatString), string(formatEncoding))
+			backend := initBackend(opts)
 
 			if string(outputFile) != "" {
 				if len(documentIDs) > 1 {
@@ -88,12 +70,7 @@ func exportCmd() *cobra.Command {
 
 				defer opts.OutputFile.Close()
 			}
-
-			for _, id := range documentIDs {
-				if err := export.Export(id, opts, backend); err != nil {
-					opts.Logger.Fatal(err)
-				}
-			}
+			Export(documentIDs, opts, backend)
 		},
 	}
 
@@ -107,8 +84,7 @@ func exportCmd() *cobra.Command {
 		&formatString,
 		"format",
 		"f",
-		"output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5]")
-
+		format.FormatStringOptions)
 	exportCmd.Flags().VarP(
 		&formatEncoding,
 		"encoding",
@@ -116,4 +92,32 @@ func exportCmd() *cobra.Command {
 		"the output encoding [spdx: [text, json] cyclonedx: [json]")
 
 	return exportCmd
+}
+
+func Export(documentIDs []string, opts *export.ExportOptions, backend *db.Backend) {
+	for _, id := range documentIDs {
+		if err := export.Export(id, opts, backend); err != nil {
+			opts.Logger.Fatal(err)
+		}
+	}
+}
+
+func initOpts(opts *export.ExportOptions, cfgFile, formatString, formatEncoding string) {
+	opts.CacheDir = viper.GetString("cache_dir")
+	opts.ConfigFile = cfgFile
+	opts.FormatString = formatString
+	opts.Encoding = formatEncoding
+}
+
+func initBackend(opts *export.ExportOptions) *db.Backend {
+	backend := db.NewBackend(func(b *db.Backend) {
+		b.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
+		b.Logger = utils.NewLogger("export")
+	})
+
+	if err := backend.InitClient(); err != nil {
+		backend.Logger.Fatalf("failed to initialize backend client: %v", err)
+	}
+
+	return backend
 }

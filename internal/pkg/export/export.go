@@ -22,12 +22,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
+	"github.com/protobom/protobom/pkg/writer"
+
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
-	"github.com/charmbracelet/log"
-
-	"github.com/protobom/protobom/pkg/writer"
 )
 
 type (
@@ -46,27 +46,28 @@ func Export(sbomID string, opts *ExportOptions, backend *db.Backend) error {
 
 	logger.Info(fmt.Sprintf("Exporting %s SBOM ID", sbomID))
 
-	document, err := backend.GetDocumentByID(sbomID)
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
 	parsedFormat, err := format.Parse(opts.FormatString, opts.Encoding)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	writer := writer.New(
+	wr := writer.New(
 		writer.WithFormat(parsedFormat),
 	)
 
+	document, err := backend.GetDocumentByID(sbomID)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
 	if opts.OutputFile != nil {
 		// Write the SBOM document bytes to file.
-		if err := writer.WriteFile(document, opts.OutputFile.Name()); err != nil {
+		if err := wr.WriteFile(document, opts.OutputFile.Name()); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	} else {
 		// Write the SBOM document bytes to stdout.
-		if err := writer.WriteStream(document, os.Stdout); err != nil {
+		if err := wr.WriteStream(document, os.Stdout); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

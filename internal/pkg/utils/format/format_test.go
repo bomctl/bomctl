@@ -3,11 +3,14 @@ package format_test
 import (
 	"testing"
 
-	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 	"github.com/protobom/protobom/pkg/formats"
+
+	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
 func Test_Parse(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		fs       string
@@ -40,9 +43,12 @@ func Test_Parse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := format.Parse(tt.fs, tt.encoding)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 

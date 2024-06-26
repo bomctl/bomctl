@@ -2,10 +2,27 @@ package format
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/protobom/protobom/pkg/formats"
+)
+
+var (
+	errUnknownEncoding = errors.New("unknown encoding")
+	errUnknownFormat   = errors.New("unknown format")
+)
+
+const (
+	FormatStringOptions = `Output Format:
+	- spdx,
+	- spdx-2.3,
+	- cyclonedx,
+	- cyclonedx-1.0,cyclonedx-1.1,
+	- cyclonedx-1.2,
+	- cyclonedx-1.3,
+	- cyclonedx-1.4,
+	- cyclonedx-1.5
+	`
 )
 
 func DefaultSPDXJSONVersion() formats.Format {
@@ -68,12 +85,12 @@ type Format struct {
 	formats.Format
 }
 
-// Parse parses the format string into a formats.Format
-func Parse(fs string, encoding string) (formats.Format, error) {
+// Parse parses the format string into a formats.Format.
+func Parse(fs, encoding string) (formats.Format, error) {
 	if fs == "" {
-		return formats.EmptyFormat, errors.New("no format specified")
+		return formats.EmptyFormat, errUnknownFormat
 	}
-	s := strings.ToLower(fs)
+
 	var fm map[string]formats.Format
 
 	switch encoding {
@@ -85,11 +102,16 @@ func Parse(fs string, encoding string) (formats.Format, error) {
 		fm = XMLFormatMap()
 	default:
 		return formats.EmptyFormat,
-			fmt.Errorf("unknown encoding: %s", encoding)
+			errUnknownEncoding
 	}
-	switch f, ok := fm[s]; {
+
+	return DefaultVersion(fm, fs, encoding)
+}
+
+func DefaultVersion(fm map[string]formats.Format, fs, encoding string) (formats.Format, error) {
+	switch f, ok := fm[strings.ToLower(fs)]; {
 	case !ok:
-		return formats.EmptyFormat, fmt.Errorf("unknown format: %s", fs)
+		return formats.EmptyFormat, errUnknownFormat
 	case f == formats.SPDXFORMAT && encoding == formats.JSON:
 		return DefaultSPDXJSONVersion(), nil
 	case f == formats.SPDXFORMAT && encoding == formats.TEXT:

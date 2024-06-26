@@ -66,8 +66,8 @@ func (dsv *DirectorySliceValue) String() string { return fmt.Sprintf("%v", *dsv)
 func (efv *ExistingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
 func (fsv *FileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
 func (ofv *OutputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
-func (ofv *FormatStringValue) String() string   { return fmt.Sprintf("%v", *ofv) }
-func (ofv *FormatEncodingValue) String() string { return fmt.Sprintf("%v", *ofv) }
+func (fstv *FormatStringValue) String() string  { return fmt.Sprintf("%v", *fstv) }
+func (fev *FormatEncodingValue) String() string { return fmt.Sprintf("%v", *fev) }
 
 func (uv *URLValue) String() string       { return fmt.Sprintf("%v", *uv) }
 func (usv *URLSliceValue) String() string { return fmt.Sprintf("%v", *usv) }
@@ -106,14 +106,14 @@ func (ofv *OutputFileValue) Set(value string) error {
 	return nil
 }
 
-func (ofv *FormatStringValue) Set(value string) error {
-	*ofv = FormatStringValue(value)
+func (fstv *FormatStringValue) Set(value string) error {
+	*fstv = FormatStringValue(value)
 
 	return nil
 }
 
-func (ofv *FormatEncodingValue) Set(value string) error {
-	*ofv = FormatEncodingValue(value)
+func (fev *FormatEncodingValue) Set(value string) error {
+	*fev = FormatEncodingValue(value)
 
 	return nil
 }
@@ -142,7 +142,7 @@ func (dsv *DirectorySliceValue) Type() string { return valueTypeDir }
 func (efv *ExistingFileValue) Type() string   { return valueTypeFile }
 func (fsv *FileSliceValue) Type() string      { return valueTypeFile }
 func (ofv *OutputFileValue) Type() string     { return valueTypeFile }
-func (fsv *FormatStringValue) Type() string   { return valueTypeString }
+func (fstv *FormatStringValue) Type() string  { return valueTypeString }
 func (fev *FormatEncodingValue) Type() string { return valueTypeString }
 func (uv *URLValue) Type() string             { return valueTypeURL }
 func (usv *URLSliceValue) Type() string       { return valueTypeURL }

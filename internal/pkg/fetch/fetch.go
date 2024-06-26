@@ -40,7 +40,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var errUnsupportedURL = errors.New("unsupported URL scheme")
+var errUnsupportedURL = errors.New("failed to parse URL; see `bomctl fetch --help` for valid URL patterns")
 
 type (
 	Fetcher interface {
@@ -54,6 +54,7 @@ type (
 		OutputFile *os.File
 		CacheDir   string
 		ConfigFile string
+		Debug      bool
 		UseNetRC   bool
 	}
 )
@@ -66,10 +67,13 @@ func Fetch(sbomURL string, opts *FetchOptions) error {
 
 	backend := db.NewBackend()
 	backend.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
+	backend.Options.Debug = opts.Debug
 
 	if err := backend.InitClient(); err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
+
+	defer backend.CloseClient()
 
 	// Insert fetched document data into database.
 	if err := backend.AddDocument(document); err != nil {
@@ -82,7 +86,13 @@ func Fetch(sbomURL string, opts *FetchOptions) error {
 
 	// Fetch externally referenced BOMs
 	var idx uint8
-	for _, ref := range backend.GetExternalReferencesByID(document.Metadata.Id) {
+
+	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
+	if err != nil {
+		return fmt.Errorf("error getting external references: %w", err)
+	}
+
+	for _, ref := range extRefs {
 		idx++
 
 		refOutput, err := getRefFile(opts.OutputFile)
