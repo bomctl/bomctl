@@ -33,9 +33,7 @@ import (
 
 func exportCmd() *cobra.Command {
 	documentIDs := []string{}
-	opts := &export.ExportOptions{
-		Logger: utils.NewLogger("export"),
-	}
+	opts := &export.ExportOptions{}
 
 	outputFile := OutputFileValue("")
 	formatString := FormatStringValue(format.DefaultFormatString())
@@ -52,6 +50,11 @@ func exportCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, _ []string) {
 			cfgFile, err := cmd.Flags().GetString("config")
 			cobra.CheckErr(err)
+
+			verbosity, err := cmd.Flags().GetCount("verbose")
+			cobra.CheckErr(err)
+
+			opts.Debug = verbosity >= minDebugLevel
 
 			initOpts(opts, cfgFile, string(formatString), string(formatEncoding))
 			backend := initBackend(opts)
@@ -74,22 +77,9 @@ func exportCmd() *cobra.Command {
 		},
 	}
 
-	exportCmd.Flags().VarP(
-		&outputFile,
-		"output-file",
-		"o",
-		"Path to output file",
-	)
-	exportCmd.Flags().VarP(
-		&formatString,
-		"format",
-		"f",
-		format.FormatStringOptions)
-	exportCmd.Flags().VarP(
-		&formatEncoding,
-		"encoding",
-		"e",
-		"the output encoding [spdx: [text, json] cyclonedx: [json]")
+	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
+	exportCmd.Flags().VarP(&formatString, "format", "f", format.FormatStringOptions)
+	exportCmd.Flags().VarP(&formatEncoding, "encoding", "e", "Output encoding [spdx: [text, json] cyclonedx: [json]")
 
 	return exportCmd
 }
@@ -112,6 +102,7 @@ func initOpts(opts *export.ExportOptions, cfgFile, formatString, formatEncoding 
 func initBackend(opts *export.ExportOptions) *db.Backend {
 	backend := db.NewBackend(func(b *db.Backend) {
 		b.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
+		b.Options.Debug = opts.Debug
 		b.Logger = utils.NewLogger("export")
 	})
 
