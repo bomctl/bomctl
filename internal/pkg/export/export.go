@@ -26,7 +26,6 @@ import (
 	"github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
@@ -38,13 +37,12 @@ type (
 		Encoding     string
 		CacheDir     string
 		ConfigFile   string
+		Debug        bool
 	}
 )
 
 func Export(sbomID string, opts *ExportOptions, backend *db.Backend) error {
-	logger := utils.NewLogger("export")
-
-	logger.Info(fmt.Sprintf("Exporting %s SBOM ID", sbomID))
+	backend.Logger.Info("Exporting Document", "sbomID", sbomID)
 
 	parsedFormat, err := format.Parse(opts.FormatString, opts.Encoding)
 	if err != nil {
