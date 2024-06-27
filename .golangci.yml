@@ -55,6 +55,7 @@ linters:
     - dogsled
     - dupl
     - durationcheck
+    - err113
     - errcheck
     - errorlint
     - exhaustive
@@ -71,12 +72,10 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
     - gofmt
     - gofumpt
     - goheader
     - goimports
-    - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
@@ -88,6 +87,7 @@ linters:
     - lll
     - makezero
     - misspell
+    - mnd
     - nakedret
     - nestif
     - nilerr
