@@ -39,6 +39,7 @@
 !go.sum
 !LICENSE
 !Makefile
+!MAINTAINERS.md
 !README.md
 !SECURITY.md
 
