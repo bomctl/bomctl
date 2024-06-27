@@ -14,8 +14,13 @@ trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 4
 
-[*.{code-snippets,json,sh,yaml,yml}]
+[*.{code-snippets,json,yaml,yml}]
 indent_size = 2
 
 [*.{ansi,md,txt}]
 insert_final_newline = false
+
+[*.sh]
+keep_padding = true
+space_redirects = true
+switch_case_indent = true
