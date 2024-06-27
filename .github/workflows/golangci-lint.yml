@@ -59,4 +59,4 @@ jobs:
         uses: golangci/golangci-lint-action@82d40c283aeb1f2b6595839195e95c2d6a49081b # v5.0.0
         with:
           install-mode: goinstall
-          version: cd890db217def69d68cf1862504bb735c0333879 # v1.57.1
+          version: 1a55854aff4ef60cd8c4e709b650b281303ca7aa # v1.59.1
