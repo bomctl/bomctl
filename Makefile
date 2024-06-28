@@ -183,20 +183,20 @@ lint-go-fix: # Fix golangci-lint findings
 
 .PHONY: lint-markdown
 lint-markdown: # Lint markdown files
-	${call run-lint,markdownlint-cli2,'**/*.md'}
+	${call run-lint,markdownlint-cli2,${shell git ls-files '*.md'}}
 
 .PHONY: lint-markdown-fix
 lint-markdown-fix: # Fix markdown lint findings
-	${call run-lint,markdownlint-cli2,'**/*.md' --fix}
+	${call run-lint,markdownlint-cli2,${shell git ls-files '*.md'} --fix}
 
 .PHONY: lint-shell
 lint-shell: # Lint shell scripts
-	${call run-lint,shellcheck,${shell find . -name '*.sh'}}
-	${call run-lint,shfmt, --diff --simplify .}
+	${call run-lint,shellcheck,${shell git ls-files '*.sh'}}
+	${call run-lint,shfmt,--diff --simplify ${shell git ls-files '*.sh'}}
 
 .PHONY: lint-yaml
 lint-yaml: # Lint YAML files
-	${call run-lint,yamllint,.}
+	${call run-lint,yamllint,${shell git ls-files '*.yml' '*.yaml'}}
 
 .PHONY: lint
 lint: lint-go lint-markdown lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files
