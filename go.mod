@@ -8,9 +8,9 @@ require (
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
-	github.com/protobom/protobom v0.4.2
+	github.com/protobom/protobom v0.4.3
 	github.com/protobom/storage v0.1.3
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.9.0
 	oras.land/oras-go/v2 v2.5.0
@@ -20,7 +20,7 @@ require (
 	ariga.io/atlas v0.19.1-0.20240203083654-5948b60a8e43 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	entgo.io/ent v0.13.1 // indirect
-	github.com/CycloneDX/cyclonedx-go v0.8.0 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.9.0 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
