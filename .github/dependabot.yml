@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------
 # SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
-# SPDX-FileName: .github/workflows/dependency-review.yml
+# SPDX-FileName: .github/dependabot.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------
@@ -17,26 +17,34 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
-name: Dependency Review
+# yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
 
-on:
-  pull_request:
-    branches: main
-    types:
-      - opened
-      - reopened
-      - synchronize
+version: 2
 
-permissions:
-  contents: read
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ":dependabot: chore(deps)"
+    labels:
+      - dependencies
+    groups:
+      gomod:
+        update-types:
+          - patch
 
-jobs:
-  dependency-review:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Dependency review
-        uses: actions/dependency-review-action@72eb03d02c7872a771aacd928f3123ac62ad6d3a # v4.3.3
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ":dependabot: chore(deps)"
+    labels:
+      - dependencies
+    groups:
+      actions:
+        update-types:
+          - minor
+          - patch
