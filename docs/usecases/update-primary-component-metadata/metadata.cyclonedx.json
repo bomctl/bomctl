@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "component": {
+      "copyright": "bomctl authors",
+      "description": "bomctl is format-agnostic Software Bill of Materials (SBOM) tooling, which is intended to bridge the gap between SBOM generation and SBOM analysis tools. It focuses on supporting more complex SBOM operations by being opinionated on only supporting the NTIA minimum fields or other fields supported by protobom.",
+      "externalReferences": [
+        {
+          "type": "documentation",
+          "url": "https://github.com/bomctl/bomctl"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/bomctl/bomctl.git"
+        },
+        {
+          "type": "license",
+          "url": "https://github.com/bomctl/bomctl/blob/main/LICENSE"
+        },
+        {
+          "type": "chat",
+          "url": "https://slack.openssf.org/#bomctl"
+        }
+      ]
+    },
+    "licenses": [
+      {
+        "license": {
+          "id": "Apache-2.0",
+          "url": "https://raw.githubusercontent.com/bomctl/bomctl/main/LICENSE"
+        }
+      }
+    ],
+    "lifecycles": [
+      {
+        "phase": "build"
+      }
+    ],
+    "manufacture": {
+      "name": "bomctl authors",
+      "url": [
+        "https://github.com/bomctl/bomctl"
+      ]
+    },
+    "supplier": {
+      "name": "bomctl authors",
+      "url": [
+        "https://github.com/bomctl/bomctl"
+      ]
+    }
+  }
+}
