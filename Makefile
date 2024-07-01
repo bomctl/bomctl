@@ -40,8 +40,18 @@ LDFLAGS := -s -w \
   -X=github.com/bomctl/bomctl/cmd.VersionPre=${VERSION_PRE} \
   -X=github.com/bomctl/bomctl/cmd.BuildDate=${BUILD_DATE}
 
+GOPATH ?= ${shell go env GOPATH}
+GOLANGCI_LINT_INSTALL := https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
+GOLANGCI_LINT_VERSION := v1.59.1
+
+SHFMT_VERSION := v3.8.0
+
+SHELLCHECK_VERSION  := v0.10.0
+SHELLCHECK_FILENAME := shellcheck-${SHELLCHECK_VERSION}
+
 ifeq (${OS},Windows_NT)
 	OS := windows
+	SHELLCHECK_FILENAME := ${addsuffix .zip,${SHELLCHECK_FILENAME}}
 
 	ifeq (${PROCESSOR_ARCHITECTURE},x86)
 		ARCH := i386
@@ -52,11 +62,19 @@ else
 
 	ifeq (${uname_s},Darwin)
 		OS := macos
+		SHELLCHECK_FILENAME := ${addsuffix .darwin,${SHELLCHECK_FILENAME}}
+	else
+		SHELLCHECK_FILENAME := ${addsuffix .linux,${SHELLCHECK_FILENAME}}
 	endif
 
 	ifeq (${uname_p},arm)
 		ARCH := arm64
+		SHELLCHECK_FILENAME := ${addsuffix .aarch64,${SHELLCHECK_FILENAME}}
+	else
+		SHELLCHECK_FILENAME := ${addsuffix .x86_64,${SHELLCHECK_FILENAME}}
 	endif
+
+	SHELLCHECK_FILENAME := ${addsuffix .tar.xz,${SHELLCHECK_FILENAME}}
 endif
 
 TARGET_BIN := ${PWD}/build/bomctl-${OS}-${ARCH}
@@ -77,6 +95,37 @@ help: # Display this help
 clean: # Clean the working directory
 	@${RM} -r dist
 	@find ${PWD} -name "*.log" -exec ${RM} {} \;
+
+SHELLCHECK_DOWNLOAD_URL := https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/${SHELLCHECK_FILENAME}
+
+.PHONY: install
+install: # Install dev tools
+	@mkdir -p .bin
+
+	@if ! command -v golangci-lint > /dev/null; then \
+	  printf "${YELLOW}golangci-lint not found. Installing... ${RESET}\n\n"; \
+	  curl --fail --silent --show-error --location ${GOLANGCI_LINT_INSTALL} | \
+	    sh -s -- -b ${GOPATH}/bin ${GOLANGCI_LINT_VERSION}; \
+	fi
+
+	@if [ ! -f .bin/shellcheck ]; then \
+	  printf "${YELLOW}shellcheck not found. Installing... ${RESET}\n\n"; \
+	  if [ ${OS} = linux ] || [ ${OS} = macos ]; then \
+	  	curl --fail --silent --show-error --location --url ${SHELLCHECK_DOWNLOAD_URL} | \
+		  tar --extract --xz --directory .bin --strip-components=1 shellcheck-${SHELLCHECK_VERSION}/shellcheck ; \
+	  elif [ {OS}$ = windows ]; then \
+	  	curl --fail --silent --show-error --location --url ${SHELLCHECK_DOWNLOAD_URL} --output temp.zip; \
+	    unzip temp.zip -d .bin; \
+		rm temp.zip; \
+	  fi; \
+	fi
+
+	@if ! command -v shfmt > /dev/null; then \
+	  printf "${YELLOW}shfmt not found. Installing... ${RESET}\n\n"; \
+	  go install mvdan.cc/sh/v3/cmd/shfmt@${SHFMT_VERSION}; \
+	fi
+
+	@printf "${YELLOW}Development tools installed${RESET}\n\n"
 
 #@ Build
 define gobuild
@@ -115,7 +164,8 @@ build: build-linux-amd build-linux-arm build-macos-intel build-macos-apple build
 
 #@ Lint
 define run-lint
-	@if command -v ${1} &> /dev/null; then \
+	@export PATH="$${PATH}:$${PWD}/.bin"; \
+	if command -v ${1} > /dev/null; then \
 	  printf "Running ${CYAN}${1} ${2}${RESET}\n\n"; \
 	  ${1} ${2}; \
 	else \
@@ -133,18 +183,23 @@ lint-go-fix: # Fix golangci-lint findings
 
 .PHONY: lint-markdown
 lint-markdown: # Lint markdown files
-	${call run-lint,markdownlint-cli2,'**/*.md'}
+	${call run-lint,markdownlint-cli2,${shell git ls-files '*.md'}}
 
 .PHONY: lint-markdown-fix
 lint-markdown-fix: # Fix markdown lint findings
-	${call run-lint,markdownlint-cli2,'**/*.md' --fix}
+	${call run-lint,markdownlint-cli2,${shell git ls-files '*.md'} --fix}
+
+.PHONY: lint-shell
+lint-shell: # Lint shell scripts
+	${call run-lint,shellcheck,${shell git ls-files '*.sh'}}
+	${call run-lint,shfmt,--diff --simplify ${shell git ls-files '*.sh'}}
 
 .PHONY: lint-yaml
 lint-yaml: # Lint YAML files
-	${call run-lint,yamllint,.}
+	${call run-lint,yamllint,${shell git ls-files '*.yml' '*.yaml'}}
 
 .PHONY: lint
-lint: lint-go lint-markdown lint-yaml # Lint Golang code, markdown, and YAML files
+lint: lint-go lint-markdown lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files
 
 #@ Test
 .PHONY: test-unit
