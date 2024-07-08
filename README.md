@@ -58,9 +58,14 @@ cd bomctl
 
 Build using the `Makefile`
 
-```shell
-make build
-```
+| Operating System | Architecture ||
+|------------------|--------------|-------------------------|
+| Linux            | AMD64        | `make build-linux-amd`  |
+| Linux            | ARM          | `make build-linux-arm`  |
+| Windows          | AMD64        | `make build-windows-amd`|
+| Windows          | ARM          | `make build-windows-arm`|
+| MacOS            | AMD64        | `make build-macos-intel`|
+| MacOS            | ARM          | `make build-macos-apple`|
 
 ## Commands
 
