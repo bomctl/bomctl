@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version-file: go.mod
           cache: false
@@ -60,7 +60,7 @@ jobs:
         uses: docker/setup-buildx-action@4fd812986e6c8c2a69e18311145f9371337f27d4 # v3.4.0
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@e8d2a6937ecead383dfe75190d104edd1f9c5751 # v0.16.0
+        uses: anchore/sbom-action/download-syft@95b086ac308035dc0850b3853be5b7ab108236a8 # v0.16.1
 
       - name: Get GitHub App installation token
         uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
@@ -100,13 +100,13 @@ jobs:
 
       - name: Attest Archives
         if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/attest-build-provenance@bdd51370e0416ac948727f861e03c2f05d32d78e # v1.3.2
+        uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0 # v1.3.3
         with:
           subject-path: dist/*[.zrda][gipep][zpbk] # match .gz, zip, deb, apk
 
       - name: Attest Artifacts
         if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/attest-build-provenance@bdd51370e0416ac948727f861e03c2f05d32d78e # v1.3.2
+        uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0 # v1.3.3
         with:
           subject-path: dist/bomctl*/* # match all binaries created
 
