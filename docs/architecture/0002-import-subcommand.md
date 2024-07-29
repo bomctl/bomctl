@@ -15,7 +15,7 @@ A decision may be "proposed" if the project stakeholders haven't agreed with it 
 If a later ADR changes or reverses a decision, it may be marked as "deprecated" or "superseded" with a reference to
 its replacement.
 -->
-Proposed
+Accepted
 
 ## Context
 <!--
@@ -31,7 +31,8 @@ This section describes our response to these forces. It is stated in full senten
 -->
 Introduce an `import` command that will accept one of the following options as input:
 
-- stream of bytes piped from `stdin`
+- stream of bytes piped from `stdin` by using the argument `-`
+  - use of `-` is how `kubectl` accepts stdin (see [kubectl examples](https://kubernetes.io/docs/reference/kubectl/#examples-common-operations))
 - path to a local file or files as optional positional arguments
   - alternatively, input files could could be specified with an explicit flag, such as `--input`, `--file`, `--path`, etc.
 
@@ -66,3 +67,7 @@ Presents additional input options for users that may feel more natural.
 ### Feature parity
 
 Adds a counterpart to the `export` command for feature parity and completeness.
+
+## References
+
+- [kubectl stdin implementation](https://github.com/kubernetes/kubernetes/blob/e8588e6493222ab623f794ca4aeb5261f86ef3d3/staging/src/k8s.io/cli-runtime/pkg/resource/builder.go#L260)
