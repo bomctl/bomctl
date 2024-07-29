@@ -5,7 +5,7 @@ You can use [adr-tools](https://github.com/npryce/adr-tools) for managing the AD
 
 In each ADR file, write the following sections.
 -->
-# 2. 0006-sbom-merge.md
+# 6. 0006-sbom-merge.md
 
 Date: 2024-07-29
 
