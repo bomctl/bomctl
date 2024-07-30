@@ -15,7 +15,7 @@ A decision may be "proposed" if the project stakeholders haven't agreed with it 
 If a later ADR changes or reverses a decision, it may be marked as "deprecated" or "superseded" with a reference to
 its replacement.
 -->
-Proposed
+Accepted
 
 ## Context
 <!--
@@ -23,16 +23,17 @@ This section describes the forces at play, including technological, political, s
 are probably in tension, and should be called out as such. The language in this section is value-neutral. It is simply
 describing facts.
 -->
-A shorter form of referencing SBOM documents stored in `bomctl`'s database is needed.
+A shorter form of referencing SBOM documents stored in `bomctl`'s database is needed, while also
+adding adding annotations/labels for adding key/value pair metadata.
 
 ## Decision
 <!--
 This section describes our response to these forces. It is stated in full sentences, with active voice. "We will …"
 -->
-Add support for user assignment of one of the following options per stored SBOM document:
+Add support for user assignment of annotations/labels per stored SBOM document:
 
-- a single alias
-- a list of one or more tags
+- a list of labels (key/value pairs)
+- the `alias` key is reserved and will be used as a unique short hand label for the SBOM document
 
 These options could also be consolidated into a unified concept such as **labels**.
 
@@ -45,8 +46,7 @@ just the "positive" ones. A particular decision may have positive, negative, and
 affect the team and project in the future.
 -->
 
-Implementing aliases could be limiting due to their 1:1 association.
+Implementing `alias` key could be limiting due to their 1:1 association.
 
-Using the tags methodology may provide greater flexibility in association between documents for actions like storing and retrieving a group of SBOMs in a tree structure.
-
-In addition, tags can still be utilized to perform a function similar to what aliases provide.
+Using the label methodology may provide greater flexibility in association between documents for
+actions like storing and retrieving a group of SBOMs in a tree structure.
