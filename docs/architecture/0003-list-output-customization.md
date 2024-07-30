@@ -15,7 +15,7 @@ A decision may be "proposed" if the project stakeholders haven't agreed with it 
 If a later ADR changes or reverses a decision, it may be marked as "deprecated" or "superseded" with a reference to
 its replacement.
 -->
-Proposed
+Accepted
 
 ## Context
 <!--
@@ -23,15 +23,15 @@ This section describes the forces at play, including technological, political, s
 are probably in tension, and should be called out as such. The language in this section is value-neutral. It is simply
 describing facts.
 -->
-This is an enhancement proposal to allow users to customize the output of `bomctl list` by specifying
-a search expression, filter, or template.
+This is an enhancement proposal to allow users to customize the output of `bomctl list` that lists
+SBOM Documents by specifying a search expression, filter, or template.
 
 ## Decision
 <!--
 This section describes our response to these forces. It is stated in full sentences, with active voice. "We will …"
 -->
-Update `bomctl list` to accept an expression to customize the output table. This would be similar in
-functionality to the `--format` option used by various `docker` commands.
+Update `bomctl list` to accept an expression to customize the output table of SBOM documents.
+This would be similar in functionality to the `--format` option used by various `docker` commands.
 
 Either the existing use of positional argument will be retained, or an additional flag (such as
 `--format` or `--query`) will be added.
@@ -44,6 +44,11 @@ The supported search/filter expression syntaxes will be:
 
 The expression would then be parsed to construct a SQL query or call to the `ent` backend to
 retrieve and display the desired table(s)/column(s).
+
+A separate `bomctl query` command will be used to query/filter nodes, `bomctl list` is reserved
+for finding SBOM Documents.
+
+@puerco recommended reading the store into CEL to simplify listing.
 
 ## Consequences
 <!--
