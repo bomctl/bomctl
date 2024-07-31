@@ -22,6 +22,7 @@ are probably in tension, and should be called out as such. The language in this 
 describing facts.
 -->
 Seeing where two SBOMs differ and highlighting potentially problematic changes such as:
+
 - a dependency that is slightly renamed and pointing to a different url
 - a new dependency that is pointing to a new/unknown package
 - a dependency whose version is bumped down
