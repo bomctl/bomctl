@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+// SPDX-FileCopyrightText: Copyright © bomctl a Series of LF Projects, LLC
 // SPDX-FileName: internal/pkg/db/db.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0

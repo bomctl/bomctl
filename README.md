@@ -148,3 +148,7 @@ shasum -a 256 bomctl_SNAPSHOT-3f16bdb_checksums.txt |awk '{print $1}'
 ```
 
 The printed `hash` can be used to look up the entry at <https://search.sigstore.dev/>.
+
+> Copyright © bomctl a Series of LF Projects, LLC
+> For web site terms of use, trademark policy and other project
+> policies please see <https://lfprojects.org>.
