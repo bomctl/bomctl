@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: cmd/fetch.go
+// SPDX-FileName: cmd/import.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -23,50 +23,43 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bomctl/bomctl/internal/pkg/fetch"
+	imprt "github.com/bomctl/bomctl/internal/pkg/import"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
-func fetchCmd() *cobra.Command {
-	opts := &fetch.Options{
-		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
+func importCmd() *cobra.Command {
+	opts := &imprt.ImportOptions{
+		Options: options.New(options.WithLogger(utils.NewLogger("import"))),
 	}
 
-	outputFile := outputFileValue("")
-
-	fetchCmd := &cobra.Command{
-		Use:    "fetch [flags] SBOM_URL...",
+	importCmd := &cobra.Command{
+		Use:    "import [flags] { - | FILE...}",
 		Args:   cobra.MinimumNArgs(1),
-		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Short:  "Import SBOM file(s) from stdin or local filesystem",
+		Long:   "Import SBOM file(s) from stdin or local filesystem",
 		PreRun: preRun(opts.Options),
 		Run: func(_ *cobra.Command, args []string) {
-			if string(outputFile) != "" {
-				if len(args) > 1 {
-					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
+			for idx := range args {
+				if args[idx] == "-" {
+					opts.InputFiles = append(opts.InputFiles, os.Stdin)
+				} else {
+					file, err := os.Open(args[idx])
+					if err != nil {
+						opts.Logger.Fatal("failed to open input file", "err", err, "file", file)
+					}
+
+					opts.InputFiles = append(opts.InputFiles, file)
+
+					defer file.Close() //nolint:revive
 				}
-
-				out, err := os.Create(string(outputFile))
-				if err != nil {
-					opts.Logger.Fatal("error creating output file", "outputFile", outputFile)
-				}
-
-				opts.OutputFile = out
-
-				defer opts.OutputFile.Close()
 			}
 
-			for _, url := range args {
-				if err := fetch.Fetch(url, opts); err != nil {
-					opts.Logger.Fatal(err)
-				}
+			if err := imprt.Import(opts); err != nil {
+				opts.Logger.Fatal(err)
 			}
 		},
 	}
 
-	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
-	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
-
-	return fetchCmd
+	return importCmd
 }

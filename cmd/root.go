@@ -26,6 +26,8 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
@@ -111,10 +113,26 @@ func rootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(exportCmd())
 	rootCmd.AddCommand(fetchCmd())
+	rootCmd.AddCommand(importCmd())
 	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd
+}
+
+func preRun(opts *options.Options) func(*cobra.Command, []string) {
+	return func(cmd *cobra.Command, _ []string) {
+		cfgFile, err := cmd.Flags().GetString("config")
+		cobra.CheckErr(err)
+
+		verbosity, err := cmd.Flags().GetCount("verbose")
+		cobra.CheckErr(err)
+
+		opts.
+			WithCacheDir(viper.GetString("cache_dir")).
+			WithConfigFile(cfgFile).
+			WithDebug(verbosity >= minDebugLevel)
+	}
 }
 
 func Execute() {
