@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+// SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/options.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
