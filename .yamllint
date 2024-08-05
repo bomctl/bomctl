@@ -38,9 +38,10 @@ rules:
     max: 120
 
   quoted-strings:
+    allow-quoted-quotes: true
+    check-keys: true
     quote-type: double
     required: only-when-needed
-    check-keys: true
 
   truthy:
     check-keys: false

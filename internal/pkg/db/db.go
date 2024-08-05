@@ -72,3 +72,45 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 
 	return document, nil
 }
+
+// Debug enables debug logging for all database transactions.
+func (backend *Backend) Debug(debug bool) *Backend {
+	backend.Options.Debug = debug
+
+	return backend
+}
+
+// WithLogger sets the logger for the backend.
+func (backend *Backend) WithLogger(logger *log.Logger) *Backend {
+	backend.Logger = logger
+
+	return backend
+}
+
+// WithDatabaseFile sets the database file for the backend.
+func (backend *Backend) WithDatabaseFile(file string) *Backend {
+	backend.Options.DatabaseFile = file
+
+	return backend
+}
+
+// Debug enables debug logging for all database transactions.
+func Debug(debug bool) Option {
+	return func(backend *Backend) {
+		backend.Debug(debug)
+	}
+}
+
+// WithLogger sets the logger for the backend.
+func WithLogger(logger *log.Logger) Option {
+	return func(backend *Backend) {
+		backend.WithLogger(logger)
+	}
+}
+
+// WithDatabaseFile sets the database file for the backend.
+func WithDatabaseFile(file string) Option {
+	return func(backend *Backend) {
+		backend.WithDatabaseFile(file)
+	}
+}

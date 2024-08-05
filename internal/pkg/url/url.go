@@ -40,7 +40,7 @@ func (auth *BasicAuth) Encode() string {
 	return base64.URLEncoding.EncodeToString(data)
 }
 
-func (auth *BasicAuth) Name() string {
+func (*BasicAuth) Name() string {
 	return "http-basic-auth"
 }
 

@@ -31,7 +31,7 @@ import (
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/memory"
 	"oras.land/oras-go/v2/registry/remote"
-	orasAuth "oras.land/oras-go/v2/registry/remote/auth"
+	orasauth "oras.land/oras-go/v2/registry/remote/auth"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
@@ -41,11 +41,11 @@ var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI
 
 type Fetcher struct{}
 
-func (fetcher *Fetcher) Name() string {
+func (*Fetcher) Name() string {
 	return "OCI"
 }
 
-func (fetcher *Fetcher) RegExp() *regexp.Regexp {
+func (*Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?P<scheme>oci|docker)(?:-archive)?:\/\/)?`,
@@ -101,7 +101,7 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
+func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
 	var (
 		err                                error
 		manifestDescriptor, sbomDescriptor *ocispec.Descriptor
@@ -145,10 +145,10 @@ func createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (*remote.Re
 	}
 
 	if auth != nil {
-		repo.Client = &orasAuth.Client{
+		repo.Client = &orasauth.Client{
 			Client: retry.DefaultClient,
-			Cache:  orasAuth.DefaultCache,
-			Credential: orasAuth.StaticCredential(parsedURL.Hostname, orasAuth.Credential{
+			Cache:  orasauth.DefaultCache,
+			Credential: orasauth.StaticCredential(parsedURL.Hostname, orasauth.Credential{
 				Username: auth.Username,
 				Password: auth.Password,
 			}),

@@ -32,11 +32,11 @@ import (
 
 type Fetcher struct{}
 
-func (fetcher *Fetcher) Name() string {
+func (*Fetcher) Name() string {
 	return "Git"
 }
 
-func (fetcher *Fetcher) RegExp() *regexp.Regexp {
+func (*Fetcher) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?:git\+)?(?P<scheme>https?|git|ssh):\/\/)?`,
@@ -81,7 +81,7 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (fetcher *Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
+func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
 	// Create temp directory to clone into.
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
 	if err != nil {
