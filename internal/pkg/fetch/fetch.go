@@ -28,7 +28,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/charmbracelet/log"
 	"github.com/jdx/go-netrc"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
@@ -37,6 +36,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
 	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
@@ -49,25 +49,23 @@ type (
 		Name() string
 	}
 
-	FetchOptions struct {
-		Logger     *log.Logger
+	Options struct {
 		OutputFile *os.File
-		CacheDir   string
-		ConfigFile string
-		Debug      bool
-		UseNetRC   bool
+		*options.Options
+		UseNetRC bool
 	}
 )
 
-func Fetch(sbomURL string, opts *FetchOptions) error {
+func Fetch(sbomURL string, opts *Options) error {
 	document, err := fetchDocument(sbomURL, opts)
 	if err != nil {
 		return err
 	}
 
-	backend := db.NewBackend()
-	backend.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
-	backend.Options.Debug = opts.Debug
+	backend := db.NewBackend().
+		Debug(opts.Debug).
+		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
+		WithLogger(opts.Logger)
 
 	if err := backend.InitClient(); err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
@@ -85,29 +83,7 @@ func Fetch(sbomURL string, opts *FetchOptions) error {
 	}
 
 	// Fetch externally referenced BOMs
-	var idx uint8
-
-	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
-	if err != nil {
-		return fmt.Errorf("error getting external references: %w", err)
-	}
-
-	for _, ref := range extRefs {
-		idx++
-
-		refOutput, err := getRefFile(opts.OutputFile)
-		if err != nil {
-			return err
-		}
-
-		defer refOutput.Close()
-
-		if err := Fetch(ref.Url, opts); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return fetchExternalReferences(document, backend, opts)
 }
 
 func NewFetcher(sbomURL string) (Fetcher, error) {
@@ -120,7 +96,7 @@ func NewFetcher(sbomURL string) (Fetcher, error) {
 	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
 }
 
-func fetchDocument(sbomURL string, opts *FetchOptions) (*sbom.Document, error) {
+func fetchDocument(sbomURL string, opts *Options) (*sbom.Document, error) {
 	fetcher, err := NewFetcher(sbomURL)
 	if err != nil {
 		return nil, err
@@ -157,6 +133,28 @@ func fetchDocument(sbomURL string, opts *FetchOptions) (*sbom.Document, error) {
 	}
 
 	return document, nil
+}
+
+func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *Options) error {
+	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
+	if err != nil {
+		return fmt.Errorf("error getting external references: %w", err)
+	}
+
+	for _, ref := range extRefs {
+		refOutput, err := getRefFile(opts.OutputFile)
+		if err != nil {
+			return err
+		}
+
+		defer refOutput.Close() //nolint:revive
+
+		if err := Fetch(ref.Url, opts); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func getRefFile(parentFile *os.File) (*os.File, error) {

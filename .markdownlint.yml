@@ -17,11 +17,14 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 ---
+# yamllint disable-line rule:line-length
+# yaml-language-server: $schema=https://github.com/DavidAnson/markdownlint/raw/main/schema/markdownlint-config-schema.json
+
 # MD013/line-length - Line length
-MD013: false
+line-length: false
 
 # MD033/no-inline-html - Inline HTML
-MD033: false
+no-inline-html: false
 
 # MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
-MD041: false
+first-line-heading: false

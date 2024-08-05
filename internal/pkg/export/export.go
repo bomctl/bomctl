@@ -29,19 +29,17 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/utils/format"
 )
 
-type (
-	ExportOptions struct {
-		Logger       *log.Logger
-		OutputFile   *os.File
-		FormatString string
-		Encoding     string
-		CacheDir     string
-		ConfigFile   string
-		Debug        bool
-	}
-)
+type Options struct {
+	Logger       *log.Logger
+	OutputFile   *os.File
+	FormatString string
+	Encoding     string
+	CacheDir     string
+	ConfigFile   string
+	Debug        bool
+}
 
-func Export(sbomID string, opts *ExportOptions, backend *db.Backend) error {
+func Export(sbomID string, opts *Options, backend *db.Backend) error {
 	backend.Logger.Info("Exporting Document", "sbomID", sbomID)
 
 	parsedFormat, err := format.Parse(opts.FormatString, opts.Encoding)

@@ -33,11 +33,11 @@ import (
 
 func exportCmd() *cobra.Command {
 	documentIDs := []string{}
-	opts := &export.ExportOptions{}
+	opts := &export.Options{}
 
-	outputFile := OutputFileValue("")
-	formatString := FormatStringValue(format.DefaultFormatString())
-	formatEncoding := FormatEncodingValue(format.DefaultEncoding())
+	outputFile := outputFileValue("")
+	formatString := formatStringValue(format.DefaultFormatString())
+	formatEncoding := formatEncodingValue(format.DefaultEncoding())
 
 	exportCmd := &cobra.Command{
 		Use:   "export [flags] SBOM_URL...",
@@ -84,7 +84,7 @@ func exportCmd() *cobra.Command {
 	return exportCmd
 }
 
-func Export(documentIDs []string, opts *export.ExportOptions, backend *db.Backend) {
+func Export(documentIDs []string, opts *export.Options, backend *db.Backend) {
 	for _, id := range documentIDs {
 		if err := export.Export(id, opts, backend); err != nil {
 			opts.Logger.Fatal(err)
@@ -92,14 +92,14 @@ func Export(documentIDs []string, opts *export.ExportOptions, backend *db.Backen
 	}
 }
 
-func initOpts(opts *export.ExportOptions, cfgFile, formatString, formatEncoding string) {
+func initOpts(opts *export.Options, cfgFile, formatString, formatEncoding string) {
 	opts.CacheDir = viper.GetString("cache_dir")
 	opts.ConfigFile = cfgFile
 	opts.FormatString = formatString
 	opts.Encoding = formatEncoding
 }
 
-func initBackend(opts *export.ExportOptions) *db.Backend {
+func initBackend(opts *export.Options) *db.Backend {
 	backend := db.NewBackend(func(b *db.Backend) {
 		b.Options.DatabaseFile = filepath.Join(opts.CacheDir, db.DatabaseFile)
 		b.Options.Debug = opts.Debug

@@ -102,6 +102,7 @@ linters:
     - staticcheck
     - stylecheck
     - tagliatelle
+    - testifylint
     - testpackage
     - thelper
     - tparallel
@@ -185,11 +186,41 @@ linters-settings:
     require-specific: true
 
   revive:
+    enable-all-rules: true
+
     rules:
+      - name: add-constant
+        exclude: [TEST]
+        arguments:
+          - maxLitCount: "5"
+            allowStrs: '""'
+            allowInts: 0,1,2
+            allowFloats: 0.0,0.,1.0,1.,2.0,2.
+            ignoreFuncs: os\.*,fmt\.*,make,viper\.*
+
+      - name: cognitive-complexity
+        exclude: [TEST, ~cmd/.*\.go]
+        arguments: [10]
+
+      - name: cyclomatic
+        disabled: true
+
+      - name: exported
+        arguments: [checkPrivateReceivers, sayRepetitiveInsteadOfStutters]
+
+      - name: function-length
+        exclude: [TEST]
+
+      - name: line-length-limit
+        arguments: [120]
+
+      - name: unhandled-error
+        arguments: [fmt\..*]
+
       - name: unused-parameter
-        severity: warning
-        disabled: false
-        exclude: [""]
         arguments:
           # Ignore all parameters beginning with "_"
           - allowRegex: ^_
+
+  testifylint:
+    enable-all: true

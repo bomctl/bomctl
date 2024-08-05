@@ -25,17 +25,17 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func fetchCmd() *cobra.Command {
-	opts := &fetch.FetchOptions{
-		Logger:   utils.NewLogger("fetch"),
-		UseNetRC: false,
+	opts := &fetch.Options{
+		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
 	}
 
-	outputFile := OutputFileValue("")
-	sbomURLs := URLSliceValue{}
+	outputFile := outputFileValue("")
+	sbomURLs := urlSliceValue{}
 
 	fetchCmd := &cobra.Command{
 		Use:   "fetch [flags] SBOM_URL...",
@@ -49,13 +49,13 @@ func fetchCmd() *cobra.Command {
 			cfgFile, err := cmd.Flags().GetString("config")
 			cobra.CheckErr(err)
 
-			opts.CacheDir = viper.GetString("cache_dir")
-			opts.ConfigFile = cfgFile
-
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
-			opts.Debug = verbosity >= minDebugLevel
+			opts.
+				WithCacheDir(viper.GetString("cache_dir")).
+				WithConfigFile(cfgFile).
+				WithDebug(verbosity >= minDebugLevel)
 
 			if string(outputFile) != "" {
 				if len(sbomURLs) > 1 {

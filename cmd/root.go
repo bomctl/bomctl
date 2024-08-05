@@ -109,8 +109,8 @@ func rootCmd() *cobra.Command {
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
 
-	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(exportCmd())
+	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(versionCmd())
 
