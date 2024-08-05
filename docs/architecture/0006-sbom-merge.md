@@ -5,7 +5,7 @@ You can use [adr-tools](https://github.com/npryce/adr-tools) for managing the AD
 
 In each ADR file, write the following sections.
 -->
-# 6. 0006-sbom-merge.md
+# 6. merge subcommand
 
 Date: 2024-07-29
 
@@ -34,8 +34,22 @@ This section describes our response to these forces. It is stated in full senten
     - Merge component dependencies
     - Merge component properties
 
-- Ability to take a flag to “flatten” any externally referenced SBOMs
+- Ability to take a flag to "expand" any externally referenced SBOMs
   - Any nested components should be moved to "top level" components and the depends_on section updated to show the dependency.
+
+### Investigation
+
+- Union on NodeList can be used to combine all the NodeLists
+  - Do all non-root nodes need to be augmented or would that already be accounted for during fetch/import?
+- Additional actions
+  - Generate new root node by augmenting it with data from old root nodes except for ID
+    - Remove old root nodes from NodeList.Nodes?
+  - Replace root elements with new root node
+  - Add/update Edges to be new root node id
+  - Generate Metadata Name, ID, Date, Version
+  - Combine/de-duplicate Metadata Authors, DocumentTypes, Tools
+  - Need to determine priority of data on updatable fields (Metadata or Node data)
+    - Next Node/Document processed replaces data or if it already exists/don't update
 
 ## Consequences
 <!--
