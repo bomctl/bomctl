@@ -41,6 +41,32 @@ Container images for bomctl can be found on [Docker Hub](https://hub.docker.com/
 docker run bomctl/bomctl:latest --help
 ```
 
+### Install From Source
+
+Installing bomctl requires the following:
+
+- [Go](https://go.dev/dl/)
+- [Git](https://git-scm.com/downloads)
+- [Make](https://www.gnu.org/software/make/manual/make.html)
+
+Clone the bomctl repository
+
+``` shell
+git clone https://github.com/bomctl/bomctl.git
+cd bomctl
+```
+
+Build using the `Makefile`
+
+| Operating System | Architecture | `make` Command           |
+| ---------------- | ------------ | ------------------------ |
+| Linux            | AMD64        | `make build-linux-amd`   |
+| Linux            | ARM          | `make build-linux-arm`   |
+| Windows          | AMD64        | `make build-windows-amd` |
+| Windows          | ARM          | `make build-windows-arm` |
+| MacOS            | AMD64        | `make build-macos-intel` |
+| MacOS            | ARM          | `make build-macos-apple` |
+
 ## Commands
 
 ### Fetch (Implemented)
