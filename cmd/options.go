@@ -32,8 +32,6 @@ type (
 	directoryValue      string
 	existingFileValue   string
 	outputFileValue     string
-	formatStringValue   string
-	formatEncodingValue string
 	urlValue            string
 	directorySliceValue []string
 	fileSliceValue      []string
@@ -66,8 +64,6 @@ func (dsv *directorySliceValue) String() string { return fmt.Sprintf("%v", *dsv)
 func (efv *existingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
 func (fsv *fileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
 func (ofv *outputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
-func (fstv *formatStringValue) String() string  { return fmt.Sprintf("%v", *fstv) }
-func (fev *formatEncodingValue) String() string { return fmt.Sprintf("%v", *fev) }
 
 func (uv *urlValue) String() string       { return fmt.Sprintf("%v", *uv) }
 func (usv *urlSliceValue) String() string { return fmt.Sprintf("%v", *usv) }
@@ -106,18 +102,6 @@ func (ofv *outputFileValue) Set(value string) error {
 	return nil
 }
 
-func (fstv *formatStringValue) Set(value string) error {
-	*fstv = formatStringValue(value)
-
-	return nil
-}
-
-func (fev *formatEncodingValue) Set(value string) error {
-	*fev = formatEncodingValue(value)
-
-	return nil
-}
-
 func (uv *urlValue) Set(value string) error {
 	*uv = urlValue(value)
 
@@ -142,8 +126,6 @@ func (*directorySliceValue) Type() string { return valueTypeDir }
 func (*existingFileValue) Type() string   { return valueTypeFile }
 func (*fileSliceValue) Type() string      { return valueTypeFile }
 func (*outputFileValue) Type() string     { return valueTypeFile }
-func (*formatStringValue) Type() string   { return valueTypeString }
-func (*formatEncodingValue) Type() string { return valueTypeString }
 func (*urlValue) Type() string            { return valueTypeURL }
 func (*urlSliceValue) Type() string       { return valueTypeURL }
 
@@ -153,8 +135,6 @@ var (
 	_ pflag.Value = (*existingFileValue)(nil)
 	_ pflag.Value = (*fileSliceValue)(nil)
 	_ pflag.Value = (*outputFileValue)(nil)
-	_ pflag.Value = (*formatStringValue)(nil)
-	_ pflag.Value = (*formatEncodingValue)(nil)
 	_ pflag.Value = (*urlValue)(nil)
 	_ pflag.Value = (*urlSliceValue)(nil)
 )
