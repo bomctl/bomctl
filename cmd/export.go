@@ -39,8 +39,8 @@ import (
 )
 
 var (
-	errUnknownEncoding = errors.New("unknown encoding")
-	errUnknownFormat   = errors.New("unknown format")
+	errEncodingNotSupported = errors.New("encoding not supported for selected format")
+	errFormatNotSupported   = errors.New("format not supported")
 )
 
 func exportCmd() *cobra.Command {
@@ -64,7 +64,9 @@ func exportCmd() *cobra.Command {
 			cobra.CheckErr(err)
 
 			format, err := parseFormat(formatString, encoding)
-			cobra.CheckErr(err)
+			if err != nil {
+				opts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
+			}
 
 			opts.Format = format
 
@@ -100,21 +102,16 @@ func exportCmd() *cobra.Command {
 
 func encodingHelp() string {
 	return fmt.Sprintf("output encoding [%s: [%s], %s: [%s]]",
-		formats.SPDXFORMAT, strings.Join(encodingOptionsSPDX(), ", "),
-		formats.CDXFORMAT, strings.Join(encodingOptionsCycloneDX(), ", "),
+		formats.SPDXFORMAT, strings.Join(encodingOptions()[formats.SPDXFORMAT], ", "),
+		formats.CDXFORMAT, strings.Join(encodingOptions()[formats.CDXFORMAT], ", "),
 	)
 }
 
-func encodingOptions() []string {
-	return []string{formats.JSON, formats.TEXT, formats.XML}
-}
-
-func encodingOptionsCycloneDX() []string {
-	return []string{formats.JSON, formats.XML}
-}
-
-func encodingOptionsSPDX() []string {
-	return []string{formats.JSON, formats.TEXT}
+func encodingOptions() map[string][]string {
+	return map[string][]string{
+		formats.CDXFORMAT:  {formats.JSON, formats.XML},
+		formats.SPDXFORMAT: {formats.JSON},
+	}
 }
 
 func formatHelp() string {
@@ -141,10 +138,6 @@ func formatOptions() []string {
 }
 
 func parseFormat(fs, encoding string) (formats.Format, error) {
-	if err := validateEncoding(encoding); err != nil {
-		return formats.EmptyFormat, err
-	}
-
 	results := map[string]string{}
 	pattern := regexp.MustCompile("^(?P<name>[^-]+)(?:-(?P<version>.*))?")
 	match := pattern.FindStringSubmatch(fs)
@@ -157,6 +150,10 @@ func parseFormat(fs, encoding string) (formats.Format, error) {
 	version := results["version"]
 
 	if err := validateFormat(baseFormat); err != nil {
+		return formats.EmptyFormat, err
+	}
+
+	if err := validateEncoding(fs, encoding); err != nil {
 		return formats.EmptyFormat, err
 	}
 
@@ -200,9 +197,9 @@ func preRun(opts *options.Options) func(*cobra.Command, []string) {
 	}
 }
 
-func validateEncoding(encoding string) error {
-	if !slices.Contains(encodingOptions(), encoding) {
-		return fmt.Errorf("%w: %s", errUnknownEncoding, encoding)
+func validateEncoding(fs, encoding string) error {
+	if !slices.Contains(encodingOptions()[fs], encoding) {
+		return errEncodingNotSupported
 	}
 
 	return nil
@@ -210,7 +207,7 @@ func validateEncoding(encoding string) error {
 
 func validateFormat(format string) error {
 	if !slices.Contains(formatOptions(), format) {
-		return fmt.Errorf("%w: %s", errUnknownFormat, format)
+		return errFormatNotSupported
 	}
 
 	return nil
