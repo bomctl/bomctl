@@ -21,35 +21,36 @@ package export
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/charmbracelet/log"
+	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/utils/format"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 type Options struct {
-	Logger       *log.Logger
-	OutputFile   *os.File
-	FormatString string
-	Encoding     string
-	CacheDir     string
-	ConfigFile   string
-	Debug        bool
+	*options.Options
+	OutputFile *os.File
+	Format     formats.Format
 }
 
-func Export(sbomID string, opts *Options, backend *db.Backend) error {
-	backend.Logger.Info("Exporting Document", "sbomID", sbomID)
+func Export(sbomID string, opts *Options) error {
+	opts.Logger.Info("Exporting Document", "sbomID", sbomID)
 
-	parsedFormat, err := format.Parse(opts.FormatString, opts.Encoding)
-	if err != nil {
-		return fmt.Errorf("%w", err)
+	backend := db.NewBackend().
+		Debug(opts.Debug).
+		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
+		WithLogger(opts.Logger)
+
+	if err := backend.InitClient(); err != nil {
+		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
 
-	wr := writer.New(
-		writer.WithFormat(parsedFormat),
-	)
+	defer backend.CloseClient()
+
+	wr := writer.New(writer.WithFormat(opts.Format))
 
 	document, err := backend.GetDocumentByID(sbomID)
 	if err != nil {
