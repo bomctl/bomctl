@@ -52,7 +52,7 @@ func listCmd() *cobra.Command {
 	documentIDs := []string{}
 
 	listCmd := &cobra.Command{
-		Use:     "list",
+		Use:     "list [flags] SBOM_ID...",
 		Aliases: []string{"ls"},
 		Short:   "List SBOM documents in local cache",
 		Long:    "List SBOM documents in local cache",

@@ -31,7 +31,6 @@ import (
 	"github.com/protobom/protobom/pkg/native/serializers"
 	"github.com/protobom/protobom/pkg/writer"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -180,21 +179,6 @@ func parseFormat(fs, encoding string) (formats.Format, error) {
 	writer.RegisterSerializer(format, serializer)
 
 	return format, nil
-}
-
-func preRun(opts *options.Options) func(*cobra.Command, []string) {
-	return func(cmd *cobra.Command, _ []string) {
-		cfgFile, err := cmd.Flags().GetString("config")
-		cobra.CheckErr(err)
-
-		verbosity, err := cmd.Flags().GetCount("verbose")
-		cobra.CheckErr(err)
-
-		opts.
-			WithCacheDir(viper.GetString("cache_dir")).
-			WithConfigFile(cfgFile).
-			WithDebug(verbosity >= minDebugLevel)
-	}
 }
 
 func validateEncoding(fs, encoding string) error {
