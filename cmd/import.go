@@ -20,6 +20,7 @@ package cmd
 
 import (
 	"os"
+	"slices"
 
 	"github.com/spf13/cobra"
 
@@ -40,6 +41,10 @@ func importCmd() *cobra.Command {
 		Long:   "Import SBOM file(s) from stdin or local filesystem",
 		PreRun: preRun(opts.Options),
 		Run: func(_ *cobra.Command, args []string) {
+			if slices.Contains(args, "-") && len(args) > 1 {
+				opts.Logger.Fatal("Piped input and file path args cannot be specified simultaneously.")
+			}
+
 			for idx := range args {
 				if args[idx] == "-" {
 					opts.InputFiles = append(opts.InputFiles, os.Stdin)
