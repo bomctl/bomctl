@@ -23,13 +23,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func fetchCmd() *cobra.Command {
-	opts := &fetch.Options{
+	opts := &client.FetchOptions{
 		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
 	}
 

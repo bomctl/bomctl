@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/http/http_test.go
+// SPDX-FileName: internal/pkg/client/http/fetch_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -23,14 +23,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
+	"github.com/bomctl/bomctl/internal/pkg/client/http"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func TestFetcher_Parse(t *testing.T) {
 	t.Parallel()
 
-	fetcher := &http.Fetcher{}
+	fetcher := &http.Client{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL

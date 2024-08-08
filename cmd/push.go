@@ -22,6 +22,7 @@ import (
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/spf13/cobra"
 
+	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/push"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
@@ -30,7 +31,7 @@ import (
 const pushArgNum = 2
 
 func pushCmd() *cobra.Command {
-	opts := &push.Options{
+	opts := &client.PushOptions{
 		Options: options.New(options.WithLogger(utils.NewLogger("push"))),
 	}
 

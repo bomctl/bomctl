@@ -19,38 +19,19 @@
 package push
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/jdx/go-netrc"
-	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/sbom"
 
+	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var errUnsupportedURL = errors.New("failed to parse URL; see `bomctl push --help` for valid URL patterns")
-
-type (
-	Pusher interface {
-		url.Parser
-		Push(*sbom.Document, *url.ParsedURL, *url.BasicAuth) error
-		Name() string
-	}
-
-	Options struct {
-		*options.Options
-		Format   formats.Format
-		UseNetRC bool
-		UseTree  bool
-	}
-)
-
-func Push(sbomIDs []string, destPath string, opts *Options) error {
+func Push(sbomIDs []string, destPath string, opts *client.PushOptions) error {
 	backend := db.NewBackend().
 		Debug(opts.Debug).
 		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
@@ -78,22 +59,12 @@ func Push(sbomIDs []string, destPath string, opts *Options) error {
 	return nil
 }
 
-func New(sbomURL string) (Pusher, error) {
-	for _, pusher := range []Pusher{} {
-		if parsedURL := pusher.Parse(sbomURL); parsedURL != nil {
-			return pusher, nil
-		}
-	}
-
-	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
-}
-
-func pushDocument(document *sbom.Document, destPath string, opts *Options) error {
+func pushDocument(document *sbom.Document, destPath string, opts *client.PushOptions) error {
 	opts.Logger.Info("Pushing Document", "sbomID", document.Metadata.Id)
 
-	pusher, err := New(destPath)
+	pusher, err := client.New(destPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating push client: %w", err)
 	}
 
 	opts.Logger.Info(fmt.Sprintf("Pushing to %s URL", pusher.Name()), "url", destPath)

@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/oci/oci_test.go
+// SPDX-FileName: internal/pkg/client/oci/fetch_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -23,7 +23,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
+	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
@@ -32,7 +32,7 @@ const testSHA string = "sha256:abcdef0123456789ABCDEF0123456789abcdef0123456789A
 func TestFetcher_Parse(t *testing.T) {
 	t.Parallel()
 
-	fetcher := &oci.Fetcher{}
+	fetcher := &oci.Client{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
