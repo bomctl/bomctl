@@ -115,6 +115,7 @@ func rootCmd() *cobra.Command {
 	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(importCmd())
 	rootCmd.AddCommand(listCmd())
+	rootCmd.AddCommand(pushCmd())
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd
