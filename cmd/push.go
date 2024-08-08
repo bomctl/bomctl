@@ -35,13 +35,13 @@ func pushCmd() *cobra.Command {
 	}
 
 	pushCmd := &cobra.Command{
-		Use:    "push [flags] SBOM_ID DEST_PATH...",
+		Use:    "push [flags] SBOM_ID [SBOM_ID...] DEST_PATH",
 		Args:   cobra.MinimumNArgs(pushArgNum),
 		Short:  "Push stored SBOM file(s) to remote URL or filesystem",
 		Long:   "Push stored SBOM file(s) to remote URL or filesystem",
 		PreRun: preRun(opts.Options),
 		Run: func(_ *cobra.Command, args []string) {
-			if err := push.Push(args[0], args[1], opts); err != nil {
+			if err := push.Push(args[:len(args)-1], args[len(args)-1], opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 		},

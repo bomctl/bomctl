@@ -50,7 +50,7 @@ type (
 	}
 )
 
-func Push(sbomID, destPath string, opts *Options) error {
+func Push(sbomIDs []string, destPath string, opts *Options) error {
 	backend := db.NewBackend().
 		Debug(opts.Debug).
 		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
@@ -62,14 +62,20 @@ func Push(sbomID, destPath string, opts *Options) error {
 
 	defer backend.CloseClient()
 
-	// Insert pushed document data into database.
-	document, err := backend.GetDocumentByID(sbomID)
-	if err != nil {
-		return fmt.Errorf("%w", err)
+	for _, id := range sbomIDs {
+		// retrieve sbom document from database.
+		document, err := backend.GetDocumentByID(id)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		err = pushDocument(document, destPath, opts)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
 
-	// Push externally referenced BOMs
-	return pushDocument(document, destPath, opts)
+	return nil
 }
 
 func New(sbomURL string) (Pusher, error) {
@@ -85,7 +91,7 @@ func New(sbomURL string) (Pusher, error) {
 func pushDocument(document *sbom.Document, destPath string, opts *Options) error {
 	opts.Logger.Info("Pushing Document", "sbomID", document.Metadata.Id)
 
-	pusher, err := NewPusher(destPath)
+	pusher, err := New(destPath)
 	if err != nil {
 		return err
 	}
