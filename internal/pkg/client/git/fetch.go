@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/git/git.go
+// SPDX-FileName: internal/pkg/client/git/fetch.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -30,58 +29,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-type Fetcher struct{}
-
-func (*Fetcher) Name() string {
-	return "Git"
-}
-
-func (*Fetcher) RegExp() *regexp.Regexp {
-	return regexp.MustCompile(
-		fmt.Sprintf("^%s%s%s%s%s$",
-			`((?:git\+)?(?P<scheme>https?|git|ssh):\/\/)?`,
-			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
-			`(?:[\/:](?P<path>[^@#]+\.git)@?)`,
-			`((?:@(?P<gitRef>[^#]+))(?:#(?P<fragment>.*)))?`,
-		),
-	)
-}
-
-func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
-	results := map[string]string{}
-	pattern := fetcher.RegExp()
-	match := pattern.FindStringSubmatch(fetchURL)
-
-	for idx, name := range match {
-		results[pattern.SubexpNames()[idx]] = name
-	}
-
-	if results["scheme"] == "" {
-		results["scheme"] = "ssh"
-	}
-
-	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path", "gitRef", "fragment"} {
-		if value, ok := results[required]; !ok || value == "" {
-			return nil
-		}
-	}
-
-	return &url.ParsedURL{
-		Scheme:   results["scheme"],
-		Username: results["username"],
-		Password: results["password"],
-		Hostname: results["hostname"],
-		Port:     results["port"],
-		Path:     results["path"],
-		GitRef:   results["gitRef"],
-		Query:    results["query"],
-		Fragment: results["fragment"],
-	}
-}
-
-func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
+func (*Client) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
 	// Create temp directory to clone into.
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
 	if err != nil {

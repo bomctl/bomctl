@@ -22,8 +22,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/jdx/go-netrc"
 )
 
 type BasicAuth struct {
@@ -59,6 +63,26 @@ func (auth *BasicAuth) String() string {
 	}
 
 	return fmt.Sprintf("Authorization: Basic %s:%s", auth.Username, masked)
+}
+
+func (auth *BasicAuth) UseNetRC(hostname string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	authFile, err := netrc.Parse(filepath.Join(home, ".netrc"))
+	if err != nil {
+		return fmt.Errorf("failed to parse .netrc file: %w", err)
+	}
+
+	// Use credentials in .netrc if entry for the hostname is found
+	if machine := authFile.Machine(hostname); machine != nil {
+		auth.Username = machine.Get("login")
+		auth.Password = machine.Get("password")
+	}
+
+	return nil
 }
 
 type ParsedURL struct {
