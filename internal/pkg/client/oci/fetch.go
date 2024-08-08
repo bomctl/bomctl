@@ -51,7 +51,12 @@ func (*Client) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, err
 	ctx := context.Background()
 	memStore := memory.New()
 
-	if manifestDescriptor, err = fetchManifestDescriptor(ctx, memStore, repo, parsedURL.Tag); err != nil {
+	ref := parsedURL.Tag
+	if ref == "" {
+		ref = parsedURL.Digest
+	}
+
+	if manifestDescriptor, err = fetchManifestDescriptor(ctx, memStore, repo, ref); err != nil {
 		return nil, err
 	}
 
