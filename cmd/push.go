@@ -37,8 +37,8 @@ func pushCmd() *cobra.Command {
 	pushCmd := &cobra.Command{
 		Use:    "push [flags] SBOM_ID DEST_PATH...",
 		Args:   cobra.MinimumNArgs(pushArgNum),
-		Short:  "Push SBOM file(s) to HTTP(S) URLs, OCI, Git Repos, FileSystem",
-		Long:   "Push SBOM file(s) to HTTP(S) URLs, OCI, Git Repos, FileSystem",
+		Short:  "Push stored SBOM file(s) to remote URL or filesystem",
+		Long:   "Push stored SBOM file(s) to remote URL or filesystem",
 		PreRun: preRun(opts.Options),
 		Run: func(_ *cobra.Command, args []string) {
 			if err := push.Push(args[0], args[1], opts); err != nil {
@@ -50,7 +50,7 @@ func pushCmd() *cobra.Command {
 	pushCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
 	pushCmd.Flags().StringP("format", "f", formats.CDXFORMAT, formatHelp())
 	pushCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
-	pushCmd.Flags().BoolVar(&opts.UseTree, "tree", false, "Push all Sboms in Tree to specified Destination")
+	pushCmd.Flags().BoolVar(&opts.UseTree, "tree", false, "Recursively push all SBOMs in external reference tree")
 
 	return pushCmd
 }

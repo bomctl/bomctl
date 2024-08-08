@@ -72,7 +72,7 @@ func Push(sbomID, destPath string, opts *Options) error {
 	return pushDocument(document, destPath, opts)
 }
 
-func NewPusher(sbomURL string) (Pusher, error) {
+func New(sbomURL string) (Pusher, error) {
 	for _, pusher := range []Pusher{} {
 		if parsedURL := pusher.Parse(sbomURL); parsedURL != nil {
 			return pusher, nil
