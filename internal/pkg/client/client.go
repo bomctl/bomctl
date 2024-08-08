@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/protobom/protobom/pkg/sbom"
+
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
@@ -44,12 +46,13 @@ type (
 	}
 
 	Pusher interface {
-		Push(*url.ParsedURL, *url.BasicAuth) error
+		Push(*sbom.Document, *url.ParsedURL, *url.BasicAuth) error
 	}
 
 	PushOptions struct {
 		*options.Options
 		UseNetRC bool
+		UseTree  bool
 	}
 
 	Client interface {

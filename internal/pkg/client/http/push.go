@@ -18,8 +18,12 @@
 // ------------------------------------------------------------------------
 package http
 
-import "github.com/bomctl/bomctl/internal/pkg/url"
+import (
+	"github.com/protobom/protobom/pkg/sbom"
 
-func (*Client) Push(_parsedURL *url.ParsedURL, _auth *url.BasicAuth) error {
+	"github.com/bomctl/bomctl/internal/pkg/url"
+)
+
+func (*Client) Push(_document *sbom.Document, _parsedURL *url.ParsedURL, _auth *url.BasicAuth) error {
 	return nil
 }
