@@ -201,6 +201,9 @@ lint-yaml: # Lint YAML files
 .PHONY: lint
 lint: lint-go lint-markdown lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files
 
+.PHONY: lint-fix
+lint-fix: lint-go-fix lint-markdown-fix lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files, apply fixes where possible
+
 #@ Test
 .PHONY: test-unit
 test-unit: # Run unit tests
