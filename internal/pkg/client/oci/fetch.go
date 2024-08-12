@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/oci/oci.go
+// SPDX-FileName: internal/pkg/client/oci/fetch.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -20,9 +20,7 @@ package oci
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -37,71 +35,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
-
-type Fetcher struct{}
-
-func (*Fetcher) Name() string {
-	return "OCI"
-}
-
-func (*Fetcher) RegExp() *regexp.Regexp {
-	return regexp.MustCompile(
-		fmt.Sprintf("^%s%s%s%s%s$",
-			`((?P<scheme>oci|docker)(?:-archive)?:\/\/)?`,
-			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?`,
-			`(?:\/(?P<path>[^:@]+))`,
-			`((?::(?P<tag>[^@]+))|(?:@(?P<digest>sha256:[A-Fa-f0-9]{64})))?`,
-		),
-	)
-}
-
-func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
-	results := map[string]string{}
-	pattern := fetcher.RegExp()
-	match := pattern.FindStringSubmatch(fetchURL)
-
-	for idx, name := range match {
-		results[pattern.SubexpNames()[idx]] = name
-	}
-
-	if results["scheme"] == "docker" || results["scheme"] == "" {
-		results["scheme"] = "oci"
-	}
-
-	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path"} {
-		if value, ok := results[required]; !ok || value == "" {
-			return nil
-		}
-	}
-
-	// One and only one of `tag` or `digest` must be present.
-	tag, ok := results["tag"]
-	hasTag := ok && tag != ""
-
-	digest, ok := results["digest"]
-	hasDigest := ok && digest != ""
-
-	// If both `tag` and `digest` are present, or neither are.
-	if hasTag == hasDigest {
-		return nil
-	}
-
-	return &url.ParsedURL{
-		Scheme:   results["scheme"],
-		Username: results["username"],
-		Password: results["password"],
-		Hostname: results["hostname"],
-		Port:     results["port"],
-		Path:     results["path"],
-		Tag:      results["tag"],
-		Digest:   results["digest"],
-	}
-}
-
-func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
+func (*Client) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
 	var (
 		err                                error
 		manifestDescriptor, sbomDescriptor *ocispec.Descriptor
@@ -117,7 +51,12 @@ func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, er
 	ctx := context.Background()
 	memStore := memory.New()
 
-	if manifestDescriptor, err = fetchManifestDescriptor(ctx, memStore, repo, parsedURL.Tag); err != nil {
+	ref := parsedURL.Tag
+	if ref == "" {
+		ref = parsedURL.Digest
+	}
+
+	if manifestDescriptor, err = fetchManifestDescriptor(ctx, memStore, repo, ref); err != nil {
 		return nil, err
 	}
 
