@@ -113,7 +113,59 @@ TBD
 
 ### Trim (Planned)
 
-TBD
+Aliases:
+  list, ls
+
+Flags:
+  -h, --help   help for list
+```
+
+### Merge
+
+Merge specified cached SBOM documents.
+
+```shell
+  bomctl merge [flags] DOCUMENT_ID...
+
+Flags:
+  -h, --help          help for merge
+  -n, --name string   Name of merged document
+```
+
+## Roadmap
+
+The project is focused on building an architecture that enables reading in, operating on, and reading
+out collections of SBOM files independent of format. This project requires an architecture that prioritizes the relationships between components in a SBOM document and between SBOM documents.
+
+Once this architecture is established, more complex operations can be implemented. This operations include:
+
+- `Diff`
+  - Generating diffs between components and component dependencies
+  - Generating diffs of component properties
+  - Creating diffs in machine readable and human readable formats
+- `Enrich`
+  - Use the [Transparency Exchange API](https://github.com/CycloneDX/transparency-exchange-api) to find enrich sbom components with additional data.
+  - Interface with [GUAC](https://guac.sh/)
+- `Merge`
+  - Merge fields from similar components in two or more SBOM documents
+  - Merge components and component dependencies from two or more SBOM documents
+  - Flatten multiple SBOM document component dependencies into a single SBOM document
+- `Redact`
+  - Redact fields by regular expressions or field name while keeping tracibility to the original document
+- `Split`
+  - Split an SBOM dependency tree into multiple files based on purl type or component identifier
+- `Trim`
+  - Trim an SBOM dependency tree based on purl type or component identifier
+- __Your suggestions too!__
+
+We use [Architecture Decision Records](docs/architecture/README.md) to track key decisions on the architecture and implementation details of `bomctl`. Decisions that are proposed but not finalized have the [adr label](https://github.com/bomctl/bomctl/labels/adr).
+
+## Similar Projects
+
+- [Kubernetes bom](https://github.com/kubernetes-sigs/bom) is a utility that lets you create, view and transform Software Bills of Materials (SBOMs). bom was created as part of the project to create an SBOM for the Kubernetes project. It enables software authors to generate an SBOM for their projects in a simple, yet powerful way.
+- [CycloneDX sbom-utility](https://github.com/CycloneDX/sbom-utility) was designed to be an API platform to validate, analyze and edit Bills-of-Materials (BOMs). Initially, it was created to validate either CycloneDX or SPDX-formatted BOMs against official, versioned JSON schemas as published by their respective standards communities.
+- [Hoppr](https://hoppr.dev/) is a Python plugin-based framework for collecting, processing, and bundling your software supply chain.
+- [sbommerge](https://github.com/anthonyharrison/sbommerge) merges two Software Bill of Materials (SBOMs) documents together. It supports SBOMs created in both SPDX and CycloneDX formats.
 
 ## Verifying Integrity
 
