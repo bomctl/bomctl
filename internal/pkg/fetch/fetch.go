@@ -57,6 +57,11 @@ func Fetch(sbomURL string, opts *client.FetchOptions) error {
 		return fmt.Errorf("error adding document: %w", err)
 	}
 
+	if opts.Alias != "" {
+		backend.AddAnnotations(document.Metadata.Id, "alias", opts.Alias)
+	}
+	backend.AddAnnotations(document.Metadata.Id, "tag", opts.Tags...)
+
 	if opts.OutputFile == nil || opts.OutputFile.Name() == "" {
 		return nil
 	}

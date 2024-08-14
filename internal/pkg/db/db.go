@@ -20,6 +20,7 @@ package db
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
@@ -71,6 +72,47 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	}
 
 	return document, nil
+}
+
+func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Document, error) {
+
+	documents, err := backend.GetDocumentsByID(ids...)
+
+	if len(documents) == 0 && len(ids) > 0 {
+		documents, err = backend.GetDocumentsByAnnotation("alias", ids...)
+	}
+
+	if err != nil && len(tags) > 0 {
+		tagged_documents, err := backend.GetDocumentsByAnnotation("tag", tags...)
+		if err != nil {
+			return nil, err
+		}
+
+		tagged_document_ids := []string{}
+		for _, tagged_doc := range tagged_documents {
+			tagged_document_ids = append(tagged_document_ids, tagged_doc.Metadata.Id)
+		}
+
+		filtered_documents := []*sbom.Document{}
+		for _, doc := range documents {
+			if slices.Contains(tagged_document_ids, doc.Metadata.Id) {
+				filtered_documents = append(filtered_documents, doc)
+			}
+		}
+		documents = filtered_documents
+	}
+
+	return documents, err
+}
+
+func (backend *Backend) GetDocument(id string, tags ...string) (*sbom.Document, error) {
+	documents, err := backend.GetDocuments([]string{id}, tags...)
+
+	if len(documents) > 0 {
+		return documents[0], err
+	}
+
+	return nil, fmt.Errorf("no document found")
 }
 
 // Debug enables debug logging for all database transactions.

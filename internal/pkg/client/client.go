@@ -43,6 +43,8 @@ type (
 		OutputFile *os.File
 		*options.Options
 		UseNetRC bool
+		Alias    string
+		Tags     []string
 	}
 
 	Pusher interface {

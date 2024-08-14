@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
@@ -48,8 +49,19 @@ const (
 	rowMaxHeight = 1
 )
 
+type (
+	ListOptions struct {
+		*options.Options
+		Tags []string
+	}
+)
+
 func listCmd() *cobra.Command {
 	documentIDs := []string{}
+
+	opts := &ListOptions{
+		Options: options.New(options.WithLogger(utils.NewLogger("list"))),
+	}
 
 	listCmd := &cobra.Command{
 		Use:     "list [flags] SBOM_ID...",
@@ -58,6 +70,7 @@ func listCmd() *cobra.Command {
 		Long:    "List SBOM documents in local cache",
 		PreRun: func(_ *cobra.Command, args []string) {
 			documentIDs = append(documentIDs, args...)
+			preRun(opts.Options)
 		},
 		Run: func(cmd *cobra.Command, _ []string) {
 			verbosity, err := cmd.Flags().GetCount("verbose")
@@ -74,25 +87,31 @@ func listCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocumentsByID(documentIDs...)
+			documents, err := backend.GetDocuments(documentIDs, opts.Tags...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
 			rows := [][]string{}
 			for _, document := range documents {
+
+				alias, err := backend.GetDocumentAlias(document.Metadata.Id)
+				if err != nil {
+					backend.Logger.Fatalf("failed to get alias: %v", err)
+				}
+
 				id := document.Metadata.Name
 				if id == "" {
 					id = document.Metadata.Id
 				}
 
 				rows = append(rows, []string{
-					id, document.Metadata.Version, fmt.Sprint(len(document.NodeList.Nodes)),
+					id, alias, document.Metadata.Version, fmt.Sprint(len(document.NodeList.Nodes)),
 				})
 			}
 
 			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
-				Headers("ID", "Version", "# Nodes").
+				Headers("ID", "Alias", "Version", "# Nodes").
 				Rows(rows...).
 				BorderTop(false).
 				BorderBottom(false).
@@ -104,6 +123,8 @@ func listCmd() *cobra.Command {
 			)
 		},
 	}
+
+	listCmd.Flags().StringArrayVarP(&opts.Tags, "tag", "t", []string{}, "Tag used to filter listed documents. Can be specified multiple times to filter using multiple tags.")
 
 	return listCmd
 }

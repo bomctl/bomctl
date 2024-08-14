@@ -66,8 +66,10 @@ func fetchCmd() *cobra.Command {
 		},
 	}
 
-	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
-	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
+	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file.")
+	fetchCmd.Flags().BoolVarP(&opts.UseNetRC, "netrc", "n", false, "Use .netrc file for authentication to remote hosts.")
+	fetchCmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias used to identify the fetched document in a readable manner.")
+	fetchCmd.Flags().StringArrayVarP(&opts.Tags, "tag", "t", []string{}, "Tag used to mark the fetched document. Can be specified multiple times to add multiple tags.")
 
 	return fetchCmd
 }
