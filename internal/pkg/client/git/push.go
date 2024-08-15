@@ -18,12 +18,8 @@
 // ------------------------------------------------------------------------
 package git
 
-import (
-	"github.com/protobom/protobom/pkg/sbom"
+import "github.com/bomctl/bomctl/internal/pkg/options"
 
-	"github.com/bomctl/bomctl/internal/pkg/url"
-)
-
-func (*Client) Push(_document *sbom.Document, _parsedURL *url.ParsedURL, _auth *url.BasicAuth) error {
+func (*Client) Push(_id, _pushURL string, _opts *options.PushOptions) error {
 	return nil
 }
