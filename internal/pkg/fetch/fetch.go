@@ -41,7 +41,9 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 		return err
 	}
 
-	backend, err := db.NewBackend(opts.Options)
+	backend, err := db.NewBackend(
+		db.WithDatabaseFile("bomctl.db"),
+		db.WithOptions(opts.Options))
 	if err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}

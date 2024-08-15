@@ -63,11 +63,14 @@ func listCmd() *cobra.Command {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
-			backend, err := db.NewBackend(&options.Options{
-				Debug:    (verbosity >= minDebugLevel),
+			opts := &options.Options{
 				CacheDir: viper.GetString("cache_dir"),
 				Logger:   utils.NewLogger("list"),
-			})
+			}
+			backend, err := db.NewBackend(
+				db.Debug(verbosity >= minDebugLevel),
+				db.WithDatabaseFile("bomctl.db"),
+				db.WithOptions(opts))
 			if err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
 			}

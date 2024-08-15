@@ -20,14 +20,12 @@ package db
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 const DatabaseFile string = "bomctl.db"
@@ -35,22 +33,20 @@ const DatabaseFile string = "bomctl.db"
 type (
 	Backend struct {
 		*ent.Backend
-		Logger *log.Logger
+		*options.Options
 	}
 
 	Option func(*Backend)
 )
 
-func NewBackend(opts *options.Options) (*Backend, error) {
+func NewBackend(opts ...Option) (*Backend, error) {
 	backend := &Backend{
 		Backend: ent.NewBackend(),
-		Logger:  utils.NewLogger("db"),
 	}
 
-	backend.
-		Debug(opts.Debug).
-		WithDatabaseFile(filepath.Join(opts.CacheDir, DatabaseFile)).
-		WithLogger(opts.Logger)
+	for _, opt := range opts {
+		opt(backend)
+	}
 
 	if err := backend.InitClient(); err != nil {
 		return nil, fmt.Errorf("failed to initialize backend client: %w", err)
@@ -80,9 +76,9 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	return document, nil
 }
 
-// Debug enables debug logging for all database transactions.
-func (backend *Backend) Debug(debug bool) *Backend {
-	backend.Options.Debug = debug
+// WithOptions sets the options for the backend.
+func (backend *Backend) WithOptions(opts *options.Options) *Backend {
+	backend.Options = opts
 
 	return backend
 }
@@ -94,30 +90,23 @@ func (backend *Backend) WithLogger(logger *log.Logger) *Backend {
 	return backend
 }
 
-// WithDatabaseFile sets the database file for the backend.
-func (backend *Backend) WithDatabaseFile(file string) *Backend {
-	backend.Options.DatabaseFile = file
-
-	return backend
+// WithOptions sets the options for the backend.
+func WithOptions(opts *options.Options) Option {
+	return func(backend *Backend) {
+		backend.WithOptions(opts)
+	}
 }
 
 // Debug enables debug logging for all database transactions.
 func Debug(debug bool) Option {
 	return func(backend *Backend) {
-		backend.Debug(debug)
-	}
-}
-
-// WithLogger sets the logger for the backend.
-func WithLogger(logger *log.Logger) Option {
-	return func(backend *Backend) {
-		backend.WithLogger(logger)
+		backend.Options.Debug = debug
 	}
 }
 
 // WithDatabaseFile sets the database file for the backend.
 func WithDatabaseFile(file string) Option {
 	return func(backend *Backend) {
-		backend.WithDatabaseFile(file)
+		backend.Backend.Options.DatabaseFile = file
 	}
 }
