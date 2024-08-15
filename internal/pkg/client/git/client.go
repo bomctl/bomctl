@@ -43,10 +43,10 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(fetchURL string) *url.ParsedURL {
+func (client *Client) Parse(_url string) *url.ParsedURL {
 	results := map[string]string{}
 	pattern := client.RegExp()
-	match := pattern.FindStringSubmatch(fetchURL)
+	match := pattern.FindStringSubmatch(_url)
 
 	for idx, name := range match {
 		results[pattern.SubexpNames()[idx]] = name

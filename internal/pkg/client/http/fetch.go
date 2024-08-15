@@ -24,10 +24,20 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func (*Client) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
+func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
+	parsedURL := client.Parse(fetchURL)
+	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+
+	if opts.UseNetRC {
+		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+			return nil, fmt.Errorf("failed to set auth: %w", err)
+		}
+	}
+
 	req, err := http.NewRequestWithContext(context.Background(), "GET", parsedURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating request to %s: %w", parsedURL.String(), err)

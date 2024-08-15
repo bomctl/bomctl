@@ -32,21 +32,17 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func Fetch(sbomURL string, opts *client.FetchOptions) error {
+func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	document, err := fetchDocument(sbomURL, opts)
 	if err != nil {
 		return err
 	}
 
-	backend := db.NewBackend().
-		Debug(opts.Debug).
-		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
-		WithLogger(opts.Logger)
-
-	if err := backend.InitClient(); err != nil {
+	backend, err := db.NewBackend(opts.Options)
+	if err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
 
@@ -65,7 +61,7 @@ func Fetch(sbomURL string, opts *client.FetchOptions) error {
 	return fetchExternalReferences(document, backend, opts)
 }
 
-func fetchDocument(sbomURL string, opts *client.FetchOptions) (*sbom.Document, error) {
+func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
@@ -73,16 +69,7 @@ func fetchDocument(sbomURL string, opts *client.FetchOptions) (*sbom.Document, e
 
 	opts.Logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
 
-	parsedURL := fetcher.Parse(sbomURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
-
-	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
-			return nil, fmt.Errorf("parsing .netrc credentials: %w", err)
-		}
-	}
-
-	sbomData, err := fetcher.Fetch(parsedURL, auth)
+	sbomData, err := fetcher.Fetch(sbomURL, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch from %s: %w", sbomURL, err)
 	}
@@ -104,7 +91,7 @@ func fetchDocument(sbomURL string, opts *client.FetchOptions) (*sbom.Document, e
 	return document, nil
 }
 
-func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *client.FetchOptions) error {
+func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
 	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
 	if err != nil {
 		return fmt.Errorf("error getting external references: %w", err)

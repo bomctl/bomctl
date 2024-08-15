@@ -21,9 +21,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"os"
-
-	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
@@ -35,31 +32,11 @@ import (
 var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
 
 type (
-	Fetcher interface {
-		Fetch(*url.ParsedURL, *url.BasicAuth) ([]byte, error)
-	}
-
-	FetchOptions struct {
-		OutputFile *os.File
-		*options.Options
-		UseNetRC bool
-	}
-
-	Pusher interface {
-		Push(*sbom.Document, *url.ParsedURL, *url.BasicAuth) error
-	}
-
-	PushOptions struct {
-		*options.Options
-		UseNetRC bool
-		UseTree  bool
-	}
-
 	Client interface {
 		url.Parser
 		Name() string
-		Fetcher
-		Pusher
+		Fetch(string, *options.FetchOptions) ([]byte, error)
+		Push(string, string, *options.PushOptions) error
 	}
 )
 

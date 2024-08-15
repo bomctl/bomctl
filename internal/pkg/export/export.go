@@ -21,7 +21,6 @@ package export
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/writer"
@@ -39,12 +38,8 @@ type Options struct {
 func Export(sbomID string, opts *Options) error {
 	opts.Logger.Info("Exporting Document", "sbomID", sbomID)
 
-	backend := db.NewBackend().
-		Debug(opts.Debug).
-		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
-		WithLogger(opts.Logger)
-
-	if err := backend.InitClient(); err != nil {
+	backend, err := db.NewBackend(opts.Options)
+	if err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
 

@@ -30,6 +30,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 type dbSuite struct {
@@ -55,10 +56,10 @@ func (dbs *dbSuite) SetupSuite() {
 		dbs.documents = append(dbs.documents, doc)
 	}
 
-	dbs.backend = db.NewBackend()
-	dbs.backend.Options.DatabaseFile = db.DatabaseFile
+	dbs.backend, err = db.NewBackend(&options.Options{})
 
-	if err := dbs.backend.InitClient(); err != nil {
+	dbs.backend.Options.DatabaseFile = db.DatabaseFile
+	if err != nil {
 		dbs.T().Fatalf("%v", err)
 	}
 }

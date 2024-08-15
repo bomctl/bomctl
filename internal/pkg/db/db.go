@@ -20,11 +20,13 @@ package db
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
@@ -39,17 +41,22 @@ type (
 	Option func(*Backend)
 )
 
-func NewBackend(opts ...Option) *Backend {
+func NewBackend(opts *options.Options) (*Backend, error) {
 	backend := &Backend{
 		Backend: ent.NewBackend(),
 		Logger:  utils.NewLogger("db"),
 	}
 
-	for _, opt := range opts {
-		opt(backend)
+	backend.
+		Debug(opts.Debug).
+		WithDatabaseFile(filepath.Join(opts.CacheDir, DatabaseFile)).
+		WithLogger(opts.Logger)
+
+	if err := backend.InitClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize backend client: %w", err)
 	}
 
-	return backend
+	return backend, nil
 }
 
 // AddDocument adds the protobom Document to the database.
