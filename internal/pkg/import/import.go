@@ -23,8 +23,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/protobom/protobom/pkg/reader"
+	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -37,7 +39,7 @@ type ImportOptions struct {
 
 func Import(opts *ImportOptions) error {
 	backend, err := db.NewBackend(
-		db.WithDatabaseFile("bomctl.db"),
+		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
 		db.WithOptions(opts.Options))
 	if err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)

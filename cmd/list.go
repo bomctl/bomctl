@@ -21,6 +21,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
@@ -63,14 +64,16 @@ func listCmd() *cobra.Command {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
-			opts := &options.Options{
-				CacheDir: viper.GetString("cache_dir"),
-				Logger:   utils.NewLogger("list"),
-			}
 			backend, err := db.NewBackend(
 				db.Debug(verbosity >= minDebugLevel),
-				db.WithDatabaseFile("bomctl.db"),
-				db.WithOptions(opts))
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
+				db.WithOptions(options.New(
+					options.WithCacheDir(viper.GetString("cache_dir")),
+					options.WithConfigFile(viper.ConfigFileUsed()),
+					options.WithDebug(verbosity >= minDebugLevel),
+					options.WithLogger(utils.NewLogger("")),
+				)),
+			)
 			if err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
 			}
