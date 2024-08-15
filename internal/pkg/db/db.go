@@ -42,6 +42,7 @@ type (
 func NewBackend(opts ...Option) (*Backend, error) {
 	backend := &Backend{
 		Backend: ent.NewBackend(),
+		Options: options.New(),
 	}
 
 	for _, opt := range opts {

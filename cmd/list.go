@@ -25,6 +25,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -71,7 +72,7 @@ func listCmd() *cobra.Command {
 					options.WithCacheDir(viper.GetString("cache_dir")),
 					options.WithConfigFile(viper.ConfigFileUsed()),
 					options.WithDebug(verbosity >= minDebugLevel),
-					options.WithLogger(utils.NewLogger("")),
+					options.WithLogger(utils.NewLogger("list")),
 				)),
 			)
 			if err != nil {
@@ -87,14 +88,7 @@ func listCmd() *cobra.Command {
 
 			rows := [][]string{}
 			for _, document := range documents {
-				id := document.Metadata.Name
-				if id == "" {
-					id = document.Metadata.Id
-				}
-
-				rows = append(rows, []string{
-					id, document.Metadata.Version, fmt.Sprint(len(document.NodeList.Nodes)),
-				})
+				rows = append(rows, getRow(document))
 			}
 
 			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
@@ -136,4 +130,13 @@ func styleFunc(row, col int) lipgloss.Style {
 		Width(width).
 		AlignHorizontal(align).
 		MaxHeight(rowMaxHeight)
+}
+
+func getRow(doc *sbom.Document) []string {
+	id := doc.Metadata.Name
+	if id == "" {
+		id = doc.Metadata.Id
+	}
+
+	return []string{id, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
 }
