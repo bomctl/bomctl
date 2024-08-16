@@ -25,10 +25,12 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
@@ -63,12 +65,17 @@ func listCmd() *cobra.Command {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("list"))
-
-			if err := backend.InitClient(); err != nil {
+			backend, err := db.NewBackend(
+				db.Debug(verbosity >= minDebugLevel),
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
+				db.WithOptions(options.New(
+					options.WithCacheDir(viper.GetString("cache_dir")),
+					options.WithConfigFile(viper.ConfigFileUsed()),
+					options.WithDebug(verbosity >= minDebugLevel),
+					options.WithLogger(utils.NewLogger("list")),
+				)),
+			)
+			if err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
 			}
 
@@ -81,14 +88,7 @@ func listCmd() *cobra.Command {
 
 			rows := [][]string{}
 			for _, document := range documents {
-				id := document.Metadata.Name
-				if id == "" {
-					id = document.Metadata.Id
-				}
-
-				rows = append(rows, []string{
-					id, document.Metadata.Version, fmt.Sprint(len(document.NodeList.Nodes)),
-				})
+				rows = append(rows, getRow(document))
 			}
 
 			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
@@ -130,4 +130,13 @@ func styleFunc(row, col int) lipgloss.Style {
 		Width(width).
 		AlignHorizontal(align).
 		MaxHeight(rowMaxHeight)
+}
+
+func getRow(doc *sbom.Document) []string {
+	id := doc.Metadata.Name
+	if id == "" {
+		id = doc.Metadata.Id
+	}
+
+	return []string{id, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
 }

@@ -20,47 +20,13 @@ package push
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-
-	"github.com/jdx/go-netrc"
-	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
-	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func Push(sbomIDs []string, destPath string, opts *client.PushOptions) error {
-	backend := db.NewBackend().
-		Debug(opts.Debug).
-		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
-		WithLogger(opts.Logger)
-
-	if err := backend.InitClient(); err != nil {
-		return fmt.Errorf("failed to initialize backend client: %w", err)
-	}
-
-	defer backend.CloseClient()
-
-	for _, id := range sbomIDs {
-		// retrieve sbom document from database.
-		document, err := backend.GetDocumentByID(id)
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-
-		err = pushDocument(document, destPath, opts)
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-	}
-
-	return nil
-}
-
-func pushDocument(document *sbom.Document, destPath string, opts *client.PushOptions) error {
-	opts.Logger.Info("Pushing Document", "sbomID", document.Metadata.Id)
+func Push(sbomID, destPath string, opts *options.PushOptions) error {
+	opts.Logger.Info("Pushing Document", "sbomID", sbomID)
 
 	pusher, err := client.New(destPath)
 	if err != nil {
@@ -69,38 +35,9 @@ func pushDocument(document *sbom.Document, destPath string, opts *client.PushOpt
 
 	opts.Logger.Info(fmt.Sprintf("Pushing to %s URL", pusher.Name()), "url", destPath)
 
-	parsedURL := pusher.Parse(destPath)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
-
-	if opts.UseNetRC {
-		if err := setNetRCAuth(parsedURL.Hostname, auth); err != nil {
-			return err
-		}
-	}
-
-	err = pusher.Push(document, parsedURL, auth)
+	err = pusher.Push(sbomID, destPath, opts)
 	if err != nil {
-		return fmt.Errorf("failed to push from %s: %w", parsedURL, err)
-	}
-
-	return nil
-}
-
-func setNetRCAuth(hostname string, auth *url.BasicAuth) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	authFile, err := netrc.Parse(filepath.Join(home, ".netrc"))
-	if err != nil {
-		return fmt.Errorf("failed to parse .netrc file: %w", err)
-	}
-
-	// Use credentials in .netrc if entry for the hostname is found
-	if machine := authFile.Machine(hostname); machine != nil {
-		auth.Username = machine.Get("login")
-		auth.Password = machine.Get("password")
+		return fmt.Errorf("failed to push to %s: %w", destPath, err)
 	}
 
 	return nil

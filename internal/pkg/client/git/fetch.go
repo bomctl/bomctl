@@ -26,10 +26,19 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func (*Client) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
+func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
+	parsedURL := client.Parse(fetchURL)
+	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+
+	if opts.UseNetRC {
+		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+			return nil, fmt.Errorf("failed to set auth: %w", err)
+		}
+	}
 	// Create temp directory to clone into.
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
 	if err != nil {
