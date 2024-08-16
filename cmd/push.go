@@ -30,18 +30,31 @@ import (
 const pushArgNum = 2
 
 func pushCmd() *cobra.Command {
-	opts := &push.Options{
+	opts := &options.PushOptions{
 		Options: options.New(options.WithLogger(utils.NewLogger("push"))),
 	}
 
 	pushCmd := &cobra.Command{
-		Use:    "push [flags] SBOM_ID [SBOM_ID...] DEST_PATH",
+		Use:    "push [flags] SBOM_ID DEST_PATH",
 		Args:   cobra.MinimumNArgs(pushArgNum),
-		Short:  "Push stored SBOM file(s) to remote URL or filesystem",
-		Long:   "Push stored SBOM file(s) to remote URL or filesystem",
+		Short:  "Push stored SBOM file to remote URL or filesystem",
+		Long:   "Push stored SBOM file to remote URL or filesystem",
 		PreRun: preRun(opts.Options),
-		Run: func(_ *cobra.Command, args []string) {
-			if err := push.Push(args[:len(args)-1], args[len(args)-1], opts); err != nil {
+		Run: func(cmd *cobra.Command, args []string) {
+			formatString, err := cmd.Flags().GetString("format")
+			cobra.CheckErr(err)
+
+			encoding, err := cmd.Flags().GetString("encoding")
+			cobra.CheckErr(err)
+
+			format, err := parseFormat(formatString, encoding)
+			if err != nil {
+				opts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
+			}
+
+			opts.Format = format
+
+			if err := push.Push(args[0], args[1], opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 		},

@@ -29,7 +29,7 @@ import (
 )
 
 func fetchCmd() *cobra.Command {
-	opts := &fetch.Options{
+	opts := &options.FetchOptions{
 		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
 	}
 

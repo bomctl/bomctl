@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/git/git_test.go
+// SPDX-FileName: internal/pkg/client/git/fetch_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -23,14 +23,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
+	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func TestFetcher_Parse(t *testing.T) {
+func TestParse(t *testing.T) {
 	t.Parallel()
 
-	fetcher := &git.Fetcher{}
+	client := &git.Client{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -254,7 +254,7 @@ func TestFetcher_Parse(t *testing.T) {
 		t.Run(data.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := fetcher.Parse(data.url)
+			actual := client.Parse(data.url)
 
 			assert.Equal(t, data.expected, actual, data.url)
 		})

@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/push/push.go
+// SPDX-FileName: internal/pkg/client/git/push.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,29 +16,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package push
+package git
 
-import (
-	"fmt"
+import "github.com/bomctl/bomctl/internal/pkg/options"
 
-	"github.com/bomctl/bomctl/internal/pkg/client"
-	"github.com/bomctl/bomctl/internal/pkg/options"
-)
-
-func Push(sbomID, destPath string, opts *options.PushOptions) error {
-	opts.Logger.Info("Pushing Document", "sbomID", sbomID)
-
-	pusher, err := client.New(destPath)
-	if err != nil {
-		return fmt.Errorf("creating push client: %w", err)
-	}
-
-	opts.Logger.Info(fmt.Sprintf("Pushing to %s URL", pusher.Name()), "url", destPath)
-
-	err = pusher.Push(sbomID, destPath, opts)
-	if err != nil {
-		return fmt.Errorf("failed to push to %s: %w", destPath, err)
-	}
-
+func (*Client) Push(_id, _pushURL string, _opts *options.PushOptions) error {
 	return nil
 }

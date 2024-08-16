@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/push/push.go
+// SPDX-FileName: internal/pkg/client/client.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,29 +16,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package push
+package client
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/bomctl/bomctl/internal/pkg/client"
+	"github.com/bomctl/bomctl/internal/pkg/client/git"
+	"github.com/bomctl/bomctl/internal/pkg/client/http"
+	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func Push(sbomID, destPath string, opts *options.PushOptions) error {
-	opts.Logger.Info("Pushing Document", "sbomID", sbomID)
+var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
 
-	pusher, err := client.New(destPath)
-	if err != nil {
-		return fmt.Errorf("creating push client: %w", err)
+type (
+	Client interface {
+		url.Parser
+		Name() string
+		Fetch(string, *options.FetchOptions) ([]byte, error)
+		Push(string, string, *options.PushOptions) error
+	}
+)
+
+func New(sbomURL string) (Client, error) {
+	for _, client := range []Client{&git.Client{}, &http.Client{}, &oci.Client{}} {
+		if parsedURL := client.Parse(sbomURL); parsedURL != nil {
+			return client, nil
+		}
 	}
 
-	opts.Logger.Info(fmt.Sprintf("Pushing to %s URL", pusher.Name()), "url", destPath)
-
-	err = pusher.Push(sbomID, destPath, opts)
-	if err != nil {
-		return fmt.Errorf("failed to push to %s: %w", destPath, err)
-	}
-
-	return nil
+	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
 }

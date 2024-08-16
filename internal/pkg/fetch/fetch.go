@@ -20,7 +20,6 @@ package fetch
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -28,46 +27,25 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/jdx/go-netrc"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/spf13/viper"
 
+	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/git"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/http"
-	"github.com/bomctl/bomctl/internal/pkg/fetch/oci"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var errUnsupportedURL = errors.New("failed to parse URL; see `bomctl fetch --help` for valid URL patterns")
-
-type (
-	Fetcher interface {
-		url.Parser
-		Fetch(*url.ParsedURL, *url.BasicAuth) ([]byte, error)
-		Name() string
-	}
-
-	Options struct {
-		OutputFile *os.File
-		*options.Options
-		UseNetRC bool
-	}
-)
-
-func Fetch(sbomURL string, opts *Options) error {
+func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	document, err := fetchDocument(sbomURL, opts)
 	if err != nil {
 		return err
 	}
 
-	backend := db.NewBackend().
-		Debug(opts.Debug).
-		WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)).
-		WithLogger(opts.Logger)
-
-	if err := backend.InitClient(); err != nil {
+	backend, err := db.NewBackend(
+		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
+		db.WithOptions(opts.Options))
+	if err != nil {
 		return fmt.Errorf("failed to initialize backend client: %w", err)
 	}
 
@@ -86,34 +64,15 @@ func Fetch(sbomURL string, opts *Options) error {
 	return fetchExternalReferences(document, backend, opts)
 }
 
-func NewFetcher(sbomURL string) (Fetcher, error) {
-	for _, fetcher := range []Fetcher{&git.Fetcher{}, &http.Fetcher{}, &oci.Fetcher{}} {
-		if parsedURL := fetcher.Parse(sbomURL); parsedURL != nil {
-			return fetcher, nil
-		}
-	}
-
-	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
-}
-
-func fetchDocument(sbomURL string, opts *Options) (*sbom.Document, error) {
-	fetcher, err := NewFetcher(sbomURL)
+func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
+	fetcher, err := client.New(sbomURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating fetch client: %w", err)
 	}
 
 	opts.Logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
 
-	parsedURL := fetcher.Parse(sbomURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
-
-	if opts.UseNetRC {
-		if err := setNetRCAuth(parsedURL.Hostname, auth); err != nil {
-			return nil, err
-		}
-	}
-
-	sbomData, err := fetcher.Fetch(parsedURL, auth)
+	sbomData, err := fetcher.Fetch(sbomURL, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch from %s: %w", sbomURL, err)
 	}
@@ -135,7 +94,7 @@ func fetchDocument(sbomURL string, opts *Options) (*sbom.Document, error) {
 	return document, nil
 }
 
-func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *Options) error {
+func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
 	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
 	if err != nil {
 		return fmt.Errorf("error getting external references: %w", err)
@@ -188,24 +147,4 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 	}
 
 	return refOutput, nil
-}
-
-func setNetRCAuth(hostname string, auth *url.BasicAuth) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	authFile, err := netrc.Parse(filepath.Join(home, ".netrc"))
-	if err != nil {
-		return fmt.Errorf("failed to parse .netrc file: %w", err)
-	}
-
-	// Use credentials in .netrc if entry for the hostname is found
-	if machine := authFile.Machine(hostname); machine != nil {
-		auth.Username = machine.Get("login")
-		auth.Password = machine.Get("password")
-	}
-
-	return nil
 }
