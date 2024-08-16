@@ -36,8 +36,8 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func Fetch(sbomURL string, opts *options.FetchOptions) error {
-	document, err := fetchDocument(sbomURL, opts)
+func Fetch(sbomURL string, opts *options.FetchOptions, outputFile *os.File) error {
+	document, err := fetchDocument(sbomURL, opts, outputFile)
 	if err != nil {
 		return err
 	}
@@ -57,10 +57,10 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	}
 
 	// Fetch externally referenced BOMs
-	return fetchExternalReferences(document, backend, opts)
+	return fetchExternalReferences(document, backend, opts, outputFile)
 }
 
-func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
+func fetchDocument(sbomURL string, opts *options.FetchOptions, outputFile *os.File) (*sbom.Document, error) {
 	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
@@ -73,10 +73,10 @@ func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, 
 		return nil, fmt.Errorf("failed to fetch from %s: %w", sbomURL, err)
 	}
 
-	if opts.OutputFile != nil {
+	if outputFile != nil {
 		// Write the SBOM document bytes to file.
-		if _, err = io.Copy(opts.OutputFile, bytes.NewReader(sbomData)); err != nil {
-			return nil, fmt.Errorf("failed to write %s: %w", opts.OutputFile.Name(), err)
+		if _, err = io.Copy(outputFile, bytes.NewReader(sbomData)); err != nil {
+			return nil, fmt.Errorf("failed to write %s: %w", outputFile.Name(), err)
 		}
 	}
 
@@ -90,23 +90,26 @@ func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, 
 	return document, nil
 }
 
-func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
+func fetchExternalReferences(document *sbom.Document, backend *db.Backend,
+	opts *options.FetchOptions, outputFile *os.File,
+) error {
 	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
 	if err != nil {
 		return fmt.Errorf("error getting external references: %w", err)
 	}
 
 	for _, ref := range extRefs {
-		if opts.OutputFile != nil && opts.OutputFile.Name() != "" {
-			refOutput, err := getRefFile(opts.OutputFile)
+		if outputFile != nil {
+			out, err := getRefFile(outputFile)
 			if err != nil {
 				return err
 			}
 
-			defer refOutput.Close() //nolint:revive
+			outputFile = out
+			defer outputFile.Close() //nolint:revive
 		}
 
-		if err := Fetch(ref.Url, opts); err != nil {
+		if err := Fetch(ref.Url, opts, outputFile); err != nil {
 			return err
 		}
 	}
@@ -133,7 +136,7 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 
 	idx++
 
-	outputFile := fmt.Sprintf("%s-%d.%s",
+	outputFile := fmt.Sprintf("%s-%d%s",
 		filepath.Join(filepath.Dir(parentFile.Name()), baseFilename),
 		idx,
 		filepath.Ext(parentFile.Name()),
