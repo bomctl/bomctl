@@ -9,7 +9,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 type TagOptions struct {
@@ -37,13 +36,8 @@ func tagClearCmd() *cobra.Command {
 		Long:  "Clear the tags of a document",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("tag"))
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
@@ -83,13 +77,8 @@ func tagAddCmd() *cobra.Command {
 		Long:  "Add tags to a document",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("tag"))
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
@@ -117,13 +106,8 @@ func tagRemoveCmd() *cobra.Command {
 		Long:    "Remove the tags of a document",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("tag"))
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
@@ -154,13 +138,8 @@ func tagListCmd() *cobra.Command {
 		Long:    "List the tags of a document",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("tag"))
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)

@@ -18,7 +18,12 @@
 // ------------------------------------------------------------------------
 package options
 
-import "github.com/charmbracelet/log"
+import (
+	"os"
+
+	"github.com/charmbracelet/log"
+	"github.com/protobom/protobom/pkg/formats"
+)
 
 type (
 	Options struct {
@@ -29,6 +34,21 @@ type (
 	}
 
 	Option func(*Options)
+
+	FetchOptions struct {
+		OutputFile *os.File
+		*Options
+		UseNetRC bool
+		Alias    string
+		Tags     []string
+	}
+
+	PushOptions struct {
+		*Options
+		Format   formats.Format
+		UseTree  bool
+		UseNetRC bool
+	}
 )
 
 func New(opts ...Option) *Options {

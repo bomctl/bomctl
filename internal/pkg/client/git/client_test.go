@@ -27,10 +27,10 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func TestFetcher_Parse(t *testing.T) {
+func TestParse(t *testing.T) {
 	t.Parallel()
 
-	fetcher := &git.Client{}
+	client := &git.Client{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -254,7 +254,7 @@ func TestFetcher_Parse(t *testing.T) {
 		t.Run(data.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := fetcher.Parse(data.url)
+			actual := client.Parse(data.url)
 
 			assert.Equal(t, data.expected, actual, data.url)
 		})

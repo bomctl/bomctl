@@ -25,6 +25,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -76,12 +77,17 @@ func listCmd() *cobra.Command {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("list"))
-
-			if err := backend.InitClient(); err != nil {
+			backend, err := db.NewBackend(
+				db.Debug(verbosity >= minDebugLevel),
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
+				db.WithOptions(options.New(
+					options.WithCacheDir(viper.GetString("cache_dir")),
+					options.WithConfigFile(viper.ConfigFileUsed()),
+					options.WithDebug(verbosity >= minDebugLevel),
+					options.WithLogger(utils.NewLogger("list")),
+				)),
+			)
+			if err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
 			}
 
@@ -151,4 +157,13 @@ func styleFunc(row, col int) lipgloss.Style {
 		Width(width).
 		AlignHorizontal(align).
 		MaxHeight(rowMaxHeight)
+}
+
+func getRow(doc *sbom.Document) []string {
+	id := doc.Metadata.Name
+	if id == "" {
+		id = doc.Metadata.Id
+	}
+
+	return []string{id, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
 }

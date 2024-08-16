@@ -8,7 +8,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 type AliasOptions struct {
@@ -36,13 +35,8 @@ func aliasSetCmd() *cobra.Command {
 		Long:  "Set the alias for a specific document",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("alias"))
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
@@ -88,13 +82,8 @@ func aliasRemoveCmd() *cobra.Command {
 		Long:    "Remove the alias for a specific document",
 		Args:    cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("alias"))
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
 				backend.Logger.Fatalf("failed to initialize backend client: %v", err)

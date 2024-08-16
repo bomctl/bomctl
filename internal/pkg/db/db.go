@@ -26,7 +26,7 @@ import (
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
-	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const DatabaseFile string = "bomctl.db"
@@ -34,23 +34,27 @@ const DatabaseFile string = "bomctl.db"
 type (
 	Backend struct {
 		*ent.Backend
-		Logger *log.Logger
+		*options.Options
 	}
 
 	Option func(*Backend)
 )
 
-func NewBackend(opts ...Option) *Backend {
+func NewBackend(opts ...Option) (*Backend, error) {
 	backend := &Backend{
 		Backend: ent.NewBackend(),
-		Logger:  utils.NewLogger("db"),
+		Options: options.New(),
 	}
 
 	for _, opt := range opts {
 		opt(backend)
 	}
 
-	return backend
+	if err := backend.InitClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize backend client: %w", err)
+	}
+
+	return backend, nil
 }
 
 // AddDocument adds the protobom Document to the database.
@@ -115,9 +119,9 @@ func (backend *Backend) GetDocument(id string, tags ...string) (*sbom.Document, 
 	return nil, fmt.Errorf("no document found")
 }
 
-// Debug enables debug logging for all database transactions.
-func (backend *Backend) Debug(debug bool) *Backend {
-	backend.Options.Debug = debug
+// WithOptions sets the options for the backend.
+func (backend *Backend) WithOptions(opts *options.Options) *Backend {
+	backend.Options = opts
 
 	return backend
 }
@@ -129,30 +133,23 @@ func (backend *Backend) WithLogger(logger *log.Logger) *Backend {
 	return backend
 }
 
-// WithDatabaseFile sets the database file for the backend.
-func (backend *Backend) WithDatabaseFile(file string) *Backend {
-	backend.Options.DatabaseFile = file
-
-	return backend
+// WithOptions sets the options for the backend.
+func WithOptions(opts *options.Options) Option {
+	return func(backend *Backend) {
+		backend.WithOptions(opts)
+	}
 }
 
 // Debug enables debug logging for all database transactions.
 func Debug(debug bool) Option {
 	return func(backend *Backend) {
-		backend.Debug(debug)
-	}
-}
-
-// WithLogger sets the logger for the backend.
-func WithLogger(logger *log.Logger) Option {
-	return func(backend *Backend) {
-		backend.WithLogger(logger)
+		backend.Options.Debug = debug
 	}
 }
 
 // WithDatabaseFile sets the database file for the backend.
 func WithDatabaseFile(file string) Option {
 	return func(backend *Backend) {
-		backend.WithDatabaseFile(file)
+		backend.Backend.Options.DatabaseFile = file
 	}
 }
