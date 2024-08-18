@@ -33,7 +33,7 @@ func fetchCmd() *cobra.Command {
 		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
 	}
 
-	outputFile := outputFileValue("")
+	outputFileName := outputFileValue("")
 
 	fetchCmd := &cobra.Command{
 		Use:    "fetch [flags] SBOM_URL...",
@@ -42,18 +42,17 @@ func fetchCmd() *cobra.Command {
 		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		PreRun: preRun(opts.Options),
 		Run: func(_ *cobra.Command, args []string) {
-			if string(outputFile) != "" {
+			if outputFileName != "" {
 				if len(args) > 1 {
 					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
 				}
 
-				out, err := os.Create(string(outputFile))
+				out, err := os.Create(string(outputFileName))
 				if err != nil {
-					opts.Logger.Fatal("error creating output file", "outputFile", outputFile)
+					opts.Logger.Fatal("error creating output file", "outputFileName", outputFileName)
 				}
 
 				opts.OutputFile = out
-
 				defer opts.OutputFile.Close()
 			}
 
@@ -65,7 +64,7 @@ func fetchCmd() *cobra.Command {
 		},
 	}
 
-	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
+	fetchCmd.Flags().VarP(&outputFileName, "output-file", "o", "Path to output file")
 	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
 
 	return fetchCmd

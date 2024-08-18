@@ -56,10 +56,6 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 		return fmt.Errorf("error adding document: %w", err)
 	}
 
-	if opts.OutputFile == nil || opts.OutputFile.Name() == "" {
-		return nil
-	}
-
 	// Fetch externally referenced BOMs
 	return fetchExternalReferences(document, backend, opts)
 }
@@ -101,14 +97,18 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 	}
 
 	for _, ref := range extRefs {
-		refOutput, err := getRefFile(opts.OutputFile)
-		if err != nil {
-			return err
+		extRefsOpt := *opts
+		if extRefsOpt.OutputFile != nil {
+			out, err := getRefFile(opts.OutputFile)
+			if err != nil {
+				return err
+			}
+
+			extRefsOpt.OutputFile = out
+			defer extRefsOpt.OutputFile.Close() //nolint:revive
 		}
 
-		defer refOutput.Close() //nolint:revive
-
-		if err := Fetch(ref.Url, opts); err != nil {
+		if err := Fetch(ref.Url, &extRefsOpt); err != nil {
 			return err
 		}
 	}
@@ -135,7 +135,7 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 
 	idx++
 
-	outputFile := fmt.Sprintf("%s-%d.%s",
+	outputFile := fmt.Sprintf("%s-%d%s",
 		filepath.Join(filepath.Dir(parentFile.Name()), baseFilename),
 		idx,
 		filepath.Ext(parentFile.Name()),
