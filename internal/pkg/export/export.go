@@ -34,7 +34,7 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	backend.Logger.Info("Exporting document", "sbomID", sbomID)
+	opts.Logger.Info("Exporting document", "sbomID", sbomID)
 
 	wr := writer.New(writer.WithFormat(opts.Format))
 

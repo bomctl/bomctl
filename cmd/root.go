@@ -116,6 +116,10 @@ func rootCmd() *cobra.Command {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
+			if verbosity > 0 {
+				log.SetLevel(log.DebugLevel)
+			}
+
 			cacheDir, err := cmd.Flags().GetString("cache-dir")
 			cobra.CheckErr(err)
 
@@ -123,10 +127,6 @@ func rootCmd() *cobra.Command {
 				WithCacheDir(cacheDir).
 				WithConfigFile(viper.ConfigFileUsed()).
 				WithVerbosity(verbosity)
-
-			if verbosity > 0 {
-				opts.Logger.SetLevel(log.DebugLevel)
-			}
 
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)),
