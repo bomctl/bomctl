@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -89,7 +88,9 @@ func tagAddCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...)
+			if err := backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...); err != nil {
+				backend.Logger.Fatalf("failed to add tags: %v", err)
+			}
 		},
 	}
 
@@ -156,7 +157,7 @@ func tagListCmd() *cobra.Command {
 			}
 
 			for _, annotation := range annotations {
-				fmt.Println(annotation.Value)
+				println(annotation.Value)
 			}
 		},
 	}

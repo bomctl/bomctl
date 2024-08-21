@@ -92,8 +92,8 @@ func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Docu
 		}
 
 		taggedDocumentIDs := []string{}
-		for _, tagged_doc := range taggedDocuments {
-			taggedDocumentIDs = append(taggedDocumentIDs, tagged_doc.Metadata.Id)
+		for _, taggedDoc := range taggedDocuments {
+			taggedDocumentIDs = append(taggedDocumentIDs, taggedDoc.Metadata.Id)
 		}
 
 		filteredDocuments := []*sbom.Document{}

@@ -57,9 +57,14 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	}
 
 	if opts.Alias != "" {
-		backend.AddAnnotations(document.Metadata.Id, "alias", opts.Alias)
+		if err := backend.AddAnnotations(document.Metadata.Id, "alias", opts.Alias); err != nil {
+			return fmt.Errorf("failed to set alias: %w", err)
+		}
 	}
-	backend.AddAnnotations(document.Metadata.Id, "tag", opts.Tags...)
+
+	if err := backend.AddAnnotations(document.Metadata.Id, "tag", opts.Tags...); err != nil {
+		return fmt.Errorf("failed to set tags: %w", err)
+	}
 
 	if opts.OutputFile == nil || opts.OutputFile.Name() == "" {
 		return nil
