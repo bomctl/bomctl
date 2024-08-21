@@ -79,7 +79,6 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 }
 
 func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Document, error) {
-
 	documents, err := backend.GetDocumentsByID(ids...)
 
 	if len(documents) == 0 && len(ids) > 0 {
@@ -87,23 +86,25 @@ func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Docu
 	}
 
 	if err != nil && len(tags) > 0 {
-		tagged_documents, err := backend.GetDocumentsByAnnotation("tag", tags...)
+		taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
 		if err != nil {
 			return nil, err
 		}
 
-		tagged_document_ids := []string{}
-		for _, tagged_doc := range tagged_documents {
-			tagged_document_ids = append(tagged_document_ids, tagged_doc.Metadata.Id)
+		taggedDocumentIDs := []string{}
+		for _, tagged_doc := range taggedDocuments {
+			taggedDocumentIDs = append(taggedDocumentIDs, tagged_doc.Metadata.Id)
 		}
 
-		filtered_documents := []*sbom.Document{}
+		filteredDocuments := []*sbom.Document{}
+
 		for _, doc := range documents {
-			if slices.Contains(tagged_document_ids, doc.Metadata.Id) {
-				filtered_documents = append(filtered_documents, doc)
+			if slices.Contains(taggedDocumentIDs, doc.Metadata.Id) {
+				filteredDocuments = append(filteredDocuments, doc)
 			}
 		}
-		documents = filtered_documents
+
+		documents = filteredDocuments
 	}
 
 	return documents, err

@@ -100,7 +100,6 @@ func listCmd() *cobra.Command {
 
 			rows := [][]string{}
 			for _, document := range documents {
-
 				alias, err := backend.GetDocumentAlias(document.Metadata.Id)
 				if err != nil {
 					backend.Logger.Fatalf("failed to get alias: %v", err)

@@ -16,7 +16,6 @@ type TagOptions struct {
 }
 
 func tagCmd() *cobra.Command {
-
 	tagCmd := &cobra.Command{
 		Use:   "tag",
 		Short: "Edit the tags of a document",
@@ -29,7 +28,6 @@ func tagCmd() *cobra.Command {
 }
 
 func tagClearCmd() *cobra.Command {
-
 	clearCmd := &cobra.Command{
 		Use:   "clear [flags] SBOM_ID...",
 		Short: "Clear the tags of a document",
