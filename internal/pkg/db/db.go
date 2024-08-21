@@ -23,11 +23,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/logger"
-	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
@@ -38,7 +38,8 @@ const (
 type (
 	Backend struct {
 		*ent.Backend
-		*options.Options
+		*log.Logger
+		Verbosity int
 	}
 
 	BackendKey struct{}
@@ -58,12 +59,7 @@ func BackendFromContext(ctx context.Context) (*Backend, error) {
 }
 
 func NewBackend(opts ...Option) (*Backend, error) {
-	backend := &Backend{
-		Backend: ent.NewBackend(),
-		Options: options.New(
-			options.WithLogger(logger.New("db")),
-		),
-	}
+	backend := &Backend{Backend: ent.NewBackend(), Logger: logger.New("db")}
 
 	for _, opt := range opts {
 		opt(backend)
@@ -112,9 +108,9 @@ func WithDatabaseFile(file string) Option {
 	}
 }
 
-// WithOptions sets the options for the backend.
-func WithOptions(opts *options.Options) Option {
+// WithVerbosity sets the SQL debugging level for the backend.
+func WithVerbosity(verbosity int) Option {
 	return func(backend *Backend) {
-		backend.Options = opts
+		backend.Verbosity = verbosity
 	}
 }

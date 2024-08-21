@@ -33,6 +33,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/export"
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -51,9 +52,8 @@ func exportCmd() *cobra.Command {
 		Short: "Export stored SBOM(s) to filesystem",
 		Long:  "Export stored SBOM(s) to filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd).WithLogger(logger.New("export"))
 			backend := backendFromContext(cmd)
-			opts.Options = backend.Options
-			opts.Logger = backend.Logger.WithPrefix("export")
 
 			defer backend.CloseClient()
 

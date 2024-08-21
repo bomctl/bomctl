@@ -52,7 +52,7 @@ func listCmd() *cobra.Command {
 		Long:    "List SBOM documents in local cache",
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
-			backend.Logger = backend.Logger.WithPrefix("list")
+			backend.Logger.SetPrefix("list")
 
 			defer backend.CloseClient()
 

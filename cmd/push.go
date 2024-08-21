@@ -22,6 +22,7 @@ import (
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/spf13/cobra"
 
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/push"
 )
@@ -37,9 +38,8 @@ func pushCmd() *cobra.Command {
 		Short: "Push stored SBOM file to remote URL or filesystem",
 		Long:  "Push stored SBOM file to remote URL or filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd).WithLogger(logger.New("push"))
 			backend := backendFromContext(cmd)
-			opts.Options = backend.Options
-			opts.Logger = backend.Logger.WithPrefix("fetch")
 
 			defer backend.CloseClient()
 

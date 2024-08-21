@@ -39,6 +39,8 @@ const (
 	modeUserExec  = 0o100
 )
 
+type optionsKey struct{}
+
 func backendFromContext(cmd *cobra.Command) *db.Backend {
 	backend, err := db.BackendFromContext(cmd.Context())
 	if err != nil {
@@ -96,6 +98,15 @@ func initConfig(cmd *cobra.Command) func() {
 	}
 }
 
+func optionsFromContext(cmd *cobra.Command) *options.Options {
+	opts, ok := cmd.Context().Value(optionsKey{}).(*options.Options)
+	if !ok {
+		logger.New("").Fatal("Failed to get options from command context")
+	}
+
+	return opts
+}
+
 func rootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "bomctl",
@@ -105,8 +116,11 @@ func rootCmd() *cobra.Command {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
 
+			cacheDir, err := cmd.Flags().GetString("cache-dir")
+			cobra.CheckErr(err)
+
 			opts := options.New().
-				WithCacheDir(viper.GetString("cache_dir")).
+				WithCacheDir(cacheDir).
 				WithConfigFile(viper.ConfigFileUsed()).
 				WithVerbosity(verbosity)
 
@@ -115,13 +129,14 @@ func rootCmd() *cobra.Command {
 			}
 
 			backend, err := db.NewBackend(
-				db.WithDatabaseFile(filepath.Join(opts.CacheDir, db.DatabaseFile)),
-				db.WithOptions(opts),
+				db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)),
+				db.WithVerbosity(verbosity),
 			)
 			if err != nil {
 				opts.Logger.Fatalf("%v", err)
 			}
 
+			cmd.SetContext(context.WithValue(cmd.Context(), optionsKey{}, opts))
 			cmd.SetContext(context.WithValue(cmd.Context(), db.BackendKey{}, backend))
 			opts.WithContext(cmd.Context())
 		},
