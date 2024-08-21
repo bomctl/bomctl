@@ -42,7 +42,7 @@ var (
 )
 
 func exportCmd() *cobra.Command {
-	exportOpts := &options.ExportOptions{}
+	opts := &options.ExportOptions{}
 	outputFile := outputFileValue("")
 
 	exportCmd := &cobra.Command{
@@ -52,8 +52,8 @@ func exportCmd() *cobra.Command {
 		Long:  "Export stored SBOM(s) to filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
-			exportOpts.Options = backend.Options
-			exportOpts.Logger = backend.Logger.WithPrefix("export")
+			opts.Options = backend.Options
+			opts.Logger = backend.Logger.WithPrefix("export")
 
 			defer backend.CloseClient()
 
@@ -65,31 +65,31 @@ func exportCmd() *cobra.Command {
 
 			format, err := parseFormat(formatString, encoding)
 			if err != nil {
-				exportOpts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
+				opts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
 			}
 
-			exportOpts.Format = format
+			opts.Format = format
 
 			if outputFile != "" {
 				if len(args) > 1 {
-					exportOpts.Logger.Fatal(
+					opts.Logger.Fatal(
 						"The --output-file option cannot be used when more than one SBOM is provided.",
 					)
 				}
 
 				out, err := os.Create(outputFile.String())
 				if err != nil {
-					exportOpts.Logger.Fatal("error creating output file", "outputFile", outputFile)
+					opts.Logger.Fatal("error creating output file", "outputFile", outputFile)
 				}
 
-				exportOpts.OutputFile = out
+				opts.OutputFile = out
 
-				defer exportOpts.OutputFile.Close()
+				defer opts.OutputFile.Close()
 			}
 
 			for _, id := range args {
-				if err := export.Export(id, exportOpts); err != nil {
-					exportOpts.Logger.Fatal(err)
+				if err := export.Export(id, opts); err != nil {
+					opts.Logger.Fatal(err)
 				}
 			}
 		},

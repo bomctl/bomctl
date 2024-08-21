@@ -29,7 +29,7 @@ import (
 )
 
 func importCmd() *cobra.Command {
-	importOpts := &options.ImportOptions{}
+	opts := &options.ImportOptions{}
 
 	importCmd := &cobra.Command{
 		Use:   "import [flags] { - | FILE...}",
@@ -38,32 +38,32 @@ func importCmd() *cobra.Command {
 		Long:  "Import SBOM file(s) from stdin or local filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
-			importOpts.Options = backend.Options
-			importOpts.Logger = backend.Logger.WithPrefix("import")
+			opts.Options = backend.Options
+			opts.Logger = backend.Logger.WithPrefix("import")
 
 			defer backend.CloseClient()
 
 			if slices.Contains(args, "-") && len(args) > 1 {
-				importOpts.Logger.Fatal("Piped input and file path args cannot be specified simultaneously.")
+				opts.Logger.Fatal("Piped input and file path args cannot be specified simultaneously.")
 			}
 
 			for idx := range args {
 				if args[idx] == "-" {
-					importOpts.InputFiles = append(importOpts.InputFiles, os.Stdin)
+					opts.InputFiles = append(opts.InputFiles, os.Stdin)
 				} else {
 					file, err := os.Open(args[idx])
 					if err != nil {
-						importOpts.Logger.Fatal("failed to open input file", "err", err, "file", file)
+						opts.Logger.Fatal("failed to open input file", "err", err, "file", file)
 					}
 
-					importOpts.InputFiles = append(importOpts.InputFiles, file)
+					opts.InputFiles = append(opts.InputFiles, file)
 
 					defer file.Close() //nolint:revive
 				}
 			}
 
-			if err := imprt.Import(importOpts); err != nil {
-				importOpts.Logger.Fatal(err)
+			if err := imprt.Import(opts); err != nil {
+				opts.Logger.Fatal(err)
 			}
 		},
 	}
