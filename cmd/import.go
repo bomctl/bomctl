@@ -25,22 +25,24 @@ import (
 	"github.com/spf13/cobra"
 
 	imprt "github.com/bomctl/bomctl/internal/pkg/import"
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func importCmd() *cobra.Command {
-	opts := &imprt.ImportOptions{
-		Options: options.New(options.WithLogger(utils.NewLogger("import"))),
-	}
+	opts := &options.ImportOptions{}
 
 	importCmd := &cobra.Command{
-		Use:    "import [flags] { - | FILE...}",
-		Args:   cobra.MinimumNArgs(1),
-		Short:  "Import SBOM file(s) from stdin or local filesystem",
-		Long:   "Import SBOM file(s) from stdin or local filesystem",
-		PreRun: preRun(opts.Options),
-		Run: func(_ *cobra.Command, args []string) {
+		Use:   "import [flags] { - | FILE...}",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Import SBOM file(s) from stdin or local filesystem",
+		Long:  "Import SBOM file(s) from stdin or local filesystem",
+		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd).WithLogger(logger.New("import"))
+			backend := backendFromContext(cmd)
+
+			defer backend.CloseClient()
+
 			if slices.Contains(args, "-") && len(args) > 1 {
 				opts.Logger.Fatal("Piped input and file path args cannot be specified simultaneously.")
 			}

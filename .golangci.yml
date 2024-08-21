@@ -124,6 +124,9 @@ linters-settings:
     # https://golangci-lint.run/usage/linters/#exhaustive
     default-signifies-exhaustive: true
 
+  funlen:
+    ignore-comments: true
+
   govet:
     enable:
       - fieldalignment

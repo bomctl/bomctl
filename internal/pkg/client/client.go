@@ -31,14 +31,12 @@ import (
 
 var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
 
-type (
-	Client interface {
-		url.Parser
-		Name() string
-		Fetch(string, *options.FetchOptions) ([]byte, error)
-		Push(string, string, *options.PushOptions) error
-	}
-)
+type Client interface {
+	url.Parser
+	Name() string
+	Fetch(string, *options.FetchOptions) ([]byte, error)
+	Push(string, string, *options.PushOptions) error
+}
 
 func New(sbomURL string) (Client, error) {
 	for _, client := range []Client{&git.Client{}, &http.Client{}, &oci.Client{}} {
