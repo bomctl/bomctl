@@ -72,9 +72,7 @@ func exportCmd() *cobra.Command {
 
 			if outputFile != "" {
 				if len(args) > 1 {
-					opts.Logger.Fatal(
-						"The --output-file option cannot be used when more than one SBOM is provided.",
-					)
+					opts.Logger.Fatal("The --output-file option cannot be used when more than one SBOM is provided.")
 				}
 
 				out, err := os.Create(outputFile.String())

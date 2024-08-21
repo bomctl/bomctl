@@ -45,9 +45,7 @@ func fetchCmd() *cobra.Command {
 
 			if outputFileName != "" {
 				if len(args) > 1 {
-					opts.Logger.Fatal(
-						"The --output-file option cannot be used when more than one URL is provided.",
-					)
+					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
 				}
 
 				out, err := os.Create(string(outputFileName))
