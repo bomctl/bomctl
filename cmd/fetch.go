@@ -25,26 +25,29 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func fetchCmd() *cobra.Command {
-	opts := &options.FetchOptions{
-		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
-	}
-
+	opts := &options.FetchOptions{}
 	outputFileName := outputFileValue("")
 
 	fetchCmd := &cobra.Command{
-		Use:    "fetch [flags] SBOM_URL...",
-		Args:   cobra.MinimumNArgs(1),
-		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		PreRun: preRun(opts.Options),
-		Run: func(_ *cobra.Command, args []string) {
+		Use:   "fetch [flags] SBOM_URL...",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+			opts.Options = backend.Options
+			opts.Logger = backend.Logger.WithPrefix("fetch")
+
+			defer backend.CloseClient()
+
 			if outputFileName != "" {
 				if len(args) > 1 {
-					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
+					opts.Logger.Fatal(
+						"The --output-file option cannot be used when more than one URL is provided.",
+					)
 				}
 
 				out, err := os.Create(string(outputFileName))
@@ -53,6 +56,7 @@ func fetchCmd() *cobra.Command {
 				}
 
 				opts.OutputFile = out
+
 				defer opts.OutputFile.Close()
 			}
 

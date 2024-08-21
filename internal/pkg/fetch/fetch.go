@@ -29,7 +29,6 @@ import (
 
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -37,19 +36,15 @@ import (
 )
 
 func Fetch(sbomURL string, opts *options.FetchOptions) error {
-	document, err := fetchDocument(sbomURL, opts)
+	backend, err := db.BackendFromContext(opts.Context())
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	document, err := fetchDocument(sbomURL, backend, opts)
 	if err != nil {
 		return err
 	}
-
-	backend, err := db.NewBackend(
-		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-		db.WithOptions(opts.Options))
-	if err != nil {
-		return fmt.Errorf("failed to initialize backend client: %w", err)
-	}
-
-	defer backend.CloseClient()
 
 	// Insert fetched document data into database.
 	if err := backend.AddDocument(document); err != nil {
@@ -60,13 +55,13 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	return fetchExternalReferences(document, backend, opts)
 }
 
-func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
+func fetchDocument(sbomURL string, backend *db.Backend, opts *options.FetchOptions) (*sbom.Document, error) {
 	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
 	}
 
-	opts.Logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
+	backend.Logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
 
 	sbomData, err := fetcher.Fetch(sbomURL, opts)
 	if err != nil {

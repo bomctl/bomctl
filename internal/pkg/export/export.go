@@ -21,33 +21,20 @@ package export
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
-	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/writer"
-	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-type Options struct {
-	*options.Options
-	OutputFile *os.File
-	Format     formats.Format
-}
-
-func Export(sbomID string, opts *Options) error {
-	opts.Logger.Info("Exporting Document", "sbomID", sbomID)
-
-	backend, err := db.NewBackend(
-		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-		db.WithOptions(opts.Options))
+func Export(sbomID string, opts *options.ExportOptions) error {
+	backend, err := db.BackendFromContext(opts.Context())
 	if err != nil {
-		return fmt.Errorf("failed to initialize backend client: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
-	defer backend.CloseClient()
+	backend.Logger.Info("Exporting document", "sbomID", sbomID)
 
 	wr := writer.New(writer.WithFormat(opts.Format))
 

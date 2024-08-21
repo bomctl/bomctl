@@ -21,17 +21,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 const (
@@ -51,37 +45,18 @@ const (
 )
 
 func listCmd() *cobra.Command {
-	documentIDs := []string{}
-
 	listCmd := &cobra.Command{
 		Use:     "list [flags] SBOM_ID...",
 		Aliases: []string{"ls"},
 		Short:   "List SBOM documents in local cache",
 		Long:    "List SBOM documents in local cache",
-		PreRun: func(_ *cobra.Command, args []string) {
-			documentIDs = append(documentIDs, args...)
-		},
-		Run: func(cmd *cobra.Command, _ []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend, err := db.NewBackend(
-				db.Debug(verbosity >= minDebugLevel),
-				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-				db.WithOptions(options.New(
-					options.WithCacheDir(viper.GetString("cache_dir")),
-					options.WithConfigFile(viper.ConfigFileUsed()),
-					options.WithDebug(verbosity >= minDebugLevel),
-					options.WithLogger(utils.NewLogger("list")),
-				)),
-			)
-			if err != nil {
-				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
-			}
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+			backend.Logger = backend.Logger.WithPrefix("list")
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocumentsByID(documentIDs...)
+			documents, err := backend.GetDocumentsByID(args...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}

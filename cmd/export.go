@@ -34,7 +34,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 var (
@@ -43,19 +42,21 @@ var (
 )
 
 func exportCmd() *cobra.Command {
-	opts := &export.Options{
-		Options: options.New(options.WithLogger(utils.NewLogger("export"))),
-	}
-
+	exportOpts := &options.ExportOptions{}
 	outputFile := outputFileValue("")
 
 	exportCmd := &cobra.Command{
-		Use:    "export [flags] SBOM_ID...",
-		Args:   cobra.MinimumNArgs(1),
-		Short:  "Export stored SBOM(s) to filesystem",
-		Long:   "Export stored SBOM(s) to filesystem",
-		PreRun: preRun(opts.Options),
+		Use:   "export [flags] SBOM_ID...",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Export stored SBOM(s) to filesystem",
+		Long:  "Export stored SBOM(s) to filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+			exportOpts.Options = backend.Options
+			exportOpts.Logger = backend.Logger.WithPrefix("export")
+
+			defer backend.CloseClient()
+
 			formatString, err := cmd.Flags().GetString("format")
 			cobra.CheckErr(err)
 
@@ -64,29 +65,31 @@ func exportCmd() *cobra.Command {
 
 			format, err := parseFormat(formatString, encoding)
 			if err != nil {
-				opts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
+				exportOpts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
 			}
 
-			opts.Format = format
+			exportOpts.Format = format
 
 			if outputFile != "" {
 				if len(args) > 1 {
-					opts.Logger.Fatal("The --output-file option cannot be used when more than one SBOM is provided.")
+					exportOpts.Logger.Fatal(
+						"The --output-file option cannot be used when more than one SBOM is provided.",
+					)
 				}
 
 				out, err := os.Create(outputFile.String())
 				if err != nil {
-					opts.Logger.Fatal("error creating output file", "outputFile", outputFile)
+					exportOpts.Logger.Fatal("error creating output file", "outputFile", outputFile)
 				}
 
-				opts.OutputFile = out
+				exportOpts.OutputFile = out
 
-				defer opts.OutputFile.Close()
+				defer exportOpts.OutputFile.Close()
 			}
 
 			for _, id := range args {
-				if err := export.Export(id, opts); err != nil {
-					opts.Logger.Fatal(err)
+				if err := export.Export(id, exportOpts); err != nil {
+					exportOpts.Logger.Fatal(err)
 				}
 			}
 		},

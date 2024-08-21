@@ -26,42 +26,44 @@ import (
 
 	imprt "github.com/bomctl/bomctl/internal/pkg/import"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func importCmd() *cobra.Command {
-	opts := &imprt.ImportOptions{
-		Options: options.New(options.WithLogger(utils.NewLogger("import"))),
-	}
+	importOpts := &options.ImportOptions{}
 
 	importCmd := &cobra.Command{
-		Use:    "import [flags] { - | FILE...}",
-		Args:   cobra.MinimumNArgs(1),
-		Short:  "Import SBOM file(s) from stdin or local filesystem",
-		Long:   "Import SBOM file(s) from stdin or local filesystem",
-		PreRun: preRun(opts.Options),
-		Run: func(_ *cobra.Command, args []string) {
+		Use:   "import [flags] { - | FILE...}",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Import SBOM file(s) from stdin or local filesystem",
+		Long:  "Import SBOM file(s) from stdin or local filesystem",
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+			importOpts.Options = backend.Options
+			importOpts.Logger = backend.Logger.WithPrefix("import")
+
+			defer backend.CloseClient()
+
 			if slices.Contains(args, "-") && len(args) > 1 {
-				opts.Logger.Fatal("Piped input and file path args cannot be specified simultaneously.")
+				importOpts.Logger.Fatal("Piped input and file path args cannot be specified simultaneously.")
 			}
 
 			for idx := range args {
 				if args[idx] == "-" {
-					opts.InputFiles = append(opts.InputFiles, os.Stdin)
+					importOpts.InputFiles = append(importOpts.InputFiles, os.Stdin)
 				} else {
 					file, err := os.Open(args[idx])
 					if err != nil {
-						opts.Logger.Fatal("failed to open input file", "err", err, "file", file)
+						importOpts.Logger.Fatal("failed to open input file", "err", err, "file", file)
 					}
 
-					opts.InputFiles = append(opts.InputFiles, file)
+					importOpts.InputFiles = append(importOpts.InputFiles, file)
 
 					defer file.Close() //nolint:revive
 				}
 			}
 
-			if err := imprt.Import(opts); err != nil {
-				opts.Logger.Fatal(err)
+			if err := imprt.Import(importOpts); err != nil {
+				importOpts.Logger.Fatal(err)
 			}
 		},
 	}
