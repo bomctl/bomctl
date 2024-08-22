@@ -26,7 +26,6 @@ import (
 	"path/filepath"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/writer"
 
@@ -51,15 +50,16 @@ func (client *Client) Push(id, pushURL string, opts *options.PushOptions) error 
 	}
 
 	// Clone the repository into the temp directory
-	repo, tmpDir, err := cloneRepo(parsedURL, auth)
+	repo, tmpDir, err := cloneRepo(parsedURL, auth, opts.Options)
 	if err != nil {
 		return fmt.Errorf("failed to clone Git repository: %w", err)
 	}
+
 	defer os.RemoveAll(tmpDir)
 
 	filePath := filepath.Join(tmpDir, parsedURL.Fragment)
 
-	err = addFile(repo, filePath, opts.Format, doc, parsedURL)
+	err = addFile(repo, filePath, opts, doc, parsedURL)
 	if err != nil {
 		return fmt.Errorf("failed to commit file %s: %w", filePath, err)
 	}
@@ -82,16 +82,17 @@ func pushFile(repo *git.Repository, parsedURL *url.ParsedURL, auth *url.BasicAut
 	return nil
 }
 
-func addFile(repo *git.Repository, filePath string, format formats.Format,
+func addFile(repo *git.Repository, filePath string, opts *options.PushOptions,
 	doc *sbom.Document, parsedURL *url.ParsedURL,
 ) error {
-	wr := writer.New(writer.WithFormat(format))
+	wr := writer.New(writer.WithFormat(opts.Format))
 
 	wt, err := repo.Worktree()
 	if err != nil {
 		return fmt.Errorf("failed to create worktree for %s: %w", parsedURL.Fragment, err)
 	}
 
+	opts.Logger.Debug("Creating any needed directories prior to creating file")
 	if _, err := os.Stat(path.Dir(filePath)); os.IsNotExist(err) {
 		err = os.MkdirAll(path.Dir(filePath), fs.ModePerm) // fs.ModePerm == 0777
 		if err != nil {
@@ -99,6 +100,7 @@ func addFile(repo *git.Repository, filePath string, format formats.Format,
 		}
 	}
 
+	opts.Logger.Debug("Writing document to: %s", parsedURL.Fragment)
 	// Write the file specified in the URL fragment
 	err = wr.WriteFile(doc, filePath)
 	if err != nil {
@@ -126,6 +128,7 @@ func getDocument(id string, opts *options.Options) (*sbom.Document, error) {
 		return nil, fmt.Errorf("%w", err)
 	}
 
+	opts.Logger.Debug("Pulling document: %s", id)
 	// Retrieve SBOM document from database.
 	doc, err := backend.GetDocumentByID(id)
 	if err != nil {

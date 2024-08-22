@@ -127,7 +127,7 @@ func pushExtRefDoc(ref *sbom.ExternalReference, be *db.Backend, destPath string,
 	}
 
 	// call fetch wrapper function to fetch extref doc object
-	doc, err := fetch.Document(ref.Url, fetchOpts)
+	doc, err := fetch.GetRemoteDocument(ref.Url, fetchOpts)
 	if err != nil {
 		return fmt.Errorf("error fetching external reference docs: %w", err)
 	}

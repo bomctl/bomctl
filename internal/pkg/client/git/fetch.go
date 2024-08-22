@@ -37,7 +37,7 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 		}
 	}
 	// Clone the repository into the temp directory
-	_, tmpDir, err := cloneRepo(parsedURL, auth)
+	_, tmpDir, err := cloneRepo(parsedURL, auth, opts.Options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}

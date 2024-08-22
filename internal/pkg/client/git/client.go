@@ -27,6 +27,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
@@ -81,7 +82,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth) (*git.Repository, string, error) {
+func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) (*git.Repository, string, error) {
 	// Create temp directory to clone into.
 	tempDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedRepoURL.Path, "/", "-"))
 	if err != nil {
@@ -107,6 +108,7 @@ func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth) (*git.Reposito
 		Depth:         1,
 	}
 
+	opts.Logger.Debug("Cloning git repo: %s", baseURL)
 	// Clone the repository into the temp directory
 	repo, err := git.PlainClone(tempDir, false, cloneOpts)
 	if err != nil {

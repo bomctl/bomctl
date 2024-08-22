@@ -46,7 +46,11 @@ func (gs *gitSuite) TestPush() {
 }
 
 func (gs *gitSuite) TestAddFile() {
-	format := formats.CDX15JSON
+	pOptions := options.PushOptions{
+		Options: gs.opts,
+		Format:  formats.CDX15JSON,
+	}
+
 	parsedURL := &url.ParsedURL{
 		Scheme:   "https",
 		Username: "git",
@@ -56,7 +60,7 @@ func (gs *gitSuite) TestAddFile() {
 		Fragment: "test/file.sbom",
 	}
 
-	err := git.AddFile(gs.repo, path.Join(gs.tempDir, "test", "file.sbom"), format, gs.doc, parsedURL)
+	err := git.AddFile(gs.repo, path.Join(gs.tempDir, "test", "file.sbom"), &pOptions, gs.doc, parsedURL)
 	if err != nil {
 		gs.T().Logf("Error testing addFile: %s", err.Error())
 	}
