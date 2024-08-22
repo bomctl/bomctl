@@ -41,21 +41,21 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	document, err := fetchDocument(sbomURL, opts)
+	doc, err := Document(sbomURL, opts)
 	if err != nil {
 		return err
 	}
 
 	// Insert fetched document data into database.
-	if err := backend.AddDocument(document); err != nil {
+	if err := backend.AddDocument(doc); err != nil {
 		return fmt.Errorf("error adding document: %w", err)
 	}
 
 	// Fetch externally referenced BOMs
-	return fetchExternalReferences(document, backend, opts)
+	return fetchExternalReferences(doc, backend, opts)
 }
 
-func fetchDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
+func Document(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
