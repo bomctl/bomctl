@@ -29,7 +29,6 @@ import (
 
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -37,19 +36,15 @@ import (
 )
 
 func Fetch(sbomURL string, opts *options.FetchOptions) error {
+	backend, err := db.BackendFromContext(opts.Context())
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
 	document, err := fetchDocument(sbomURL, opts)
 	if err != nil {
 		return err
 	}
-
-	backend, err := db.NewBackend(
-		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-		db.WithOptions(opts.Options))
-	if err != nil {
-		return fmt.Errorf("failed to initialize backend client: %w", err)
-	}
-
-	defer backend.CloseClient()
 
 	// Insert fetched document data into database.
 	if err := backend.AddDocument(document); err != nil {
@@ -64,10 +59,6 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 
 	if err := backend.AddAnnotations(document.Metadata.Id, "tag", opts.Tags...); err != nil {
 		return fmt.Errorf("failed to set tags: %w", err)
-	}
-
-	if opts.OutputFile == nil || opts.OutputFile.Name() == "" {
-		return nil
 	}
 
 	// Fetch externally referenced BOMs
@@ -111,14 +102,18 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 	}
 
 	for _, ref := range extRefs {
-		refOutput, err := getRefFile(opts.OutputFile)
-		if err != nil {
-			return err
+		extRefsOpt := *opts
+		if extRefsOpt.OutputFile != nil {
+			out, err := getRefFile(opts.OutputFile)
+			if err != nil {
+				return err
+			}
+
+			extRefsOpt.OutputFile = out
+			defer extRefsOpt.OutputFile.Close() //nolint:revive
 		}
 
-		defer refOutput.Close() //nolint:revive
-
-		if err := Fetch(ref.Url, opts); err != nil {
+		if err := Fetch(ref.Url, &extRefsOpt); err != nil {
 			return err
 		}
 	}
@@ -145,7 +140,7 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 
 	idx++
 
-	outputFile := fmt.Sprintf("%s-%d.%s",
+	outputFile := fmt.Sprintf("%s-%d%s",
 		filepath.Join(filepath.Dir(parentFile.Name()), baseFilename),
 		idx,
 		filepath.Ext(parentFile.Name()),

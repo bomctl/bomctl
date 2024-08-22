@@ -16,24 +16,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package options
+package options //nolint:revive
 
 import (
+	"context"
 	"os"
 
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/formats"
+
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 )
 
 type (
 	Options struct {
 		Logger     *log.Logger
+		ctx        context.Context
 		CacheDir   string
 		ConfigFile string
-		Debug      bool
+		Verbosity  int
 	}
 
 	Option func(*Options)
+
+	ExportOptions struct {
+		*Options
+		OutputFile *os.File
+		Format     formats.Format
+	}
 
 	FetchOptions struct {
 		OutputFile *os.File
@@ -41,6 +51,13 @@ type (
 		UseNetRC bool
 		Alias    string
 		Tags     []string
+	}
+
+	ImportOptions struct {
+		*Options
+		InputFiles []*os.File
+		Alias      string
+		Tags       []string
 	}
 
 	PushOptions struct {
@@ -52,13 +69,20 @@ type (
 )
 
 func New(opts ...Option) *Options {
-	options := &Options{}
+	options := &Options{
+		// Instantiates with a default unprefixed logger.
+		Logger: logger.New(""),
+	}
 
 	for _, opt := range opts {
 		opt(options)
 	}
 
 	return options
+}
+
+func (o *Options) Context() context.Context {
+	return o.ctx
 }
 
 func (o *Options) WithCacheDir(dir string) *Options {
@@ -73,14 +97,20 @@ func (o *Options) WithConfigFile(file string) *Options {
 	return o
 }
 
-func (o *Options) WithDebug(debug bool) *Options {
-	o.Debug = debug
+func (o *Options) WithContext(ctx context.Context) *Options {
+	o.ctx = ctx
 
 	return o
 }
 
-func (o *Options) WithLogger(logger *log.Logger) *Options {
-	o.Logger = logger
+func (o *Options) WithLogger(l *log.Logger) *Options {
+	o.Logger = l
+
+	return o
+}
+
+func (o *Options) WithVerbosity(level int) *Options {
+	o.Verbosity = level
 
 	return o
 }
@@ -97,14 +127,20 @@ func WithConfigFile(file string) Option {
 	}
 }
 
-func WithDebug(debug bool) Option {
+func WithContext(ctx context.Context) Option {
 	return func(o *Options) {
-		o.WithDebug(debug)
+		o.WithContext(ctx)
 	}
 }
 
-func WithLogger(logger *log.Logger) Option {
+func WithLogger(l *log.Logger) Option {
 	return func(o *Options) {
-		o.WithLogger(logger)
+		o.WithLogger(l)
+	}
+}
+
+func WithVerbosity(level int) Option {
+	return func(o *Options) {
+		o.WithVerbosity(level)
 	}
 }

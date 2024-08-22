@@ -21,17 +21,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 const (
@@ -50,50 +44,21 @@ const (
 	rowMaxHeight = 1
 )
 
-type (
-	ListOptions struct {
-		*options.Options
-		Tags []string
-	}
-)
-
 func listCmd() *cobra.Command {
-	documentIDs := []string{}
-
-	opts := &ListOptions{
-		Options: options.New(options.WithLogger(utils.NewLogger("list"))),
-	}
+	tags := []string{}
 
 	listCmd := &cobra.Command{
 		Use:     "list [flags] SBOM_ID...",
 		Aliases: []string{"ls"},
 		Short:   "List SBOM documents in local cache",
 		Long:    "List SBOM documents in local cache",
-		PreRun: func(_ *cobra.Command, args []string) {
-			documentIDs = append(documentIDs, args...)
-			preRun(opts.Options)
-		},
-		Run: func(cmd *cobra.Command, _ []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend, err := db.NewBackend(
-				db.Debug(verbosity >= minDebugLevel),
-				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-				db.WithOptions(options.New(
-					options.WithCacheDir(viper.GetString("cache_dir")),
-					options.WithConfigFile(viper.ConfigFileUsed()),
-					options.WithDebug(verbosity >= minDebugLevel),
-					options.WithLogger(utils.NewLogger("list")),
-				)),
-			)
-			if err != nil {
-				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
-			}
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+			backend.Logger.SetPrefix("list")
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocuments(documentIDs, opts.Tags...)
+			documents, err := backend.GetDocuments(args, tags...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
@@ -129,8 +94,8 @@ func listCmd() *cobra.Command {
 		},
 	}
 
-	listCmd.Flags().StringArrayVarP(&opts.Tags, "tag", "t", []string{},
-		"Tag used to filter listed documents. Can be specified multiple times to filter using multiple tags.")
+	listCmd.Flags().StringArrayVar(&tags, "tag", []string{},
+		"Tag(s) used to filter documents (can be specified multiple times)")
 
 	return listCmd
 }

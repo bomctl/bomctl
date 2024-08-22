@@ -16,7 +16,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package utils
+package logger
 
 import (
 	"os"
@@ -26,7 +26,7 @@ import (
 
 const levelWidth = 5
 
-func NewLogger(prefix string) *log.Logger {
+func New(prefix string) *log.Logger {
 	// Set displayed width of log level in messages to show full level name
 	styles := log.DefaultStyles()
 	for _, level := range []log.Level{log.DebugLevel, log.ErrorLevel, log.FatalLevel, log.InfoLevel, log.WarnLevel} {

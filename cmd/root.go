@@ -19,6 +19,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,59 +28,90 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
-	minDebugLevel        = 2
-	readWriteExecuteUser = 0o700
+	modeUserRead  = 0o400
+	modeUserWrite = 0o200
+	modeUserExec  = 0o100
 )
+
+type optionsKey struct{}
+
+func backendFromContext(cmd *cobra.Command) *db.Backend {
+	backend, err := db.BackendFromContext(cmd.Context())
+	if err != nil {
+		logger.New("").Fatal(err)
+	}
+
+	return backend
+}
+
+func defaultCacheDir() string {
+	cacheDir, err := os.UserCacheDir()
+	cobra.CheckErr(err)
+
+	return filepath.Join(cacheDir, "bomctl")
+}
+
+func defaultConfig() string {
+	cfgDir, err := os.UserConfigDir()
+	cobra.CheckErr(err)
+
+	return filepath.Join(cfgDir, "bomctl", "bomctl.yaml")
+}
 
 func initCache() {
 	cacheDir := viper.GetString("cache_dir")
-
-	if cache, err := os.UserCacheDir(); cacheDir == "" && err == nil {
-		cacheDir = filepath.Join(cache, "bomctl")
-		viper.Set("cache_dir", cacheDir)
-	}
-
-	cobra.CheckErr(os.MkdirAll(cacheDir, os.FileMode(readWriteExecuteUser)))
+	cobra.CheckErr(os.MkdirAll(cacheDir, modeUserRead|modeUserWrite|modeUserExec))
 }
 
-func initConfig() {
-	cfgFile := viper.GetString("config_file")
+func initConfig(cmd *cobra.Command) func() {
+	return func() {
+		cfgFile := cmd.PersistentFlags().Lookup("config").Value.String()
 
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		cfgDir, err := os.UserConfigDir()
-		cobra.CheckErr(err)
+		if cfgFile != "" {
+			viper.SetConfigFile(cfgFile)
+		} else {
+			cfgDir, err := os.UserConfigDir()
+			cobra.CheckErr(err)
 
-		cfgDir = filepath.Join(cfgDir, "bomctl")
-		cobra.CheckErr(os.MkdirAll(cfgDir, os.FileMode(readWriteExecuteUser)))
+			cfgDir = filepath.Join(cfgDir, "bomctl")
+			cobra.CheckErr(os.MkdirAll(cfgDir, modeUserRead|modeUserWrite|modeUserExec))
 
-		viper.AddConfigPath(cfgDir)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName("bomctl")
+			viper.AddConfigPath(cfgDir)
+			viper.SetConfigType("yaml")
+			viper.SetConfigName("bomctl")
+		}
+
+		viper.SetEnvPrefix("bomctl")
+		viper.AutomaticEnv()
+
+		if err := viper.ReadInConfig(); err == nil {
+			fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		}
+
+		cobra.CheckErr(os.MkdirAll(viper.GetString("cache_dir"), modeUserRead|modeUserWrite|modeUserExec))
+	}
+}
+
+func optionsFromContext(cmd *cobra.Command) *options.Options {
+	opts, ok := cmd.Context().Value(optionsKey{}).(*options.Options)
+	if !ok {
+		logger.New("").Fatal("Failed to get options from command context")
 	}
 
-	viper.SetEnvPrefix("bomctl")
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
-
-	cobra.CheckErr(os.MkdirAll(viper.GetString("cache_dir"), os.FileMode(readWriteExecuteUser)))
+	return opts
 }
 
 func rootCmd() *cobra.Command {
-	cobra.OnInitialize(initCache, initConfig)
-
 	rootCmd := &cobra.Command{
 		Use:     "bomctl",
 		Long:    "Simpler Software Bill of Materials management",
-		Version: Version,
+		Version: VersionString,
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 			verbosity, err := cmd.Flags().GetCount("verbose")
 			cobra.CheckErr(err)
@@ -87,26 +119,41 @@ func rootCmd() *cobra.Command {
 			if verbosity > 0 {
 				log.SetLevel(log.DebugLevel)
 			}
+
+			cacheDir, err := cmd.Flags().GetString("cache-dir")
+			cobra.CheckErr(err)
+
+			// Get first top-level subcommand.
+			subcmd := cmd
+			for subcmd.HasParent() && subcmd.Parent() != subcmd.Root() {
+				subcmd = subcmd.Parent()
+			}
+
+			opts := options.New().
+				WithCacheDir(cacheDir).
+				WithConfigFile(viper.ConfigFileUsed()).
+				WithVerbosity(verbosity).
+				WithLogger(logger.New(subcmd.Name()))
+
+			backend, err := db.NewBackend(
+				db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)),
+				db.WithVerbosity(verbosity),
+			)
+			if err != nil {
+				opts.Logger.Fatalf("%v", err)
+			}
+
+			cmd.SetContext(context.WithValue(cmd.Context(), optionsKey{}, opts))
+			cmd.SetContext(context.WithValue(cmd.Context(), db.BackendKey{}, backend))
+			opts.WithContext(cmd.Context())
 		},
 	}
 
-	rootCmd.PersistentFlags().String("cache-dir", "",
-		fmt.Sprintf("cache directory [defaults:\n\t%s\n\t%s\n\t%s",
-			"Unix:    $HOME/.cache/bomctl",
-			"Darwin:  $HOME/Library/Caches/bomctl",
-			"Windows: %LocalAppData%\\bomctl]",
-		),
-	)
-
-	rootCmd.PersistentFlags().String("config", "",
-		fmt.Sprintf("config file [defaults:\n\t%s\n\t%s\n\t%s",
-			"Unix:    $HOME/.config/bomctl/bomctl.yaml",
-			"Darwin:  $HOME/Library/Application Support/bomctl/bomctl.yml",
-			"Windows: %AppData%\\bomctl\\bomctl.yml]",
-		),
-	)
-
+	rootCmd.PersistentFlags().String("cache-dir", defaultCacheDir(), "cache directory")
+	rootCmd.PersistentFlags().String("config", defaultConfig(), "config file")
 	rootCmd.PersistentFlags().CountP("verbose", "v", "Enable debug output")
+
+	cobra.OnInitialize(initCache, initConfig(rootCmd))
 
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
@@ -121,21 +168,6 @@ func rootCmd() *cobra.Command {
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd
-}
-
-func preRun(opts *options.Options) func(*cobra.Command, []string) {
-	return func(cmd *cobra.Command, _ []string) {
-		cfgFile, err := cmd.Flags().GetString("config")
-		cobra.CheckErr(err)
-
-		verbosity, err := cmd.Flags().GetCount("verbose")
-		cobra.CheckErr(err)
-
-		opts.
-			WithCacheDir(viper.GetString("cache_dir")).
-			WithConfigFile(cfgFile).
-			WithDebug(verbosity >= minDebugLevel)
-	}
 }
 
 func Execute() {

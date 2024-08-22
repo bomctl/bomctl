@@ -25,31 +25,31 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 func fetchCmd() *cobra.Command {
-	opts := &options.FetchOptions{
-		Options: options.New(options.WithLogger(utils.NewLogger("fetch"))),
-	}
-
-	outputFile := outputFileValue("")
+	opts := &options.FetchOptions{}
+	outputFileName := outputFileValue("")
 
 	fetchCmd := &cobra.Command{
-		Use:    "fetch [flags] SBOM_URL...",
-		Args:   cobra.MinimumNArgs(1),
-		Short:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:   "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		PreRun: preRun(opts.Options),
-		Run: func(_ *cobra.Command, args []string) {
-			if string(outputFile) != "" {
+		Use:   "fetch [flags] SBOM_URL...",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd)
+			backend := backendFromContext(cmd)
+
+			defer backend.CloseClient()
+
+			if outputFileName != "" {
 				if len(args) > 1 {
 					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
 				}
 
-				out, err := os.Create(string(outputFile))
+				out, err := os.Create(string(outputFileName))
 				if err != nil {
-					opts.Logger.Fatal("error creating output file", "outputFile", outputFile)
+					opts.Logger.Fatal("error creating output file", "outputFileName", outputFileName)
 				}
 
 				opts.OutputFile = out
@@ -65,12 +65,11 @@ func fetchCmd() *cobra.Command {
 		},
 	}
 
-	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file.")
-	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts.")
-	fetchCmd.Flags().StringVar(&opts.Alias, "alias", "",
-		"Alias used to identify the fetched document in a readable manner.")
+	fetchCmd.Flags().VarP(&outputFileName, "output-file", "o", "Path to output file")
+	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
+	fetchCmd.Flags().StringVar(&opts.Alias, "alias", "", "Readable identifier to apply to document")
 	fetchCmd.Flags().StringArrayVar(&opts.Tags, "tag", []string{},
-		"Tag used to mark the fetched document. Can be specified multiple times to add multiple tags.")
+		"Tag(s) to apply to document (can be specified multiple times)")
 
 	return fetchCmd
 }
