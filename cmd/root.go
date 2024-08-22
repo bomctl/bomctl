@@ -123,10 +123,17 @@ func rootCmd() *cobra.Command {
 			cacheDir, err := cmd.Flags().GetString("cache-dir")
 			cobra.CheckErr(err)
 
+			// Get first top-level subcommand.
+			subcmd := cmd
+			for subcmd.HasParent() && subcmd.Parent() != subcmd.Root() {
+				subcmd = subcmd.Parent()
+			}
+
 			opts := options.New().
 				WithCacheDir(cacheDir).
 				WithConfigFile(viper.ConfigFileUsed()).
-				WithVerbosity(verbosity)
+				WithVerbosity(verbosity).
+				WithLogger(logger.New(subcmd.Name()))
 
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)),

@@ -25,7 +25,6 @@ import (
 	"github.com/spf13/cobra"
 
 	imprt "github.com/bomctl/bomctl/internal/pkg/import"
-	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -38,7 +37,7 @@ func importCmd() *cobra.Command {
 		Short: "Import SBOM file(s) from stdin or local filesystem",
 		Long:  "Import SBOM file(s) from stdin or local filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
-			opts.Options = optionsFromContext(cmd).WithLogger(logger.New("import"))
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()

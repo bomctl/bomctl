@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
-	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -38,7 +37,7 @@ func fetchCmd() *cobra.Command {
 		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Run: func(cmd *cobra.Command, args []string) {
-			opts.Options = optionsFromContext(cmd).WithLogger(logger.New("fetch"))
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
