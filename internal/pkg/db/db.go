@@ -29,7 +29,6 @@ import (
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/logger"
-	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
@@ -50,8 +49,8 @@ type (
 )
 
 var (
-	errMissingDocument           = errors.New("no document found")
 	errBackendMissingFromContext = errors.New("failed to get database backend from command context")
+	errMissingDocument           = errors.New("no document found")
 )
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
@@ -145,35 +144,7 @@ func (backend *Backend) GetDocument(id string, tags ...string) (*sbom.Document, 
 		return documents[0], err
 	}
 
-	return nil, errNoDocumentFound
-}
-
-// WithOptions sets the options for the backend.
-func (backend *Backend) WithOptions(opts *options.Options) *Backend {
-	backend.Options = opts
-
-	return backend
-}
-
-// WithLogger sets the logger for the backend.
-func (backend *Backend) WithLogger(logger *log.Logger) *Backend {
-	backend.Logger = logger
-
-	return backend
-}
-
-// WithOptions sets the options for the backend.
-func WithOptions(opts *options.Options) Option {
-	return func(backend *Backend) {
-		backend.WithOptions(opts)
-	}
-}
-
-// Debug enables debug logging for all database transactions.
-func Debug(debug bool) Option {
-	return func(backend *Backend) {
-		backend.Options.Debug = debug
-	}
+	return nil, errMissingDocument
 }
 
 // WithDatabaseFile sets the database file for the backend.

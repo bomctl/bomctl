@@ -1,12 +1,8 @@
 package cmd
 
 import (
-	"path/filepath"
-
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
-	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -15,7 +11,11 @@ type AliasOptions struct {
 	UseAlias bool
 }
 
-var AliasAnnotationName = "alias"
+const (
+	aliasRemoveMinArgNum = 1
+	aliasRemoveMaxArgNum = 2
+	aliasSetArgNum       = 2
+)
 
 func aliasCmd() *cobra.Command {
 	aliasCmd := &cobra.Command{
@@ -30,61 +30,45 @@ func aliasCmd() *cobra.Command {
 	return aliasCmd
 }
 
-func aliasSetCmd() *cobra.Command {
-	aliasSetCmd := &cobra.Command{
-		Use:   "set [flags] SBOM_ID NEW_ALIAS",
-		Short: "Set the alias for a specific document",
-		Long:  "Set the alias for a specific document",
-		Args:  cobra.ExactArgs(2),
-		Run: func(_ *cobra.Command, args []string) {
-			backend, err := db.NewBackend(
-				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
-
-			if err := backend.InitClient(); err != nil {
-				backend.Logger.Fatal("Failed to initialize backend client", "err", err)
-			}
-
-			defer backend.CloseClient()
-
-			document, err := backend.GetDocument(args[0])
-			if err != nil {
-				backend.Logger.Fatal("Failed to get document", "documentID", args[0], "err", err)
-			}
-
-			docAlias, err := backend.GetDocumentAlias(document.Metadata.Id)
-			if err != nil {
-				backend.Logger.Fatal("Failed to read alias", "err", err)
-			}
-
-			if err := backend.RemoveAnnotations(document.Metadata.Id, AliasAnnotationName, docAlias); err != nil {
-				backend.Logger.Fatal("Failed to remove alias", AliasAnnotationName, docAlias, "err", err)
-			}
-
-			if len(args) > 1 {
-				if err := backend.AddAnnotations(document.Metadata.Id, AliasAnnotationName, args[1]); err != nil {
-					backend.Logger.Fatal("Failed to set alias", AliasAnnotationName, docAlias, "err", err)
-				}
-			}
-		},
-	}
-
-	return aliasSetCmd
-}
-
 func aliasRemoveCmd() *cobra.Command {
 	aliasCmd := &cobra.Command{
 		Use:     "remove [flags] SBOM_ID",
 		Aliases: []string{"rm"},
 		Short:   "Remove the alias for a specific document",
 		Long:    "Remove the alias for a specific document",
-		Args:    cobra.RangeArgs(1, 2),
-		Run: func(_ *cobra.Command, args []string) {
-			backend, err := db.NewBackend(
-				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
+		Args:    cobra.RangeArgs(aliasRemoveMinArgNum, aliasRemoveMaxArgNum),
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
 
-			if err := backend.InitClient(); err != nil {
-				backend.Logger.Fatal("Failed to initialize backend client", "err", err)
+			defer backend.CloseClient()
+
+			document, err := backend.GetDocument(args[0])
+			if err != nil {
+				backend.Logger.Fatal(err, "documentID", args[0])
 			}
+
+			docAlias, err := backend.GetDocumentAlias(document.Metadata.Id)
+			if err != nil {
+				backend.Logger.Fatal(err, "documentID", args[0])
+			}
+
+			if err := backend.RemoveAnnotations(document.Metadata.Id, "tag", docAlias); err != nil {
+				backend.Logger.Fatal(err, "alias", docAlias)
+			}
+		},
+	}
+
+	return aliasCmd
+}
+
+func aliasSetCmd() *cobra.Command {
+	aliasSetCmd := &cobra.Command{
+		Use:   "set [flags] SBOM_ID NEW_ALIAS",
+		Short: "Set the alias for a specific document",
+		Long:  "Set the alias for a specific document",
+		Args:  cobra.ExactArgs(aliasSetArgNum),
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
 
@@ -95,14 +79,20 @@ func aliasRemoveCmd() *cobra.Command {
 
 			docAlias, err := backend.GetDocumentAlias(document.Metadata.Id)
 			if err != nil {
-				backend.Logger.Fatal("Failed to read alias", "documentID", args[0], "err", err)
+				backend.Logger.Fatal(err)
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, TagAnnotationName, docAlias); err != nil {
-				backend.Logger.Fatal("Failed to remove alias", AliasAnnotationName, docAlias, "err", err)
+			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
+				backend.Logger.Fatal(err, "alias", docAlias)
+			}
+
+			if len(args) > 1 {
+				if err := backend.AddAnnotations(document.Metadata.Id, "alias", args[1]); err != nil {
+					backend.Logger.Fatal(err, "alias", docAlias)
+				}
 			}
 		},
 	}
 
-	return aliasCmd
+	return aliasSetCmd
 }

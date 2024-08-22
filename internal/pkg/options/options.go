@@ -46,11 +46,11 @@ type (
 	}
 
 	FetchOptions struct {
-		OutputFile *os.File
 		*Options
-		UseNetRC bool
-		Alias    string
-		Tags     []string
+		OutputFile *os.File
+		Alias      string
+		Tags       []string
+		UseNetRC   bool
 	}
 
 	ImportOptions struct {

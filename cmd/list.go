@@ -26,6 +26,8 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
+
+	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 const (
@@ -65,19 +67,12 @@ func listCmd() *cobra.Command {
 
 			rows := [][]string{}
 			for _, document := range documents {
-				alias, err := backend.GetDocumentAlias(document.Metadata.Id)
-				if err != nil {
-					backend.Logger.Fatalf("failed to get alias: %v", err)
-				}
-
 				id := document.Metadata.Name
 				if id == "" {
 					id = document.Metadata.Id
 				}
 
-				rows = append(rows, []string{
-					id, alias, document.Metadata.Version, fmt.Sprint(len(document.NodeList.Nodes)),
-				})
+				rows = append(rows, getRow(document, backend))
 			}
 
 			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
@@ -124,11 +119,16 @@ func styleFunc(row, col int) lipgloss.Style {
 		MaxHeight(rowMaxHeight)
 }
 
-func getRow(doc *sbom.Document) []string {
+func getRow(doc *sbom.Document, backend *db.Backend) []string {
 	id := doc.Metadata.Name
 	if id == "" {
 		id = doc.Metadata.Id
 	}
 
-	return []string{id, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
+	alias, err := backend.GetDocumentAlias(doc.Metadata.Id)
+	if err != nil {
+		backend.Logger.Fatalf("failed to get alias: %v", err)
+	}
+
+	return []string{id, alias, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
 }
