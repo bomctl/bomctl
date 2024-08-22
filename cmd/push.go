@@ -51,13 +51,13 @@ func pushCmd() *cobra.Command {
 
 			format, err := parseFormat(formatString, encoding)
 			if err != nil {
-				backend.Logger.Fatal(err, "format", formatString, "encoding", encoding)
+				opts.Logger.Fatal(err, "format", formatString, "encoding", encoding)
 			}
 
 			opts.Format = format
 
 			if err := push.Push(args[0], args[1], opts); err != nil {
-				backend.Logger.Fatal(err)
+				opts.Logger.Fatal(err)
 			}
 		},
 	}
