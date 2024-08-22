@@ -42,7 +42,7 @@ func aliasRemoveCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocument(args[0])
+			document, err := db.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
@@ -72,7 +72,7 @@ func aliasSetCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocument(args[0])
+			document, err := backend.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document", "documentID", args[0], "err", err)
 			}
@@ -83,12 +83,12 @@ func aliasSetCmd() *cobra.Command {
 			}
 
 			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
-				backend.Logger.Fatal(err, "alias", docAlias)
+				backend.Logger.Fatal(err, "alias", docAlias) //nolint:revive
 			}
 
 			if len(args) > 1 {
 				if err := backend.AddAnnotations(document.Metadata.Id, "alias", args[1]); err != nil {
-					backend.Logger.Fatal(err, "alias", docAlias)
+					backend.Logger.Fatal(err, "alias", docAlias) //nolint:revive
 				}
 			}
 		},

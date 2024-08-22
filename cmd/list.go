@@ -60,18 +60,18 @@ func listCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocuments(args, tags...)
+			documents, err := backend.GetDocumentsByID(args...)
+			if err != nil {
+				backend.Logger.Fatalf("failed to get documents: %v", err)
+			}
+
+			documents, err = backend.SelectDocumentsByTag(documents, tags...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
 			rows := [][]string{}
 			for _, document := range documents {
-				id := document.Metadata.Name
-				if id == "" {
-					id = document.Metadata.Id
-				}
-
 				rows = append(rows, getRow(document, backend))
 			}
 

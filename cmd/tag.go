@@ -37,7 +37,7 @@ func tagAddCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocument(args[0])
+			document, err := backend.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
@@ -62,7 +62,7 @@ func tagClearCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocument(args[0])
+			document, err := backend.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
@@ -99,7 +99,7 @@ func tagListCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocument(args[0])
+			document, err := backend.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document", "err", err)
 			}
@@ -130,7 +130,7 @@ func tagRemoveCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocument(args[0])
+			document, err := backend.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}

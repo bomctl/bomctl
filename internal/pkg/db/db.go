@@ -105,46 +105,28 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	return document, nil
 }
 
-func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Document, error) {
-	documents, err := backend.GetDocumentsByID(ids...)
-
-	if len(documents) == 0 && len(ids) > 0 {
-		documents, err = backend.GetDocumentsByAnnotation("alias", ids...)
+func (backend *Backend) SelectDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
+	taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
 	}
 
-	if err != nil && len(tags) > 0 {
-		taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get documents by tag: %w", err)
-		}
-
-		taggedDocumentIDs := []string{}
-		for _, taggedDoc := range taggedDocuments {
-			taggedDocumentIDs = append(taggedDocumentIDs, taggedDoc.Metadata.Id)
-		}
-
-		filteredDocuments := []*sbom.Document{}
-
-		for _, doc := range documents {
-			if slices.Contains(taggedDocumentIDs, doc.Metadata.Id) {
-				filteredDocuments = append(filteredDocuments, doc)
-			}
-		}
-
-		documents = filteredDocuments
+	taggedDocumentIDs := []string{}
+	for _, taggedDoc := range taggedDocuments {
+		taggedDocumentIDs = append(taggedDocumentIDs, taggedDoc.Metadata.Id)
 	}
+
+	filteredDocuments := []*sbom.Document{}
+
+	for _, doc := range documents {
+		if slices.Contains(taggedDocumentIDs, doc.Metadata.Id) {
+			filteredDocuments = append(filteredDocuments, doc)
+		}
+	}
+
+	documents = filteredDocuments
 
 	return documents, nil
-}
-
-func (backend *Backend) GetDocument(id string, tags ...string) (*sbom.Document, error) {
-	documents, err := backend.GetDocuments([]string{id}, tags...)
-
-	if len(documents) > 0 {
-		return documents[0], err
-	}
-
-	return nil, errMissingDocument
 }
 
 // WithDatabaseFile sets the database file for the backend.
