@@ -14,6 +14,8 @@ type TagOptions struct {
 	*options.Options
 }
 
+var TagAnnotationName = "tag"
+
 func tagCmd() *cobra.Command {
 	tagCmd := &cobra.Command{
 		Use:   "tag",
@@ -32,7 +34,7 @@ func tagClearCmd() *cobra.Command {
 		Short: "Clear the tags of a document",
 		Long:  "Clear the tags of a document",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
@@ -73,7 +75,7 @@ func tagAddCmd() *cobra.Command {
 		Short: "Add tags to a document",
 		Long:  "Add tags to a document",
 		Args:  cobra.MinimumNArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
@@ -104,7 +106,7 @@ func tagRemoveCmd() *cobra.Command {
 		Short:   "Remove the tags of a document",
 		Long:    "Remove the tags of a document",
 		Args:    cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
@@ -136,28 +138,28 @@ func tagListCmd() *cobra.Command {
 		Short:   "List the tags of a document",
 		Long:    "List the tags of a document",
 		Args:    cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
-				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
+				backend.Logger.Fatal("Failed to initialize backend client", "err", err)
 			}
 
 			defer backend.CloseClient()
 
 			document, err := backend.GetDocument(args[0])
 			if err != nil {
-				backend.Logger.Fatalf("failed to get document: %v", err)
+				backend.Logger.Fatal("Failed to get document", "err", err)
 			}
 
-			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
+			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, TagAnnotationName)
 			if err != nil {
-				backend.Logger.Fatalf("failed to get document tags: %v", err)
+				backend.Logger.Fatal("Failed to get document tags", "err", err)
 			}
 
 			for _, annotation := range annotations {
-				println(annotation.Value)
+				backend.Logger.Print(annotation.Value)
 			}
 		},
 	}

@@ -19,6 +19,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 
@@ -39,6 +40,8 @@ type (
 
 	Option func(*Backend)
 )
+
+var errNoDocumentFound = errors.New("no document found")
 
 func NewBackend(opts ...Option) (*Backend, error) {
 	backend := &Backend{
@@ -88,7 +91,7 @@ func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Docu
 	if err != nil && len(tags) > 0 {
 		taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get documents by tag: %w", err)
 		}
 
 		taggedDocumentIDs := []string{}
@@ -107,7 +110,7 @@ func (backend *Backend) GetDocuments(ids []string, tags ...string) ([]*sbom.Docu
 		documents = filteredDocuments
 	}
 
-	return documents, err
+	return documents, nil
 }
 
 func (backend *Backend) GetDocument(id string, tags ...string) (*sbom.Document, error) {
@@ -117,7 +120,7 @@ func (backend *Backend) GetDocument(id string, tags ...string) (*sbom.Document, 
 		return documents[0], err
 	}
 
-	return nil, fmt.Errorf("no document found")
+	return nil, errNoDocumentFound
 }
 
 // WithOptions sets the options for the backend.

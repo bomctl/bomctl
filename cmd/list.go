@@ -129,7 +129,8 @@ func listCmd() *cobra.Command {
 		},
 	}
 
-	listCmd.Flags().StringArrayVarP(&opts.Tags, "tag", "t", []string{}, "Tag used to filter listed documents. Can be specified multiple times to filter using multiple tags.")
+	listCmd.Flags().StringArrayVarP(&opts.Tags, "tag", "t", []string{},
+		"Tag used to filter listed documents. Can be specified multiple times to filter using multiple tags.")
 
 	return listCmd
 }

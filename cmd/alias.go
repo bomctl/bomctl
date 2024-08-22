@@ -15,6 +15,8 @@ type AliasOptions struct {
 	UseAlias bool
 }
 
+var AliasAnnotationName = "alias"
+
 func aliasCmd() *cobra.Command {
 	aliasCmd := &cobra.Command{
 		Use:   "alias",
@@ -34,7 +36,7 @@ func aliasSetCmd() *cobra.Command {
 		Short: "Set the alias for a specific document",
 		Long:  "Set the alias for a specific document",
 		Args:  cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
@@ -54,13 +56,13 @@ func aliasSetCmd() *cobra.Command {
 				backend.Logger.Fatal("Failed to read alias", "err", err)
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
-				backend.Logger.Fatal("Failed to remove alias", "alias", docAlias, "err", err)
+			if err := backend.RemoveAnnotations(document.Metadata.Id, AliasAnnotationName, docAlias); err != nil {
+				backend.Logger.Fatal("Failed to remove alias", AliasAnnotationName, docAlias, "err", err)
 			}
 
 			if len(args) > 1 {
-				if err := backend.AddAnnotations(document.Metadata.Id, "alias", args[1]); err != nil {
-					backend.Logger.Fatal("Failed to set alias", "alias", docAlias, "err", err)
+				if err := backend.AddAnnotations(document.Metadata.Id, AliasAnnotationName, args[1]); err != nil {
+					backend.Logger.Fatal("Failed to set alias", AliasAnnotationName, docAlias, "err", err)
 				}
 			}
 		},
@@ -76,28 +78,28 @@ func aliasRemoveCmd() *cobra.Command {
 		Short:   "Remove the alias for a specific document",
 		Long:    "Remove the alias for a specific document",
 		Args:    cobra.RangeArgs(1, 2),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			backend, err := db.NewBackend(
 				db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)))
 
 			if err := backend.InitClient(); err != nil {
-				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
+				backend.Logger.Fatal("Failed to initialize backend client", "err", err)
 			}
 
 			defer backend.CloseClient()
 
 			document, err := backend.GetDocument(args[0])
 			if err != nil {
-				backend.Logger.Fatalf("failed to get document: %v", err)
+				backend.Logger.Fatal("Failed to get document", "documentID", args[0], "err", err)
 			}
 
 			docAlias, err := backend.GetDocumentAlias(document.Metadata.Id)
 			if err != nil {
-				backend.Logger.Fatalf("failed to read alias: %v", err)
+				backend.Logger.Fatal("Failed to read alias", "documentID", args[0], "err", err)
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
-				backend.Logger.Fatalf("failed to remove alias: %v", err)
+			if err := backend.RemoveAnnotations(document.Metadata.Id, TagAnnotationName, docAlias); err != nil {
+				backend.Logger.Fatal("Failed to remove alias", AliasAnnotationName, docAlias, "err", err)
 			}
 		},
 	}
