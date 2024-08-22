@@ -82,7 +82,9 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) (*git.Repository, string, error) {
+func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
+	opts *options.Options,
+) (*git.Repository, string, error) {
 	// Create temp directory to clone into.
 	tempDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedRepoURL.Path, "/", "-"))
 	if err != nil {

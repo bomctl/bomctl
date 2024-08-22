@@ -93,6 +93,7 @@ func addFile(repo *git.Repository, filePath string, opts *options.PushOptions,
 	}
 
 	opts.Logger.Debug("Creating any needed directories prior to creating file")
+
 	if _, err := os.Stat(path.Dir(filePath)); os.IsNotExist(err) {
 		err = os.MkdirAll(path.Dir(filePath), fs.ModePerm) // fs.ModePerm == 0777
 		if err != nil {
