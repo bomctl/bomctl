@@ -22,12 +22,17 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 )
 
 //nolint:gochecknoglobals
 var (
 	// BuildDate is the date and time this binary was built.
 	BuildDate string
+
+	// Version is the full version string.
+	Version = fmt.Sprintf("v%s.%s.%s%s", VersionMajor, VersionMinor, VersionPatch, VersionPre)
 
 	// VersionMajor is for breaking API changes.
 	VersionMajor string
@@ -41,14 +46,8 @@ var (
 	// VersionPre indicates prerelease branch.
 	VersionPre string
 
-	// Version is the specification version that the package types support.
-	Version = fmt.Sprintf("v%s.%s.%s%s (built on %s)",
-		VersionMajor,
-		VersionMinor,
-		VersionPatch,
-		VersionPre,
-		BuildDate,
-	)
+	// VersionString is the specification version that the package types support.
+	VersionString = fmt.Sprintf("%s (built on %s)", Version, BuildDate)
 )
 
 func versionCmd() *cobra.Command {
@@ -57,7 +56,7 @@ func versionCmd() *cobra.Command {
 		Short: "Show version",
 		Long:  "Print the version",
 		Run: func(_ *cobra.Command, _ []string) {
-			fmt.Println("bomctl version", Version) //nolint:forbidigo // Print to terminal and exit
+			logger.New("bomctl").Print("", "version", Version, "buildDate", BuildDate)
 		},
 	}
 

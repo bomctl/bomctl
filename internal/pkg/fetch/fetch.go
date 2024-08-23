@@ -29,7 +29,6 @@ import (
 
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -37,19 +36,15 @@ import (
 )
 
 func Fetch(sbomURL string, opts *options.FetchOptions) error {
+	backend, err := db.BackendFromContext(opts.Context())
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
 	document, err := fetchDocument(sbomURL, opts)
 	if err != nil {
 		return err
 	}
-
-	backend, err := db.NewBackend(
-		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-		db.WithOptions(opts.Options))
-	if err != nil {
-		return fmt.Errorf("failed to initialize backend client: %w", err)
-	}
-
-	defer backend.CloseClient()
 
 	// Insert fetched document data into database.
 	if err := backend.AddDocument(document); err != nil {

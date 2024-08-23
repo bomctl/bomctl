@@ -24,23 +24,24 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/push"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 const pushArgNum = 2
 
 func pushCmd() *cobra.Command {
-	opts := &options.PushOptions{
-		Options: options.New(options.WithLogger(utils.NewLogger("push"))),
-	}
+	opts := &options.PushOptions{}
 
 	pushCmd := &cobra.Command{
-		Use:    "push [flags] SBOM_ID DEST_PATH",
-		Args:   cobra.MinimumNArgs(pushArgNum),
-		Short:  "Push stored SBOM file to remote URL or filesystem",
-		Long:   "Push stored SBOM file to remote URL or filesystem",
-		PreRun: preRun(opts.Options),
+		Use:   "push [flags] SBOM_ID DEST_PATH",
+		Args:  cobra.MinimumNArgs(pushArgNum),
+		Short: "Push stored SBOM file to remote URL or filesystem",
+		Long:  "Push stored SBOM file to remote URL or filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd)
+			backend := backendFromContext(cmd)
+
+			defer backend.CloseClient()
+
 			formatString, err := cmd.Flags().GetString("format")
 			cobra.CheckErr(err)
 
