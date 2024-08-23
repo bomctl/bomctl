@@ -171,7 +171,13 @@ Once that is established, more complex operations will be implemented. This oper
   - Split an SBOM dependency tree into multiple files based on purl type or component identifier
 - `Trim`
   - Trim an SBOM dependency tree based on purl type or component identifier
-- __Your suggestion too!__
+- __Your suggestions too!__
+
+## Similar Projects
+
+- [Kubernetes bom](https://github.com/kubernetes-sigs/bom) is a utility that lets you create, view and transform Software Bills of Materials (SBOMs). bom was created as part of the project to create an SBOM for the Kubernetes project. It enables software authors to generate an SBOM for their projects in a simple, yet powerful way.
+- [CycloneDX sbom-utility](https://github.com/CycloneDX/sbom-utility) was designed to be an API platform to validate, analyze and edit Bills-of-Materials (BOMs). Initially, it was created to validate either CycloneDX or SPDX-formatted BOMs against official, versioned JSON schemas as published by their respective standards communities.
+- [sbommerge](https://github.com/anthonyharrison/sbommerge) merges two Software Bill of Materials (SBOMs) documents together. It supports SBOMs created in both SPDX and CycloneDX formats.
 
 ## Verifying Integrity
 
