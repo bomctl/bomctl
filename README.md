@@ -25,7 +25,7 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 ## Join our Community
 
 - [#bomctl on OpenSSF Slack](https://openssf.slack.com/archives/C06ED5VB81W)
-- [OpenSSF Security Tooling Working Group Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/94897563315?password=7f03d8e7-7bc9-454e-95bd-6e1e09cb3b0b) - Every two weeks on Friday, 8am Pacific
+- [OpenSSF Security Tooling Working Group Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/94897563315?password=7f03d8e7-7bc9-454e-95bd-6e1e09cb3b0b) - Every other Friday at 8am Pacific
 - [SBOM Tooling Working Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/92103679564?password=c351279a-5cec-44a4-ab5b-e4342da0e43f) - Every Monday, 2pm Pacific
 
 ## Installation
@@ -46,7 +46,7 @@ docker run bomctl/bomctl:latest --help
 
 ### Install From Source
 
-Installing bomctl requires the following:
+To install bomctl, you need the following:
 
 - [Go](https://go.dev/dl/)
 - [Git](https://git-scm.com/downloads)
@@ -59,7 +59,7 @@ git clone https://github.com/bomctl/bomctl.git
 cd bomctl
 ```
 
-Build using the `Makefile`
+Build using the `make` command with the `Makefile`
 
 | Operating System | Architecture | `make` Command           |
 | ---------------- | ------------ | ------------------------ |
@@ -76,17 +76,17 @@ Build using the `Makefile`
 
 `bomctl` uses the [protobom library](https://github.com/protobom/protobom) to store the SBOM component graph in a SBOM format agnostic manner. When you interact with the `bomctl` cache, you are interacting with the [protobom library](https://github.com/protobom/protobom).
 
-- SBOMs are read into the cache
+- SBOMs are read and loaded into the cache
   - [fetch](#fetch)
   - [import](#import)
-- SBOMs are operated on the cache
+- Operations are performed on the cached SBOMs
   - [list](#list)
 - SBOMs are outputted out of the cache
   - [export](#export)
 
 ### Export
 
-Export stored SBOM(s) to stdout or the filesystem.
+Eexport stored SBOMs to either standard output or the file system.
 
 ```shell
 bomctl export [flags] SBOM_ID...
@@ -100,7 +100,7 @@ Flags:
 
 ### Fetch
 
-Ability to retrieve an SBOM files from HTTP(S), OCI, or Git URLs:
+Ability to retrieve SBOM files from URLs over HTTPS, OCI, or Git.
 
 ```shell
 bomctl fetch [flags] SBOM_URL...
@@ -123,7 +123,7 @@ bomctl fetch https://raw.githubusercontent.com/bomctl/bomctl-playground/main/exa
 
 ### Import
 
-Import SBOM file(s) from stdin or local filesystem.
+Import SBOM files from either standard input or the local file system.
 
 ```shell
 bomctl import [flags] { - | FILE...}
@@ -134,7 +134,7 @@ Flags:
 
 ### List
 
-List SBOM documents in local cache.
+List cached SBOM documents.
 
 ```shell
 bomctl list [flags] SBOM_ID...
@@ -149,10 +149,9 @@ Flags:
 ## Roadmap
 
 The project is focused on building an architecture that enables reading in, operating on, and reading
-out collections of SBOM files independent of format. Creating an architecture that allows the relationships
-between components in a SBOM document, and then relationships between SBOM documents in the priority.
+out collections of SBOM files independent of format. This project requires an architecture that prioritizes the relationships between components in a SBOM document and between SBOM documents.
 
-Once that is established, more complex operations will be implemented. This operations include:
+Once this architecture is established, more complex operations can be implemented. This operations include:
 
 - `Diff`
   - Generating diffs between components and component dependencies
@@ -177,6 +176,7 @@ Once that is established, more complex operations will be implemented. This oper
 
 - [Kubernetes bom](https://github.com/kubernetes-sigs/bom) is a utility that lets you create, view and transform Software Bills of Materials (SBOMs). bom was created as part of the project to create an SBOM for the Kubernetes project. It enables software authors to generate an SBOM for their projects in a simple, yet powerful way.
 - [CycloneDX sbom-utility](https://github.com/CycloneDX/sbom-utility) was designed to be an API platform to validate, analyze and edit Bills-of-Materials (BOMs). Initially, it was created to validate either CycloneDX or SPDX-formatted BOMs against official, versioned JSON schemas as published by their respective standards communities.
+- [Hoppr](https://hoppr.dev/) is a Python plugin-based framework for collecting, processing, and bundling your software supply chain.
 - [sbommerge](https://github.com/anthonyharrison/sbommerge) merges two Software Bill of Materials (SBOMs) documents together. It supports SBOMs created in both SPDX and CycloneDX formats.
 
 ## Verifying Integrity
