@@ -25,7 +25,8 @@
 !/.vscode/tasks.json
 !/.yamllint
 !/docs/**/*.md
-!/docs/images/**
+!/docs/images/*.png
+!/docs/images/*.svg
 
 # Whitelist patterns found anywhere in project
 !.gitignore
