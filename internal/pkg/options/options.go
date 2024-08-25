@@ -56,7 +56,7 @@ type (
 	ImportOptions struct {
 		*Options
 		InputFiles []*os.File
-		Alias      string
+		Alias      []string
 		Tags       []string
 	}
 

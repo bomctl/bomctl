@@ -52,8 +52,8 @@ func Import(opts *options.ImportOptions) error {
 			return fmt.Errorf("failed to store document: %w", err)
 		}
 
-		if idx == 0 && opts.Alias != "" {
-			if err := backend.AddAnnotations(document.Metadata.Id, "alias", opts.Alias); err != nil {
+		if idx < len(opts.Alias) {
+			if err := backend.AddAnnotations(document.Metadata.Id, "alias", opts.Alias[idx]); err != nil {
 				return fmt.Errorf("failed to set alias: %w", err)
 			}
 		}

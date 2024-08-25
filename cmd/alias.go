@@ -42,7 +42,7 @@ func aliasRemoveCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := db.GetDocumentByID(args[0])
+			document, err := backend.GetDocumentByID(args[0])
 			if err != nil {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}

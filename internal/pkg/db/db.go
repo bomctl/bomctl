@@ -48,10 +48,7 @@ type (
 	Option func(*Backend)
 )
 
-var (
-	errBackendMissingFromContext = errors.New("failed to get database backend from command context")
-	errMissingDocument           = errors.New("no document found")
-)
+var errBackendMissingFromContext = errors.New("failed to get database backend from command context")
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
 	backend, ok := ctx.Value(BackendKey{}).(*Backend)
