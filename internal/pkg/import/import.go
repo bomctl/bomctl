@@ -29,7 +29,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func Import(opts *options.ImportOptions) error {
+func Import(opts *options.ImportOptions) error { //nolint:revive
 	backend, err := db.BackendFromContext(opts.Context())
 	if err != nil {
 		return fmt.Errorf("%w", err)
