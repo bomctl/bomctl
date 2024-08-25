@@ -42,7 +42,7 @@ func tagAddCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			if err := backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...); err != nil { //nolint:revive
+			if err := backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...); err != nil {
 				backend.Logger.Fatalf("failed to add tags: %v", err)
 			}
 		},
@@ -67,7 +67,7 @@ func tagClearCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag") //nolint:revive
+			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -77,7 +77,7 @@ func tagClearCmd() *cobra.Command {
 				tagsToRemove = append(tagsToRemove, annotation.Value)
 			}
 
-			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", tagsToRemove...) //nolint:revive
+			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", tagsToRemove...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -104,7 +104,7 @@ func tagListCmd() *cobra.Command {
 				backend.Logger.Fatal("Failed to get document", "err", err)
 			}
 
-			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag") //nolint:revive
+			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document tags", "err", err)
 			}
