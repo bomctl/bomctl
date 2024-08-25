@@ -52,8 +52,8 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, "tag", docAlias); err != nil {
-				backend.Logger.Fatal(err, "alias", docAlias)
+			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil { //nolint:revive
+				backend.Logger.Fatal(err, "alias", docAlias) //nolint:revive
 			}
 		},
 	}
@@ -82,12 +82,12 @@ func aliasSetCmd() *cobra.Command {
 				backend.Logger.Fatal(err)
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
+			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil { //nolint:revive
 				backend.Logger.Fatal(err, "alias", docAlias) //nolint:revive
 			}
 
 			if len(args) > 1 {
-				if err := backend.AddAnnotations(document.Metadata.Id, "alias", args[1]); err != nil {
+				if err := backend.AddAnnotations(document.Metadata.Id, "alias", args[1]); err != nil { //nolint:revive
 					backend.Logger.Fatal(err, "alias", docAlias) //nolint:revive
 				}
 			}

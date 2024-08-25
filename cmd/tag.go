@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	tagAddArgNum    int = 2
-	tagClearArgNum  int = 1
-	tagListArgNum   int = 1
-	tagRemoveArgNum int = 1
+	tagAddArgNum       int = 2
+	tagClearArgNum     int = 1
+	tagListArgNum      int = 1
+	tagRemoveMinArgNum int = 2
 )
 
 func tagCmd() *cobra.Command {
@@ -42,7 +42,7 @@ func tagAddCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			if err := backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...); err != nil {
+			if err := backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...); err != nil { //nolint:revive
 				backend.Logger.Fatalf("failed to add tags: %v", err)
 			}
 		},
@@ -67,7 +67,7 @@ func tagClearCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
+			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag") //nolint:revive
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -77,7 +77,7 @@ func tagClearCmd() *cobra.Command {
 				tagsToRemove = append(tagsToRemove, annotation.Value)
 			}
 
-			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", tagsToRemove...)
+			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", tagsToRemove...) //nolint:revive
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -104,7 +104,7 @@ func tagListCmd() *cobra.Command {
 				backend.Logger.Fatal("Failed to get document", "err", err)
 			}
 
-			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
+			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag") //nolint:revive
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document tags", "err", err)
 			}
@@ -124,7 +124,7 @@ func tagRemoveCmd() *cobra.Command {
 		Aliases: []string{"rm"},
 		Short:   "Remove the tags of a document",
 		Long:    "Remove the tags of a document",
-		Args:    cobra.ExactArgs(tagRemoveArgNum),
+		Args:    cobra.MinimumNArgs(tagRemoveMinArgNum),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -135,7 +135,7 @@ func tagRemoveCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", args[1:]...)
+			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", args[1:]...) //nolint:revive
 			if err != nil {
 				backend.Logger.Fatalf("failed to remove tags: %v", err)
 			}
