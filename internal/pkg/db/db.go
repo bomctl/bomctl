@@ -102,6 +102,40 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	return document, nil
 }
 
+func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) {
+	document, id_err := backend.GetDocumentByID(id)
+
+	if document == nil {
+		documents, alias_err := backend.GetDocumentsByAnnotation("alias", id)
+		if alias_err != nil {
+			return nil, fmt.Errorf("failed to get document by ID or alias: %w | %w", id_err, alias_err)
+		}
+
+		document = documents[0]
+	}
+
+	return document, nil
+}
+
+func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document, error) {
+	var documents []*sbom.Document
+
+	if len(ids) == 0 {
+		return backend.GetDocumentsByID()
+	}
+
+	for _, id := range ids {
+		document, err := backend.GetDocumentByIDOrAlias(id)
+		if err != nil {
+			return nil, err
+		}
+
+		documents = append(documents, document)
+	}
+
+	return documents, nil
+}
+
 func (backend *Backend) SelectDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
 	taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
 	if err != nil {

@@ -42,7 +42,7 @@ func aliasRemoveCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocumentByID(args[0])
+			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
@@ -72,7 +72,7 @@ func aliasSetCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			document, err := backend.GetDocumentByID(args[0])
+			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document", "documentID", args[0], "err", err)
 			}

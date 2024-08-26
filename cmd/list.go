@@ -60,7 +60,7 @@ func listCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocumentsByID(args...)
+			documents, err := backend.GetDocumentsByIDOrAlias(args...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
