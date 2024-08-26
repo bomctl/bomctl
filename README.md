@@ -16,11 +16,11 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 ## Features
 
 - Work with multiple SBOMs in tree structures (through external references)
-- Fetch and push SBOMs using multiple protocols
+- Fetch and push SBOMs using multiple supported protocols
 - Leverage a `.netrc` file to handle authentication
 - Manage SBOMs using a persistent database cache
 - __FUTURE__ - Manipulate SBOMs with commands like `diff`, `split`, and `redact`
-- __FUTURE__ - Interface with OpenSSF projects and services like [GUAC](https://guac.sh/) and [Sigstore](https://www.sigstore.dev/)
+- __FUTURE__ - Interface with other OpenSSF projects and services like [GUAC](https://guac.sh/) and [Sigstore](https://www.sigstore.dev/)
 
 ## Join our Community
 
@@ -74,7 +74,7 @@ Build using the `make` command with the `Makefile`
 
 `bomctl` stores SBOMs in a cache database, this allows more complex cross SBOM document operations to exist. This is a fundemental concept; files are not directly modified, the cache is.
 
-`bomctl` uses the [protobom library](https://github.com/protobom/protobom) to store the SBOM component graph in a SBOM format agnostic manner. When you interact with the `bomctl` cache, you are interacting with the [protobom library](https://github.com/protobom/protobom).
+`bomctl` uses the [protobom library](https://github.com/protobom/protobom) to store the SBOM component graph in an SBOM agnostic format. When you interact with the `bomctl` cache, you are interacting with the [protobom library](https://github.com/protobom/protobom).
 
 - SBOMs are read and loaded into the cache
   - [fetch](#fetch)
@@ -86,21 +86,21 @@ Build using the `make` command with the `Makefile`
 
 ### Export
 
-Eexport stored SBOMs to either standard output or the file system.
+Export stored SBOMs to either standard output or the file system.
 
 ```shell
 bomctl export [flags] SBOM_ID...
 
 Flags:
   -e, --encoding string    output encoding [spdx: [json], cyclonedx: [json, xml]] (default "json")
-  -f, --format string      output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
+  -f, --format string      SBOM output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
   -h, --help               help for export
   -o, --output-file FILE   path to output file
 ```
 
 ### Fetch
 
-Ability to retrieve SBOM files from URLs over HTTPS, OCI, or Git.
+Ability to retrieve SBOM files over several protocols, including HTTPS, OCI, and git.
 
 ```shell
 bomctl fetch [flags] SBOM_URL...
@@ -111,7 +111,7 @@ Flags:
   -o, --output-file FILE   Path to output file
 ```
 
-This includes recursive loading of external references in an SBOM to other SBOMs and placing them into the persistent cache. If SBOMs are access controlled, a user's [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) file to authenticate.
+This includes recursive loading of external references in an SBOM to other SBOMs and placing them into the persistent cache. If SBOMs are access controlled, a user's [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) file can be used to authenticate.
 
 The following example will fetch this [CycloneDX SBOM](https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json)
 that represents a container image and will then recursively fetch an externally referenced SBOM that
@@ -165,12 +165,14 @@ Once this architecture is established, more complex operations can be implemente
   - Merge components and component dependencies from two or more SBOM documents
   - Flatten multiple SBOM document component dependencies into a single SBOM document
 - `Redact`
-  - Redact fields by regular express or field name while keeping tracibility to the original document
+  - Redact fields by regular expressions or field name while keeping tracibility to the original document
 - `Split`
   - Split an SBOM dependency tree into multiple files based on purl type or component identifier
 - `Trim`
   - Trim an SBOM dependency tree based on purl type or component identifier
 - __Your suggestions too!__
+
+We use [Architecture Decision Records](docs/architecture/README.md) to track key decisions on the architecture and implementation details of `bomctl`. Decisions that are proposed but not finalized have the [adr label](https://github.com/bomctl/bomctl/labels/adr).
 
 ## Similar Projects
 
