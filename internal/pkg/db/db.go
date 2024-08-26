@@ -103,14 +103,14 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 }
 
 func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) {
-	document, id_err := backend.GetDocumentByID(id)
+	document, idErr := backend.GetDocumentByID(id)
 
 	if document == nil {
-		documents, alias_err := backend.GetDocumentsByAnnotation("alias", id)
-		if alias_err != nil {
-			backend.Logger.Debug("Document could not be retrieved", "alias", id, "err", alias_err)
+		documents, aliasErr := backend.GetDocumentsByAnnotation("alias", id)
+		if aliasErr != nil {
+			backend.Logger.Debug("Document could not be retrieved", "alias", id, "err", aliasErr)
 
-			return nil, fmt.Errorf("failed to get document by ID or alias: %w | %w", id_err, alias_err)
+			return nil, fmt.Errorf("failed to get document by ID or alias: %w | %w", idErr, aliasErr)
 		}
 
 		document = documents[0]
@@ -120,19 +120,24 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 }
 
 func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document, error) {
-	var documents []*sbom.Document
-
 	if len(ids) == 0 {
-		return backend.GetDocumentsByID()
+		documents, err := backend.GetDocumentsByID()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get documents by ID: %w", err)
+		}
+
+		return documents, nil
 	}
 
-	for _, id := range ids {
+	documents := make([]*sbom.Document, len(ids))
+
+	for i, id := range ids {
 		document, err := backend.GetDocumentByIDOrAlias(id)
 		if err != nil {
 			return nil, err
 		}
 
-		documents = append(documents, document)
+		documents[i] = document
 	}
 
 	return documents, nil
