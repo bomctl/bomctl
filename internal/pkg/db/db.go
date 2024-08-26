@@ -149,9 +149,9 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
 	}
 
-	taggedDocumentIDs := []string{}
-	for _, taggedDoc := range taggedDocuments {
-		taggedDocumentIDs = append(taggedDocumentIDs, taggedDoc.Metadata.Id)
+	taggedDocumentIDs := make([]string, len(taggedDocuments))
+	for i, taggedDoc := range taggedDocuments {
+		taggedDocumentIDs[i] = taggedDoc.Metadata.Id
 	}
 
 	filteredDocuments := []*sbom.Document{}
