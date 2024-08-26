@@ -114,7 +114,7 @@ func encodingOptions() map[string][]string {
 }
 
 func formatHelp() string {
-	return fmt.Sprintf("output format [%s]", strings.Join(formatOptions(), ", "))
+	return fmt.Sprintf("SBOM output format [%s]", strings.Join(formatOptions(), ", "))
 }
 
 func formatOptions() []string {
