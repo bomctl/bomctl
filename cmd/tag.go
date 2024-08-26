@@ -21,7 +21,7 @@ func tagCmd() *cobra.Command {
 		Long:  "Edit the tags of a document",
 	}
 
-	tagCmd.AddCommand(tagClearCmd(), tagAddCmd(), tagRemoveCmd(), tagListCmd())
+	tagCmd.AddCommand(tagAddCmd(), tagClearCmd(), tagListCmd(), tagRemoveCmd())
 
 	return tagCmd
 }

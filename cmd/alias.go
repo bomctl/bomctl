@@ -24,8 +24,7 @@ func aliasCmd() *cobra.Command {
 		Long:  "Edit the alias for a document",
 	}
 
-	aliasCmd.AddCommand(aliasSetCmd())
-	aliasCmd.AddCommand(aliasRemoveCmd())
+	aliasCmd.AddCommand(aliasRemoveCmd(), aliasSetCmd())
 
 	return aliasCmd
 }
