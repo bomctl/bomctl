@@ -94,7 +94,7 @@ func (backend *Backend) AddDocument(document *sbom.Document) error {
 func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	document, err := backend.Retrieve(id, nil)
 	if err != nil {
-		backend.Logger.Warn("Document could not be retrieved", "id", id, "err", err)
+		backend.Logger.Debug("Document could not be retrieved", "id", id, "err", err)
 
 		return nil, fmt.Errorf("failed to retrieve document: %w", err)
 	}
@@ -108,6 +108,8 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 	if document == nil {
 		documents, alias_err := backend.GetDocumentsByAnnotation("alias", id)
 		if alias_err != nil {
+			backend.Logger.Debug("Document could not be retrieved", "alias", id, "err", alias_err)
+
 			return nil, fmt.Errorf("failed to get document by ID or alias: %w | %w", id_err, alias_err)
 		}
 
@@ -136,7 +138,7 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 	return documents, nil
 }
 
-func (backend *Backend) SelectDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
+func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
 	taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get documents by tag: %w", err)

@@ -65,7 +65,7 @@ func listCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
-			documents, err = backend.SelectDocumentsByTag(documents, tags...)
+			documents, err = backend.FilterDocumentsByTag(documents, tags...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
