@@ -36,6 +36,8 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
+var TestDataDir = filepath.Join("..", "..", "db", "testdata")
+
 type gitSuite struct {
 	suite.Suite
 	tempDir string
@@ -62,14 +64,14 @@ func (gs *gitSuite) SetupSuite() {
 
 	gs.repo = r
 
-	sboms, err := os.ReadDir("../../db/testdata")
+	sboms, err := os.ReadDir(TestDataDir)
 	if err != nil {
 		gs.T().Fatalf("%v", err)
 	}
 
 	rdr := reader.New()
 	for sbomIdx := range sboms {
-		doc, err := rdr.ParseFile(filepath.Join("../../db/testdata", sboms[sbomIdx].Name()))
+		doc, err := rdr.ParseFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
 		if err != nil {
 			gs.T().Fatalf("%v", err)
 		}
