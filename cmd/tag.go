@@ -73,8 +73,8 @@ func tagClearCmd() *cobra.Command {
 			}
 
 			tagsToRemove := make([]string, len(annotationsToRemove))
-			for i, annotation := range annotationsToRemove {
-				tagsToRemove[i] = annotation.Value
+			for idx := range annotationsToRemove {
+				tagsToRemove[idx] = annotationsToRemove[idx].Value
 			}
 
 			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", tagsToRemove...)

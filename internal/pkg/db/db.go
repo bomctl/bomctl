@@ -131,13 +131,13 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 
 	documents := make([]*sbom.Document, len(ids))
 
-	for i, id := range ids {
-		document, err := backend.GetDocumentByIDOrAlias(id)
+	for idx := range ids {
+		document, err := backend.GetDocumentByIDOrAlias(ids[idx])
 		if err != nil {
 			return nil, err
 		}
 
-		documents[i] = document
+		documents[idx] = document
 	}
 
 	return documents, nil
@@ -150,8 +150,8 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 	}
 
 	taggedDocumentIDs := make([]string, len(taggedDocuments))
-	for i, taggedDoc := range taggedDocuments {
-		taggedDocumentIDs[i] = taggedDoc.Metadata.Id
+	for idx := range taggedDocuments {
+		taggedDocumentIDs[idx] = taggedDocuments[idx].Metadata.Id
 	}
 
 	filteredDocuments := []*sbom.Document{}
