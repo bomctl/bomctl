@@ -27,6 +27,7 @@
 !/docs/**/*.md
 !/docs/images/*.png
 !/docs/images/*.svg
+!/Taskfile.yml
 
 # Whitelist patterns found anywhere in project
 !.gitignore
