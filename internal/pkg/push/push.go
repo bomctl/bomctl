@@ -35,22 +35,22 @@ func Push(sbomID, destPath string, opts *options.PushOptions) error {
 	opts.Logger.Info("Pushing Document", "sbomID", sbomID)
 
 	// create appropriate push client based on user provided destination
-	pClient, err := client.New(destPath)
+	pushClient, err := client.New(destPath)
 	if err != nil {
 		return fmt.Errorf("creating push client: %w", err)
 	}
 
-	opts.Logger.Info(fmt.Sprintf("Pushing to %s URL", pClient.Name()), "url", destPath)
+	opts.Logger.Info(fmt.Sprintf("Pushing to %s URL", pushClient.Name()), "url", destPath)
 
 	// push sbomid to destpath via client
-	err = pClient.Push(sbomID, destPath, opts)
+	err = pushClient.Push(sbomID, destPath, opts)
 	if err != nil {
 		return fmt.Errorf("failed to push to %s: %w", destPath, err)
 	}
 
 	// If user wants to recurse the sbom tree and push all, do so
 	if opts.UseTree {
-		err := getExtRefDocs(sbomID, destPath, opts)
+		err := processExtRefDocs(sbomID, destPath, opts)
 		if err != nil {
 			return fmt.Errorf("failed to fetch external ref boms for %s: %w", sbomID, err)
 		}
@@ -59,7 +59,7 @@ func Push(sbomID, destPath string, opts *options.PushOptions) error {
 	return nil
 }
 
-func getExtRefDocs(sbomID, destPath string, opts *options.PushOptions) error {
+func processExtRefDocs(sbomID, destPath string, opts *options.PushOptions) error {
 	opts.Logger.Info("Fetching External Ref Boms for Document", "sbomID", sbomID)
 
 	backend, err := db.BackendFromContext(opts.Context())
@@ -83,9 +83,9 @@ func getExtRefDocs(sbomID, destPath string, opts *options.PushOptions) error {
 	return nil
 }
 
-func checkForExistingDoc(be *db.Backend, doc *sbom.Document) (id, name string, err error) {
-	// checks local db for fetched document identifiers
-	// returns local data if found, otherwise uses fetched data
+// checks local db for fetched document identifiers,
+// returns local data if found, otherwise uses fetched data.
+func getDocumentInfo(be *db.Backend, doc *sbom.Document) (id, name string, err error) {
 	existingDoc, err := be.GetDocumentByID(doc.Metadata.Id)
 	if err != nil {
 		if err = be.AddDocument(doc); err != nil {
@@ -98,11 +98,11 @@ func checkForExistingDoc(be *db.Backend, doc *sbom.Document) (id, name string, e
 	return existingDoc.Metadata.Id, existingDoc.Metadata.Name, nil
 }
 
-func getExtRefPath(destPath, docID, docName string) string {
-	// generate destination path to push to
-	// based on what we know about the bom and the requested dest url
-	// will push to same path (dir) as the origin pushed bom
-	// but with name or id from fecth doc and requested format ext
+// generate destination path to push to based on what
+// we know about the bom and the requested dest url
+// pushes to same path (dir) as the origin pushed bom
+// but with name or id from fetch doc and requested format ext.
+func getExtRefPath(destPath, docID, docName string, opts *options.PushOptions) string {
 	ext := filepath.Ext(destPath)
 	base := filepath.Base(destPath)
 	destDir := destPath[:len(destPath)-len(base)]
@@ -113,6 +113,7 @@ func getExtRefPath(destPath, docID, docName string) string {
 	}
 
 	fileName := strings.ReplaceAll(docName, ".", "_")
+	opts.Logger.Info("Fetching External Ref Bom from URL", "refUrl", fileName)
 
 	return (destDir + fileName + ext)
 }
@@ -133,13 +134,13 @@ func pushExtRefDoc(ref *sbom.ExternalReference, be *db.Backend, destPath string,
 	}
 
 	// check local db to see if this file already exists
-	docID, docName, err := checkForExistingDoc(be, doc)
+	docID, docName, err := getDocumentInfo(be, doc)
 	if err != nil {
 		return fmt.Errorf("failed to import external ref bom: %w", err)
 	}
 
 	// generate deestination path for ext ref doc based on provided dest pah
-	extRefDestPath := getExtRefPath(destPath, docID, docName)
+	extRefDestPath := getExtRefPath(destPath, docID, docName, opts)
 	opts.Logger.Info("pushing External Ref Bom Document", "destPath", extRefDestPath)
 
 	// push extref bom, calling top level push cmd
