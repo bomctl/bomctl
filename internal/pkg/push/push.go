@@ -113,7 +113,7 @@ func getExtRefPath(destPath, docID, docName string, opts *options.PushOptions) s
 	}
 
 	fileName := strings.ReplaceAll(docName, ".", "_")
-	opts.Logger.Info("Fetching External Ref Bom from URL", "refUrl", fileName)
+	opts.Logger.Info("External References BOM Name: %s", fileName)
 
 	return (destDir + fileName + ext)
 }
