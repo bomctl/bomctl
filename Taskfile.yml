@@ -38,12 +38,12 @@ env:
   RESET: \033[0m
 
 vars:
-  BUILD_DATE:
-    sh: date -u +'%Y-%m-%dT%H:%M:%SZ'
+  BUILD_DATE: '{{dateInZone "2006-01-02T15:04:05Z" (now) "UTC"}}'
   GIT_SHA:
     sh: git rev-parse HEAD
   GOLANGCI_LINT_INSTALL: https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
   GOLANGCI_LINT_VERSION: v1.60.3
+  GOLANGCI_LINT_RELEASE_URL: https://github.com/golangci/golangci-lint/releases/download/{{.GOLANGCI_LINT_VERSION}}
   MARKDOWN_FILES:
     sh: git ls-files '*.md'
   SHELL_FILES:
@@ -76,34 +76,40 @@ tasks:
 
   install:golangci-lint:
     desc: Install golangci-lint
-    status:
-      - test -x {{.TOOLS_DIR}}/golangci-lint
-    cmd: curl --fail --silent --show-error --location {{.GOLANGCI_LINT_INSTALL}} |
-      sh -s -- -b {{.TOOLS_DIR}} {{.GOLANGCI_LINT_VERSION}}
-
-  install:shellcheck:unix:
-    desc: Install shellcheck
-    platforms: [darwin, linux]
     vars:
-      SHELLCHECK_FILENAME: shellcheck-{{.SHELLCHECK_VERSION}}.{{OS}}.{{.SHELLCHECK_ARCH}}.tar.xz
-      SHELLCHECK_DOWNLOAD_URL: "{{.SHELLCHECK_RELEASE_URL}}/{{.SHELLCHECK_FILENAME}}"
+      GOLANGCI_LINT_PREFIX: golangci-lint-{{trimPrefix "v" .GOLANGCI_LINT_VERSION}}-{{OS}}-{{ARCH}}
+      GOLANGCI_LINT_FILENAME: '{{.GOLANGCI_LINT_PREFIX}}{{if eq OS "windows"}}.zip{{else}}.tar.gz{{end}}'
+      GOLANGCI_LINT_DOWNLOAD_URL: "{{.GOLANGCI_LINT_RELEASE_URL}}/{{.GOLANGCI_LINT_FILENAME}}"
     status:
-      - test -x {{.TOOLS_DIR}}/shellcheck
-    cmd: curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} |
-      tar --extract --xz --directory {{.TOOLS_DIR}} --strip-components=1 shellcheck-{{.SHELLCHECK_VERSION}}/shellcheck
-
-  install:shellcheck:windows:
-    desc: Install shellcheck
-    platforms: [windows]
-    vars:
-      SHELLCHECK_FILENAME: shellcheck-{{.SHELLCHECK_VERSION}}.zip
-      SHELLCHECK_DOWNLOAD_URL: "{{.SHELLCHECK_RELEASE_URL}}/{{.SHELLCHECK_FILENAME}}"
-    status:
-      - test -x {{.TOOLS_DIR}}/shellcheck.exe
+      - test -x {{.TOOLS_DIR}}/golangci-lint{{exeExt}}
     cmds:
-      - curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} --output temp.zip
-      - defer: rm -f temp.zip
-      - unzip temp.zip -d {{.TOOLS_DIR}}
+      - mkdir -p {{.TOOLS_DIR}}
+      - curl --fail --silent --show-error --location --url {{.GOLANGCI_LINT_DOWNLOAD_URL}} --remote-name
+      - defer: rm -r {{.GOLANGCI_LINT_FILENAME}}
+      - cmd: tar --extract --gzip --file {{.GOLANGCI_LINT_FILENAME}} --directory {{.TOOLS_DIR}}
+          --strip-components=1 {{.GOLANGCI_LINT_PREFIX}}/golangci-lint
+        platforms: [darwin, linux]
+      - cmd: unzip {{.GOLANGCI_LINT_FILENAME}} {{.GOLANGCI_LINT_PREFIX}}/golangci-lint.exe -d {{.TOOLS_DIR}}
+        platforms: [windows]
+
+  install:shellcheck:
+    desc: Install shellcheck
+    vars:
+      SHELLCHECK_PREFIX: shellcheck-{{.SHELLCHECK_VERSION}}
+      SHELLCHECK_EXTENSION: '{{if eq OS "windows"}}.zip{{else}}.{{OS}}.{{.SHELLCHECK_ARCH}}.tar.xz{{end}}'
+      SHELLCHECK_FILENAME: "{{.SHELLCHECK_PREFIX}}{{.SHELLCHECK_EXTENSION}}"
+      SHELLCHECK_DOWNLOAD_URL: "{{.SHELLCHECK_RELEASE_URL}}/{{.SHELLCHECK_FILENAME}}"
+    status:
+      - test -x {{.TOOLS_DIR}}/shellcheck{{exeExt}}
+    cmds:
+      - mkdir -p {{.TOOLS_DIR}}
+      - curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} --remote-name
+      - defer: rm -r {{.SHELLCHECK_FILENAME}}
+      - cmd: tar --extract --xz --file {{.SHELLCHECK_FILENAME}} --directory {{.TOOLS_DIR}}
+          --strip-components=1 {{.SHELLCHECK_PREFIX}}/shellcheck
+        platforms: [darwin, linux]
+      - cmd: unzip {{.SHELLCHECK_FILENAME}} -d {{.TOOLS_DIR}}
+        platforms: [windows]
 
   install:shfmt:
     desc: Install shfmt
@@ -230,7 +236,7 @@ tasks:
     cmd:
       task: run-lint
       vars:
-        CLI_NAME: golangci-lint
+        CLI_NAME: golangci-lint{{exeExt}}
         CLI_ARGS: [run, --verbose]
 
   lint:go:fix:
@@ -238,7 +244,7 @@ tasks:
     cmd:
       task: run-lint
       vars:
-        CLI_NAME: golangci-lint
+        CLI_NAME: golangci-lint{{exeExt}}
         CLI_ARGS: [run, --fix, --verbose]
 
   lint:markdown:
@@ -262,12 +268,12 @@ tasks:
     cmds:
       - task: run-lint
         vars:
-          CLI_NAME: shellcheck
+          CLI_NAME: shellcheck{{exeExt}}
           CLI_ARGS: ["{{catLines .SHELL_FILES}}"]
 
       - task: run-lint
         vars:
-          CLI_NAME: shfmt
+          CLI_NAME: shfmt{{exeExt}}
           CLI_ARGS: [--diff, --simplify, "{{catLines .SHELL_FILES}}"]
 
   lint:shell:fix:
@@ -275,7 +281,7 @@ tasks:
     cmd:
       task: run-lint
       vars:
-        CLI_NAME: shfmt
+        CLI_NAME: shfmt{{exeExt}}
         CLI_ARGS: [--write, --simplify, "{{catLines .SHELL_FILES}}"]
 
   lint:yaml:
