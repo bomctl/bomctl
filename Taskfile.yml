@@ -70,8 +70,7 @@ tasks:
     desc: Install dev tools
     cmds:
       - task: install:golangci-lint
-      - task: install:shellcheck:unix
-      - task: install:shellcheck:windows
+      - task: install:shellcheck
       - task: install:shfmt
 
   install:golangci-lint:
