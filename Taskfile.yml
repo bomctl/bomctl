@@ -46,6 +46,7 @@ vars:
   GOLANGCI_LINT_RELEASE_URL: https://github.com/golangci/golangci-lint/releases/download/{{.GOLANGCI_LINT_VERSION}}
   MARKDOWN_FILES:
     sh: git ls-files '*.md'
+  RM: '{{if eq OS "windows"}}powershell -Command "Remove-Item -Recurse -Force -Path"{{else}}rm -rf{{end}}'
   SHELL_FILES:
     sh: git ls-files '*.sh'
   SHELLCHECK_ARCH: '{{eq ARCH "amd64" | ternary "x86_64" "aarch64"}}'
@@ -67,12 +68,14 @@ tasks:
   # Dev tools tasks
   # ----------------------------------------------------------------------------
   make-tools-dir:
-    internal: true
+    silent: true
+    status:
+      - test -d {{.TOOLS_DIR}}
     cmds:
-      - cmd: mkdir -p {{.TOOLS_DIR}}
+      - cmd: mkdir {{.TOOLS_DIR}}
         platforms: [darwin, linux]
 
-      - cmd: powershell -Command "New-Item -ItemType directory -Path {{.TOOLS_DIR}} -Force"
+      - cmd: powershell -Command "New-Item -ItemType directory -Path {{.TOOLS_DIR}}"
         platforms: [windows]
 
   install:
@@ -93,7 +96,7 @@ tasks:
     cmds:
       - task: make-tools-dir
       - cmd: curl --fail --silent --show-error --location --url {{.GOLANGCI_LINT_DOWNLOAD_URL}} --remote-name
-      - defer: rm -r {{.GOLANGCI_LINT_FILENAME}}
+      - defer: "{{.RM}} {{.GOLANGCI_LINT_FILENAME}}"
       - cmd: tar --extract --gzip --file {{.GOLANGCI_LINT_FILENAME}} --directory {{.TOOLS_DIR}}
           --strip-components=1 {{.GOLANGCI_LINT_PREFIX}}/golangci-lint
         platforms: [darwin, linux]
@@ -112,7 +115,7 @@ tasks:
     cmds:
       - task: make-tools-dir
       - cmd: curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} --remote-name
-      - defer: rm -r {{.SHELLCHECK_FILENAME}}
+      - defer: "{{.RM}} {{.SHELLCHECK_FILENAME}}"
       - cmd: tar --extract --xz --file {{.SHELLCHECK_FILENAME}} --directory {{.TOOLS_DIR}}
           --strip-components=1 {{.SHELLCHECK_PREFIX}}/shellcheck
         platforms: [darwin, linux]
@@ -136,7 +139,7 @@ tasks:
   # ----------------------------------------------------------------------------
   # Build tasks
   # ----------------------------------------------------------------------------
-  clean: rm -rf dist
+  clean: "{{.RM}} dist"
 
   gobuild:
     internal: true
@@ -217,12 +220,14 @@ tasks:
     silent: true
     vars:
       CLI_ARGS: '{{.CLI_ARGS | join " "}}'
-    preconditions:
-      - sh: command -v {{.CLI_NAME}}
-        msg: "{{.CLI_NAME}} not found, please install and run the command again."
-    cmds:
-      - printf "Running ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n"
-      - PATH={{.TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}${PATH} {{.CLI_NAME}} {{.CLI_ARGS}}
+    cmd: >
+      export PATH="{{.TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}{{env "PATH"}}";
+      if command -v {{.CLI_NAME}} > /dev/null; then
+        printf "Running ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n";
+        {{.CLI_NAME}} {{.CLI_ARGS}};
+      else
+        printf "${YELLOW}{{.CLI_NAME}} not found, please install and run the command again.${RESET}\n";
+      fi
 
   lint:
     desc: Lint Golang code, markdown, shell scripts, and YAML files
