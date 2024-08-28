@@ -206,7 +206,7 @@ tasks:
       - sh: command -v {{.CLI_NAME}}
         msg: "{{.CLI_NAME}} not found, please install and run the command again."
     cmds:
-      - printf "\nRunning ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n"
+      - printf "Running ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n"
       - PATH={{.TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}${PATH} {{.CLI_NAME}} {{.CLI_ARGS}}
 
   lint:
@@ -215,6 +215,14 @@ tasks:
       - task: lint:go
       - task: lint:markdown
       - task: lint:shell
+      - task: lint:yaml
+
+  lint:fix:
+    desc: Lint Golang code, markdown, shell script, and YAML files, apply fixes where possible
+    cmds:
+      - task: lint:go:fix
+      - task: lint:markdown:fix
+      - task: lint:shell:fix
       - task: lint:yaml
 
   lint:go:
@@ -252,24 +260,23 @@ tasks:
   lint:shell:
     desc: Lint shell scripts
     cmds:
-      - task: shellcheck
-      - task: shfmt
+      - task: run-lint
+        vars:
+          CLI_NAME: shellcheck
+          CLI_ARGS: ["{{catLines .SHELL_FILES}}"]
 
-  shellcheck:
-    internal: true
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: shellcheck
-        CLI_ARGS: ["{{catLines .SHELL_FILES}}"]
+      - task: run-lint
+        vars:
+          CLI_NAME: shfmt
+          CLI_ARGS: [--diff, --simplify, "{{catLines .SHELL_FILES}}"]
 
-  shfmt:
-    internal: true
+  lint:shell:fix:
+    desc: Fix shell script lint findings
     cmd:
       task: run-lint
       vars:
         CLI_NAME: shfmt
-        CLI_ARGS: [--diff, --simplify, "{{catLines .SHELL_FILES}}"]
+        CLI_ARGS: [--write, --simplify, "{{catLines .SHELL_FILES}}"]
 
   lint:yaml:
     desc: Lint YAML files
