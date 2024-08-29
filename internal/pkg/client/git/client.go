@@ -20,9 +20,7 @@ package git
 
 import (
 	"fmt"
-	"os"
 	"regexp"
-	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -82,15 +80,9 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
+func cloneRepo(tempDir string, parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
 	opts *options.Options,
-) (*git.Repository, string, error) {
-	// Create temp directory to clone into.
-	tempDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedRepoURL.Path, "/", "-"))
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to create temp directory: %w", err)
-	}
-
+) (*git.Repository, error) {
 	refName := plumbing.NewBranchReferenceName(parsedRepoURL.GitRef)
 
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
@@ -114,8 +106,8 @@ func cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
 	// Clone the repository into the temp directory
 	repo, err := git.PlainClone(tempDir, false, cloneOpts)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to clone Git repository: %w", err)
+		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}
 
-	return repo, tempDir, nil
+	return repo, nil
 }

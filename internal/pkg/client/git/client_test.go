@@ -52,14 +52,14 @@ type gitSuite struct {
 func (gs *gitSuite) SetupSuite() {
 	dir, err := os.MkdirTemp("", "testrepo")
 	if err != nil {
-		gs.T().Fatalf("Failed to create temporary directory: %v", err)
+		gs.T().Fatalf("failed to create temporary directory: %v", err)
 	}
 
 	gs.tempDir = dir
 
 	r, err := gogit.PlainInit(dir, false)
 	if err != nil {
-		gs.T().Fatalf("Failed to initialize git repo: %v", err)
+		gs.T().Fatalf("failed to initialize git repo: %v", err)
 	}
 
 	gs.repo = r

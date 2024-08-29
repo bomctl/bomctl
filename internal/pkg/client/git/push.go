@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/protobom/protobom/pkg/sbom"
@@ -49,12 +50,19 @@ func (client *Client) Push(id, pushURL string, opts *options.PushOptions) error 
 		}
 	}
 
+	// Create temp directory to clone into.
+	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-"))
+	if err != nil {
+		return fmt.Errorf("failed to create temp directory: %w", err)
+	}
+
 	// Clone the repository into the temp directory
-	repo, tmpDir, err := cloneRepo(parsedURL, auth, opts.Options)
+	repo, err := cloneRepo(tmpDir, parsedURL, auth, opts.Options)
 	if err != nil {
 		return fmt.Errorf("failed to clone Git repository: %w", err)
 	}
 
+	// Defer removing the temp directory with the cloned repo, to clean up
 	defer os.RemoveAll(tmpDir)
 
 	filePath := filepath.Join(tmpDir, parsedURL.Fragment)

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
@@ -36,8 +37,15 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 			return nil, fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
+
+	// Create temp directory to clone into.
+	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp directory: %w", err)
+	}
+
 	// Clone the repository into the temp directory
-	_, tmpDir, err := cloneRepo(parsedURL, auth, opts.Options)
+	_, err = cloneRepo(tmpDir, parsedURL, auth, opts.Options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}
