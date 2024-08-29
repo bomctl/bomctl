@@ -22,6 +22,10 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
@@ -74,4 +78,36 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		Query:    results["query"],
 		Fragment: results["fragment"],
 	}
+}
+
+func cloneRepo(tempDir string, parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
+	opts *options.Options,
+) (*git.Repository, error) {
+	refName := plumbing.NewBranchReferenceName(parsedRepoURL.GitRef)
+
+	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
+	baseURL := &url.ParsedURL{
+		Scheme:   parsedRepoURL.Scheme,
+		Hostname: parsedRepoURL.Hostname,
+		Path:     parsedRepoURL.Path,
+		Port:     parsedRepoURL.Port,
+	}
+
+	cloneOpts := &git.CloneOptions{
+		URL:           baseURL.String(),
+		Auth:          auth,
+		RemoteName:    "origin",
+		ReferenceName: refName,
+		SingleBranch:  true,
+		Depth:         1,
+	}
+
+	opts.Logger.Debug("Cloning git repo: %s", baseURL)
+	// Clone the repository into the temp directory
+	repo, err := git.PlainClone(tempDir, false, cloneOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
+	}
+
+	return repo, nil
 }
