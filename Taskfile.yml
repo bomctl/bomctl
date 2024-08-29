@@ -75,8 +75,17 @@ tasks:
       - cmd: mkdir {{.TOOLS_DIR}}
         platforms: [darwin, linux]
 
-      - cmd: powershell -Command "New-Item -ItemType directory -Path {{.TOOLS_DIR}}"
+      - cmd: powershell -Command '$null = New-Item -ItemType directory -Path {{shellQuote .TOOLS_DIR}}'
         platforms: [windows]
+
+  unzip-windows:
+    internal: true
+    platforms: [windows]
+    cmd: powershell -Command 'Add-Type -Assembly System.IO.Compression.FileSystem;
+      $zip = [IO.Compression.ZipFile]::OpenRead("{{.ZIP_FILENAME}}");
+      $entry = $zip.Entries | Where-Object -Property Name -EQ "{{.EXE_FILENAME}}";
+      $target = "{{shellQuote (joinPath .TOOLS_DIR "{{.EXE_FILENAME}}")}}";
+      [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target)'
 
   install:
     desc: Install dev tools
@@ -92,7 +101,7 @@ tasks:
       GOLANGCI_LINT_FILENAME: '{{.GOLANGCI_LINT_PREFIX}}{{if eq OS "windows"}}.zip{{else}}.tar.gz{{end}}'
       GOLANGCI_LINT_DOWNLOAD_URL: "{{.GOLANGCI_LINT_RELEASE_URL}}/{{.GOLANGCI_LINT_FILENAME}}"
     status:
-      - test -x {{.TOOLS_DIR}}/golangci-lint{{exeExt}}
+      - test -x "{{shellQuote .TOOLS_DIR}}/golangci-lint{{exeExt}}"
     cmds:
       - task: make-tools-dir
       - cmd: curl --fail --silent --show-error --location --url {{.GOLANGCI_LINT_DOWNLOAD_URL}} --remote-name
@@ -100,8 +109,10 @@ tasks:
       - cmd: tar --extract --gzip --file {{.GOLANGCI_LINT_FILENAME}} --directory {{.TOOLS_DIR}}
           --strip-components=1 {{.GOLANGCI_LINT_PREFIX}}/golangci-lint
         platforms: [darwin, linux]
-      - cmd: unzip -j {{.GOLANGCI_LINT_FILENAME}} {{.GOLANGCI_LINT_PREFIX}}/golangci-lint.exe -d {{.TOOLS_DIR}}
-        platforms: [windows]
+      - task: unzip-windows
+        vars:
+          ZIP_FILENAME: "{{.GOLANGCI_LINT_FILENAME}}"
+          EXE_FILENAME: golangci-lint.exe
 
   install:shellcheck:
     desc: Install shellcheck
@@ -111,7 +122,7 @@ tasks:
       SHELLCHECK_FILENAME: "{{.SHELLCHECK_PREFIX}}{{.SHELLCHECK_EXTENSION}}"
       SHELLCHECK_DOWNLOAD_URL: "{{.SHELLCHECK_RELEASE_URL}}/{{.SHELLCHECK_FILENAME}}"
     status:
-      - test -x {{.TOOLS_DIR}}/shellcheck{{exeExt}}
+      - test -x "{{shellQuote .TOOLS_DIR}}/shellcheck{{exeExt}}"
     cmds:
       - task: make-tools-dir
       - cmd: curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} --remote-name
@@ -119,8 +130,10 @@ tasks:
       - cmd: tar --extract --xz --file {{.SHELLCHECK_FILENAME}} --directory {{.TOOLS_DIR}}
           --strip-components=1 {{.SHELLCHECK_PREFIX}}/shellcheck
         platforms: [darwin, linux]
-      - cmd: unzip -j {{.SHELLCHECK_FILENAME}} -d {{.TOOLS_DIR}}
-        platforms: [windows]
+      - task: unzip-windows
+        vars:
+          ZIP_FILENAME: "{{.SHELLCHECK_FILENAME}}"
+          EXE_FILENAME: shellcheck.exe
 
   install:shfmt:
     desc: Install shfmt
@@ -128,7 +141,7 @@ tasks:
       SHFMT_FILENAME: shfmt_{{.SHFMT_VERSION}}_{{OS}}_{{ARCH}}{{exeExt}}
       SHFMT_DOWNLOAD_URL: https://github.com/mvdan/sh/releases/download/{{.SHFMT_VERSION}}/{{.SHFMT_FILENAME}}
     status:
-      - test -x {{.TOOLS_DIR}}/shfmt{{exeExt}}
+      - test -x "{{shellQuote .TOOLS_DIR}}/shfmt{{exeExt}}"
     cmds:
       - task: make-tools-dir
       - cmd: curl --fail --silent --show-error --location
@@ -221,7 +234,7 @@ tasks:
     vars:
       CLI_ARGS: '{{.CLI_ARGS | join " "}}'
     cmd: >
-      export PATH="{{.TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}{{env "PATH"}}";
+      export PATH="{{shellQuote .TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}{{env "PATH"}}";
       if command -v {{.CLI_NAME}} > /dev/null; then
         printf "Running ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n";
         {{.CLI_NAME}} {{.CLI_ARGS}};
