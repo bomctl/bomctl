@@ -17,6 +17,7 @@
 !/.markdownlint.yml
 !/.markdownlintignore
 !/.pre-commit-config.yaml
+!/.taskfiles/*.yml
 !/.vscode/adr.code-snippets
 !/.vscode/extensions.json
 !/.vscode/header.code-snippets

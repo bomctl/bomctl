@@ -21,150 +21,50 @@
 
 version: "3"
 
+includes:
+  build:
+    taskfile: .taskfiles/build.yml
+
+  fix:
+    taskfile: .taskfiles/fix.yml
+    vars:
+      MARKDOWN_FILES: "{{.MARKDOWN_FILES}}"
+      SHELL_FILES: "{{.SHELL_FILES}}"
+
+  install:
+    taskfile: .taskfiles/install.yml
+    vars:
+      RM: "{{.RM}}"
+      TOOLS_DIR: "{{.TOOLS_DIR}}"
+
+  lint:
+    taskfile: .taskfiles/lint.yml
+    vars:
+      MARKDOWN_FILES: "{{.MARKDOWN_FILES}}"
+      SHELL_FILES: "{{.SHELL_FILES}}"
+      TOOLS_DIR: "{{.TOOLS_DIR}}"
+      YAML_FILES: "{{.YAML_FILES}}"
+
 env:
   GO111MODULE: "on"
   GOPATH:
     sh: go env GOPATH
   GOPROXY: https://proxy.golang.org,direct
-  LDFLAGS: -s -w
-    -X=github.com/bomctl/bomctl/cmd.VersionMajor={{.VERSION_MAJOR}}
-    -X=github.com/bomctl/bomctl/cmd.VersionMinor={{.VERSION_MINOR}}
-    -X=github.com/bomctl/bomctl/cmd.VersionPatch={{.VERSION_PATCH}}
-    -X=github.com/bomctl/bomctl/cmd.VersionPre={{.VERSION_PRE}}
-    -X=github.com/bomctl/bomctl/cmd.BuildDate={{.BUILD_DATE}}
-  BOLD: \033[1m
-  CYAN: \033[36m
-  YELLOW: \033[33m
-  RESET: \033[0m
 
 vars:
-  BUILD_DATE: '{{dateInZone "2006-01-02T15:04:05Z" (now) "UTC"}}'
-  GIT_SHA:
-    sh: git rev-parse HEAD
-  GOLANGCI_LINT_INSTALL: https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
-  GOLANGCI_LINT_VERSION: v1.60.3
-  GOLANGCI_LINT_RELEASE_URL: https://github.com/golangci/golangci-lint/releases/download/{{.GOLANGCI_LINT_VERSION}}
+  RM: '{{if eq OS "windows"}}powershell -Command "Remove-Item -Recurse -Force -Path"{{else}}rm -rf{{end}}'
   MARKDOWN_FILES:
     sh: git ls-files '*.md'
-  RM: '{{if eq OS "windows"}}powershell -Command "Remove-Item -Recurse -Force -Path"{{else}}rm -rf{{end}}'
   SHELL_FILES:
     sh: git ls-files '*.sh'
-  SHELLCHECK_ARCH: '{{eq ARCH "amd64" | ternary "x86_64" "aarch64"}}'
-  SHELLCHECK_VERSION: v0.10.0
-  SHELLCHECK_RELEASE_URL: https://github.com/koalaman/shellcheck/releases/download/{{.SHELLCHECK_VERSION}}
-  SHFMT_VERSION: v3.9.0
   TOOLS_DIR: '{{shellQuote (joinPath .ROOT_DIR ".bin")}}'
-  VERSION:
-    sh: '{{default "Undefined" "git describe --tags --abbrev=0"}}'
-  VERSION_REGEX: v(\d+)\.(\d+)\.(\d+)
-  VERSION_MAJOR: '{{regexReplaceAll .VERSION_REGEX .VERSION "${1}"}}'
-  VERSION_MINOR: '{{regexReplaceAll .VERSION_REGEX .VERSION "${2}"}}'
-  VERSION_PATCH: '{{regexReplaceAll .VERSION_REGEX .VERSION "${3}"}}'
   YAML_FILES:
     sh: git ls-files '*.yml' '*.yaml'
 
 tasks:
-  # ----------------------------------------------------------------------------
-  # Dev tools tasks
-  # ----------------------------------------------------------------------------
-  make-tools-dir:
+  default:
     silent: true
-    status:
-      - test -d {{.TOOLS_DIR}}
-    cmds:
-      - cmd: mkdir {{.TOOLS_DIR}}
-        platforms: [darwin, linux]
-
-      - cmd: powershell -Command '$null = New-Item -ItemType directory -Path {{shellQuote .TOOLS_DIR}}'
-        platforms: [windows]
-
-  unzip-windows:
-    internal: true
-    platforms: [windows]
-    cmd: powershell -Command 'Add-Type -Assembly System.IO.Compression.FileSystem;
-      $zip = [IO.Compression.ZipFile]::OpenRead("{{.ZIP_FILENAME}}");
-      $entry = $zip.Entries | Where-Object -Property Name -EQ "{{.EXE_FILENAME}}";
-      $target = {{shellQuote (joinPath .TOOLS_DIR .EXE_FILENAME)}};
-      [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target)'
-
-  install:
-    desc: Install dev tools
-    cmds:
-      - task: install:golangci-lint
-      - task: install:shellcheck
-      - task: install:shfmt
-
-  install:golangci-lint:
-    desc: Install golangci-lint
-    vars:
-      GOLANGCI_LINT_PREFIX: golangci-lint-{{trimPrefix "v" .GOLANGCI_LINT_VERSION}}-{{OS}}-{{ARCH}}
-      GOLANGCI_LINT_FILENAME: '{{.GOLANGCI_LINT_PREFIX}}{{if eq OS "windows"}}.zip{{else}}.tar.gz{{end}}'
-      GOLANGCI_LINT_DOWNLOAD_URL: "{{.GOLANGCI_LINT_RELEASE_URL}}/{{.GOLANGCI_LINT_FILENAME}}"
-    status:
-      - test -x "{{shellQuote .TOOLS_DIR}}/golangci-lint{{exeExt}}"
-    cmds:
-      - task: make-tools-dir
-      - cmd: curl --fail --silent --show-error --location --url {{.GOLANGCI_LINT_DOWNLOAD_URL}} --remote-name
-      - defer: "{{.RM}} {{.GOLANGCI_LINT_FILENAME}}"
-      - cmd: tar --extract --gzip --file {{.GOLANGCI_LINT_FILENAME}} --directory {{.TOOLS_DIR}}
-          --strip-components=1 {{.GOLANGCI_LINT_PREFIX}}/golangci-lint
-        platforms: [darwin, linux]
-      - task: unzip-windows
-        vars:
-          ZIP_FILENAME: "{{.GOLANGCI_LINT_FILENAME}}"
-          EXE_FILENAME: golangci-lint.exe
-
-  install:shellcheck:
-    desc: Install shellcheck
-    vars:
-      SHELLCHECK_PREFIX: shellcheck-{{.SHELLCHECK_VERSION}}
-      SHELLCHECK_EXTENSION: '{{if eq OS "windows"}}.zip{{else}}.{{OS}}.{{.SHELLCHECK_ARCH}}.tar.xz{{end}}'
-      SHELLCHECK_FILENAME: "{{.SHELLCHECK_PREFIX}}{{.SHELLCHECK_EXTENSION}}"
-      SHELLCHECK_DOWNLOAD_URL: "{{.SHELLCHECK_RELEASE_URL}}/{{.SHELLCHECK_FILENAME}}"
-    status:
-      - test -x "{{shellQuote .TOOLS_DIR}}/shellcheck{{exeExt}}"
-    cmds:
-      - task: make-tools-dir
-      - cmd: curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} --remote-name
-      - defer: "{{.RM}} {{.SHELLCHECK_FILENAME}}"
-      - cmd: tar --extract --xz --file {{.SHELLCHECK_FILENAME}} --directory {{.TOOLS_DIR}}
-          --strip-components=1 {{.SHELLCHECK_PREFIX}}/shellcheck
-        platforms: [darwin, linux]
-      - task: unzip-windows
-        vars:
-          ZIP_FILENAME: "{{.SHELLCHECK_FILENAME}}"
-          EXE_FILENAME: shellcheck.exe
-
-  install:shfmt:
-    desc: Install shfmt
-    vars:
-      SHFMT_FILENAME: shfmt_{{.SHFMT_VERSION}}_{{OS}}_{{ARCH}}{{exeExt}}
-      SHFMT_DOWNLOAD_URL: https://github.com/mvdan/sh/releases/download/{{.SHFMT_VERSION}}/{{.SHFMT_FILENAME}}
-    status:
-      - test -x "{{shellQuote .TOOLS_DIR}}/shfmt{{exeExt}}"
-    cmds:
-      - task: make-tools-dir
-      - cmd: curl --fail --silent --show-error --location
-          --url {{.SHFMT_DOWNLOAD_URL}}
-          --output {{.TOOLS_DIR}}/shfmt{{exeExt}}
-      - cmd: '{{if ne OS "windows"}}chmod +x {{.TOOLS_DIR}}/shfmt{{end}}'
-
-  # ----------------------------------------------------------------------------
-  # Build tasks
-  # ----------------------------------------------------------------------------
-  clean: "{{.RM}} dist"
-
-  gobuild:
-    internal: true
-    generates:
-      - "{{.OUTPUT}}"
-    env:
-      CGO_ENABLED: 0
-      GOOS: "{{.GOOS}}"
-      GOARCH: "{{.GOARCH}}"
-    vars:
-      OUTPUT: '{{joinPath "dist" (list .GOOS .GOARCH | join "-") "bomctl"}}{{.EXT}}'
-    cmd: go build -trimpath -o {{.OUTPUT}} -ldflags="${LDFLAGS}"
+    cmd: task --list
 
   build:
     desc: Build binaries for all platforms and CPU architectures
@@ -176,71 +76,23 @@ tasks:
       - task: build:windows:amd
       - task: build:windows:arm
 
-  build:linux:amd:
-    desc: Build for Linux on AMD64
-    cmd:
-      task: gobuild
-      vars:
-        GOOS: linux
-        GOARCH: amd64
+  clean:
+    desc: Clean the working directory
+    cmd: "{{.RM}} dist"
 
-  build:linux:arm:
-    desc: Build for Linux on ARM
-    cmd:
-      task: gobuild
-      vars:
-        GOOS: linux
-        GOARCH: arm64
+  fix:
+    desc: Apply fixes to Golang code, markdown, and shell scripts where possible
+    cmds:
+      - task: fix:go
+      - task: fix:markdown
+      - task: fix:shell
 
-  build:macos:intel:
-    desc: Build for macOS on AMD64
-    cmd:
-      task: gobuild
-      vars:
-        GOOS: darwin
-        GOARCH: amd64
-
-  build:macos:apple:
-    desc: Build for macOS on ARM
-    cmd:
-      task: gobuild
-      vars:
-        GOOS: darwin
-        GOARCH: arm64
-
-  build:windows:amd:
-    desc: Build for Windows on AMD64
-    cmd:
-      task: gobuild
-      vars:
-        EXT: .exe
-        GOOS: windows
-        GOARCH: amd64
-
-  build:windows:arm:
-    desc: Build for Windows on ARM
-    cmd:
-      task: gobuild
-      vars:
-        EXT: .exe
-        GOOS: windows
-        GOARCH: arm64
-
-  # ----------------------------------------------------------------------------
-  # Lint tasks
-  # ----------------------------------------------------------------------------
-  run-lint:
-    silent: true
-    vars:
-      CLI_ARGS: '{{.CLI_ARGS | join " "}}'
-    cmd: >
-      export PATH="{{shellQuote .TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}{{env "PATH"}}";
-      if command -v {{.CLI_NAME}} > /dev/null; then
-        printf "Running ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n";
-        {{.CLI_NAME}} {{.CLI_ARGS}};
-      else
-        printf "${YELLOW}{{.CLI_NAME}} not found, please install and run the command again.${RESET}\n";
-      fi
+  install:
+    desc: Install dev tools
+    cmds:
+      - task: install:golangci-lint
+      - task: install:shellcheck
+      - task: install:shfmt
 
   lint:
     desc: Lint Golang code, markdown, shell scripts, and YAML files
@@ -250,78 +102,6 @@ tasks:
       - task: lint:shell
       - task: lint:yaml
 
-  lint:fix:
-    desc: Lint Golang code, markdown, shell script, and YAML files, apply fixes where possible
-    cmds:
-      - task: lint:go:fix
-      - task: lint:markdown:fix
-      - task: lint:shell:fix
-      - task: lint:yaml
-
-  lint:go:
-    desc: Lint Golang code files
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: golangci-lint{{exeExt}}
-        CLI_ARGS: [run, --verbose]
-
-  lint:go:fix:
-    desc: Fix golangci-lint findings
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: golangci-lint{{exeExt}}
-        CLI_ARGS: [run, --fix, --verbose]
-
-  lint:markdown:
-    desc: Lint markdown files
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: markdownlint-cli2
-        CLI_ARGS: "{{catLines .MARKDOWN_FILES}}"
-
-  lint:markdown:fix:
-    desc: Fix markdown lint findings
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: markdownlint-cli2
-        CLI_ARGS: [--fix, "{{catLines .MARKDOWN_FILES}}"]
-
-  lint:shell:
-    desc: Lint shell scripts
-    cmds:
-      - task: run-lint
-        vars:
-          CLI_NAME: shellcheck{{exeExt}}
-          CLI_ARGS: ["{{catLines .SHELL_FILES}}"]
-
-      - task: run-lint
-        vars:
-          CLI_NAME: shfmt{{exeExt}}
-          CLI_ARGS: [--diff, --simplify, "{{catLines .SHELL_FILES}}"]
-
-  lint:shell:fix:
-    desc: Fix shell script lint findings
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: shfmt{{exeExt}}
-        CLI_ARGS: [--write, --simplify, "{{catLines .SHELL_FILES}}"]
-
-  lint:yaml:
-    desc: Lint YAML files
-    cmd:
-      task: run-lint
-      vars:
-        CLI_NAME: yamllint
-        CLI_ARGS: ["{{catLines .YAML_FILES}}"]
-
-  # ----------------------------------------------------------------------------
-  # Testing tasks
-  # ----------------------------------------------------------------------------
   test:
     desc: Run all tests
     cmds:
