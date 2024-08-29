@@ -84,7 +84,7 @@ tasks:
     cmd: powershell -Command 'Add-Type -Assembly System.IO.Compression.FileSystem;
       $zip = [IO.Compression.ZipFile]::OpenRead("{{.ZIP_FILENAME}}");
       $entry = $zip.Entries | Where-Object -Property Name -EQ "{{.EXE_FILENAME}}";
-      $target = "{{shellQuote (joinPath .TOOLS_DIR "{{.EXE_FILENAME}}")}}";
+      $target = {{shellQuote (joinPath .TOOLS_DIR .EXE_FILENAME)}};
       [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target)'
 
   install:
