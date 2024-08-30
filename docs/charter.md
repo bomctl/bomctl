@@ -94,4 +94,3 @@ Except as described in the Intellectual Property Policy Section, all contributio
 ## Amendments
 
 This charter may be amended by a two-thirds vote of the entire TSC and is subject to approval by LF Projects.
-This Markdown conversion maintains the structure and formatting of the original text.
