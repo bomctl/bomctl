@@ -1,5 +1,3 @@
-Here’s the content converted to Markdown:
-
 # Technical Charter (the “Charter”) for bomctl a Series of LF Projects, LLC
 
 **Adopted August 5, 2024**
