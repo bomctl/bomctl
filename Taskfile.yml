@@ -1,0 +1,112 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
+# SPDX-FileName: Taskfile.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+includes:
+  build:
+    taskfile: .taskfiles/build.yml
+
+  fix:
+    taskfile: .taskfiles/fix.yml
+    vars:
+      MARKDOWN_FILES: "{{.MARKDOWN_FILES}}"
+      SHELL_FILES: "{{.SHELL_FILES}}"
+
+  install:
+    taskfile: .taskfiles/install.yml
+    vars:
+      RM: "{{.RM}}"
+      TOOLS_DIR: "{{.TOOLS_DIR}}"
+
+  lint:
+    taskfile: .taskfiles/lint.yml
+    vars:
+      MARKDOWN_FILES: "{{.MARKDOWN_FILES}}"
+      SHELL_FILES: "{{.SHELL_FILES}}"
+      TOOLS_DIR: "{{.TOOLS_DIR}}"
+      YAML_FILES: "{{.YAML_FILES}}"
+
+env:
+  GO111MODULE: "on"
+  GOPATH:
+    sh: go env GOPATH
+  GOPROXY: https://proxy.golang.org,direct
+
+vars:
+  RM: '{{if eq OS "windows"}}powershell -Command "Remove-Item -Recurse -Force -Path"{{else}}rm -rf{{end}}'
+  MARKDOWN_FILES:
+    sh: git ls-files '*.md'
+  SHELL_FILES:
+    sh: git ls-files '*.sh'
+  TOOLS_DIR: '{{shellQuote (joinPath .ROOT_DIR ".bin")}}'
+  YAML_FILES:
+    sh: git ls-files '*.yml' '*.yaml'
+
+tasks:
+  default:
+    silent: true
+    cmd: task --list
+
+  build:
+    desc: Build binaries for all platforms and CPU architectures
+    cmds:
+      - task: build:linux:amd
+      - task: build:linux:arm
+      - task: build:macos:intel
+      - task: build:macos:apple
+      - task: build:windows:amd
+      - task: build:windows:arm
+
+  clean:
+    desc: Clean the working directory
+    cmd: "{{.RM}} dist"
+
+  fix:
+    desc: Apply fixes to Golang code, markdown, and shell scripts where possible
+    cmds:
+      - task: fix:go
+      - task: fix:markdown
+      - task: fix:shell
+
+  install:
+    desc: Install dev tools
+    cmds:
+      - task: install:golangci-lint
+      - task: install:shellcheck
+      - task: install:shfmt
+
+  lint:
+    desc: Lint Golang code, markdown, shell scripts, and YAML files
+    cmds:
+      - task: lint:go
+      - task: lint:markdown
+      - task: lint:shell
+      - task: lint:yaml
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task: test:unit
+
+  test:unit:
+    desc: Run unit tests
+    cmd: go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...

@@ -48,27 +48,29 @@ docker run bomctl/bomctl:latest --help
 
 To install bomctl, you need the following:
 
-- [Go](https://go.dev/dl/)
+- [Go](https://go.dev/dl)
 - [Git](https://git-scm.com/downloads)
-- [Make](https://www.gnu.org/software/make/manual/make.html)
+- One of:
+  - [Make](https://www.gnu.org/software/make/manual/make.html)
+  - [Task](https://taskfile.dev)
 
-Clone the bomctl repository
+#### Clone the bomctl repository
 
-``` shell
+```shell
 git clone https://github.com/bomctl/bomctl.git
 cd bomctl
 ```
 
-Build using the `make` command with the `Makefile`
+#### Build using `make` or `task`
 
-| Operating System | Architecture | `make` Command           |
-| ---------------- | ------------ | ------------------------ |
-| Linux            | AMD64        | `make build-linux-amd`   |
-| Linux            | ARM          | `make build-linux-arm`   |
-| Windows          | AMD64        | `make build-windows-amd` |
-| Windows          | ARM          | `make build-windows-arm` |
-| MacOS            | AMD64        | `make build-macos-intel` |
-| MacOS            | ARM          | `make build-macos-apple` |
+| Platform      | `make` Command           | `task` Command           |
+| :------------ | :----------------------- | :----------------------- |
+| linux/amd64   | `make build-linux-amd`   | `task build:linux:amd`   |
+| linux/arm     | `make build-linux-arm`   | `task build:linux:arm`   |
+| windows/amd64 | `make build-windows-amd` | `task build:windows:amd` |
+| windows/arm   | `make build-windows-arm` | `task build:windows:arm` |
+| darwin/amd64  | `make build-macos-intel` | `task build:macos:intel` |
+| darwin/arm    | `make build-macos-apple` | `task build:macos:apple` |
 
 ## Commands
 
