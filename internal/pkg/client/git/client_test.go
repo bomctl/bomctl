@@ -19,18 +19,110 @@
 package git_test
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	gogit "github.com/go-git/go-git/v5"
+	"github.com/protobom/protobom/pkg/reader"
+	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
+	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func TestParse(t *testing.T) {
-	t.Parallel()
+var TestDataDir = filepath.Join("..", "..", "db", "testdata")
 
-	client := &git.Client{}
+type gitSuite struct {
+	suite.Suite
+	tempDir string
+	repo    *gogit.Repository
+	opts    *options.Options
+	backend *db.Backend
+	gc      *git.Client
+	doc     *sbom.Document
+	docs    []*sbom.Document
+}
+
+func (gs *gitSuite) SetupSuite() {
+	dir, err := os.MkdirTemp("", "testrepo")
+	if err != nil {
+		gs.T().Fatalf("failed to create temporary directory: %v", err)
+	}
+
+	gs.tempDir = dir
+
+	r, err := gogit.PlainInit(dir, false)
+	if err != nil {
+		gs.T().Fatalf("failed to initialize git repo: %v", err)
+	}
+
+	gs.repo = r
+
+	sboms, err := os.ReadDir(TestDataDir)
+	if err != nil {
+		gs.T().Fatalf("%v", err)
+	}
+
+	rdr := reader.New()
+	for sbomIdx := range sboms {
+		doc, err := rdr.ParseFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
+		if err != nil {
+			gs.T().Fatalf("%v", err)
+		}
+
+		gs.docs = append(gs.docs, doc)
+	}
+
+	gs.opts = options.New().
+		WithCacheDir(viper.GetString("cache_dir"))
+
+	gs.backend, err = db.NewBackend(
+		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
+	)
+	if err != nil {
+		gs.T().Fatalf("%v", err)
+	}
+
+	for _, document := range gs.docs {
+		err := gs.backend.AddDocument(document)
+		if err != nil {
+			gs.Fail("failed retrieving document", "id", document.Metadata.Id)
+		}
+	}
+
+	gs.opts = gs.opts.WithContext(context.WithValue(context.Background(), db.BackendKey{}, gs.backend))
+
+	gs.gc = &git.Client{}
+}
+
+func (gs *gitSuite) TearDownSuite() {
+	err := os.RemoveAll(gs.tempDir)
+	if err != nil {
+		gs.T().Logf("Error removing repo file %s", db.DatabaseFile)
+	}
+
+	gs.backend.CloseClient()
+
+	if _, err := os.Stat(db.DatabaseFile); err == nil {
+		if err := os.Remove(db.DatabaseFile); err != nil {
+			gs.T().Logf("Error removing database file %s", db.DatabaseFile)
+		}
+	}
+}
+
+func TestGitSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(gitSuite))
+}
+
+func (gs *gitSuite) TestParse() {
+	gs.T().Parallel()
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -251,12 +343,8 @@ func TestParse(t *testing.T) {
 			expected: nil,
 		},
 	} {
-		t.Run(data.name, func(t *testing.T) {
-			t.Parallel()
+		actual := gs.gc.Parse(data.url)
 
-			actual := client.Parse(data.url)
-
-			assert.Equal(t, data.expected, actual, data.url)
-		})
+		gs.Equal(data.expected, actual)
 	}
 }

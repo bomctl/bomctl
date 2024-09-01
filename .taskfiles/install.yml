@@ -1,0 +1,106 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
+# SPDX-FileName: .taskfiles/install.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+vars:
+  GOLANGCI_LINT_VERSION: v1.60.3
+  GOLANGCI_LINT_RELEASE_URL: https://github.com/golangci/golangci-lint/releases/download/{{.GOLANGCI_LINT_VERSION}}
+  SHELLCHECK_ARCH: '{{eq ARCH "amd64" | ternary "x86_64" "aarch64"}}'
+  SHELLCHECK_VERSION: v0.10.0
+  SHELLCHECK_RELEASE_URL: https://github.com/koalaman/shellcheck/releases/download/{{.SHELLCHECK_VERSION}}
+  SHFMT_VERSION: v3.9.0
+
+tasks:
+  make-tools-dir:
+    silent: true
+    status:
+      - test -d {{.TOOLS_DIR}}
+    cmds:
+      - cmd: mkdir {{.TOOLS_DIR}}
+        platforms: [darwin, linux]
+
+      - cmd: powershell -Command '$null = New-Item -ItemType directory -Path {{shellQuote .TOOLS_DIR}}'
+        platforms: [windows]
+
+  unzip-windows:
+    internal: true
+    platforms: [windows]
+    cmd: powershell -Command 'Add-Type -Assembly System.IO.Compression.FileSystem;
+      $zip = [IO.Compression.ZipFile]::OpenRead("{{.ZIP_FILENAME}}");
+      $entry = $zip.Entries | Where-Object -Property Name -EQ "{{.EXE_FILENAME}}";
+      $target = {{shellQuote (joinPath .TOOLS_DIR .EXE_FILENAME)}};
+      [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target)'
+
+  golangci-lint:
+    desc: Install golangci-lint
+    vars:
+      GOLANGCI_LINT_PREFIX: golangci-lint-{{trimPrefix "v" .GOLANGCI_LINT_VERSION}}-{{OS}}-{{ARCH}}
+      GOLANGCI_LINT_FILENAME: '{{.GOLANGCI_LINT_PREFIX}}{{if eq OS "windows"}}.zip{{else}}.tar.gz{{end}}'
+      GOLANGCI_LINT_DOWNLOAD_URL: "{{.GOLANGCI_LINT_RELEASE_URL}}/{{.GOLANGCI_LINT_FILENAME}}"
+    status:
+      - test -x "{{shellQuote .TOOLS_DIR}}/golangci-lint{{exeExt}}"
+    cmds:
+      - task: make-tools-dir
+      - cmd: curl --fail --silent --show-error --location --url {{.GOLANGCI_LINT_DOWNLOAD_URL}} --remote-name
+      - defer: "{{.RM}} {{.GOLANGCI_LINT_FILENAME}}"
+      - cmd: tar --extract --gzip --file {{.GOLANGCI_LINT_FILENAME}} --directory {{.TOOLS_DIR}}
+          --strip-components=1 {{.GOLANGCI_LINT_PREFIX}}/golangci-lint
+        platforms: [darwin, linux]
+      - task: unzip-windows
+        vars:
+          ZIP_FILENAME: "{{.GOLANGCI_LINT_FILENAME}}"
+          EXE_FILENAME: golangci-lint.exe
+
+  shellcheck:
+    desc: Install shellcheck
+    vars:
+      SHELLCHECK_PREFIX: shellcheck-{{.SHELLCHECK_VERSION}}
+      SHELLCHECK_EXTENSION: '{{if eq OS "windows"}}.zip{{else}}.{{OS}}.{{.SHELLCHECK_ARCH}}.tar.xz{{end}}'
+      SHELLCHECK_FILENAME: "{{.SHELLCHECK_PREFIX}}{{.SHELLCHECK_EXTENSION}}"
+      SHELLCHECK_DOWNLOAD_URL: "{{.SHELLCHECK_RELEASE_URL}}/{{.SHELLCHECK_FILENAME}}"
+    status:
+      - test -x "{{shellQuote .TOOLS_DIR}}/shellcheck{{exeExt}}"
+    cmds:
+      - task: make-tools-dir
+      - cmd: curl --fail --silent --show-error --location --url {{.SHELLCHECK_DOWNLOAD_URL}} --remote-name
+      - defer: "{{.RM}} {{.SHELLCHECK_FILENAME}}"
+      - cmd: tar --extract --xz --file {{.SHELLCHECK_FILENAME}} --directory {{.TOOLS_DIR}}
+          --strip-components=1 {{.SHELLCHECK_PREFIX}}/shellcheck
+        platforms: [darwin, linux]
+      - task: unzip-windows
+        vars:
+          ZIP_FILENAME: "{{.SHELLCHECK_FILENAME}}"
+          EXE_FILENAME: shellcheck.exe
+
+  shfmt:
+    desc: Install shfmt
+    vars:
+      SHFMT_FILENAME: shfmt_{{.SHFMT_VERSION}}_{{OS}}_{{ARCH}}{{exeExt}}
+      SHFMT_DOWNLOAD_URL: https://github.com/mvdan/sh/releases/download/{{.SHFMT_VERSION}}/{{.SHFMT_FILENAME}}
+    status:
+      - test -x "{{shellQuote .TOOLS_DIR}}/shfmt{{exeExt}}"
+    cmds:
+      - task: make-tools-dir
+      - cmd: curl --fail --silent --show-error --location
+          --url {{.SHFMT_DOWNLOAD_URL}}
+          --output {{.TOOLS_DIR}}/shfmt{{exeExt}}
+      - cmd: '{{if ne OS "windows"}}chmod +x {{.TOOLS_DIR}}/shfmt{{end}}'
