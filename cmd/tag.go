@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 const (
@@ -42,7 +44,7 @@ func tagAddCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			if err := backend.AddAnnotations(document.Metadata.Id, "tag", args[1:]...); err != nil {
+			if err := backend.AddAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, args[1:]...); err != nil {
 				backend.Logger.Fatalf("failed to add tags: %v", err)
 			}
 		},
@@ -67,7 +69,7 @@ func tagClearCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
+			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, db.BomctlAnnotationTag)
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -77,7 +79,7 @@ func tagClearCmd() *cobra.Command {
 				tagsToRemove[idx] = annotationsToRemove[idx].Value
 			}
 
-			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", tagsToRemove...)
+			err = backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, tagsToRemove...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -104,7 +106,7 @@ func tagListCmd() *cobra.Command {
 				backend.Logger.Fatal("Failed to get document", "err", err)
 			}
 
-			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, "tag")
+			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, db.BomctlAnnotationTag)
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document tags", "err", err)
 			}
@@ -135,7 +137,7 @@ func tagRemoveCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			err = backend.RemoveAnnotations(document.Metadata.Id, "tag", args[1:]...) //nolint:revive
+			err = backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, args[1:]...) //nolint:revive
 			if err != nil {
 				backend.Logger.Fatalf("failed to remove tags: %v", err)
 			}

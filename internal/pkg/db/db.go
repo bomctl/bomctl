@@ -32,8 +32,12 @@ import (
 )
 
 const (
-	DatabaseFile  string = "bomctl.db"
-	EntDebugLevel int    = 2
+	BomctlAnnotationAlias string = "bomctl_annotation_alias"
+	BomctlAnnotationTag   string = "bomctl_annotation_tag"
+
+	DatabaseFile string = "bomctl.db"
+
+	EntDebugLevel int = 2
 )
 
 type (
@@ -48,7 +52,10 @@ type (
 	Option func(*Backend)
 )
 
-var errBackendMissingFromContext = errors.New("failed to get database backend from command context")
+var (
+	errBackendMissingFromContext  = errors.New("failed to get database backend from command context")
+	errDocumentAnnotationNotFound = errors.New("no documents found with named annotation")
+)
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
 	backend, ok := ctx.Value(BackendKey{}).(*Backend)
@@ -106,11 +113,11 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 	document, idErr := backend.GetDocumentByID(id)
 
 	if document == nil {
-		documents, aliasErr := backend.GetDocumentsByAnnotation("alias", id)
-		if aliasErr != nil {
-			backend.Logger.Debug("Document could not be retrieved", "alias", id, "err", aliasErr)
+		documents, aliasErr := backend.GetDocumentsByAnnotation(BomctlAnnotationAlias, id)
+		if aliasErr != nil || len(documents) == 0 {
+			backend.Logger.Debug("Document could not be retrieved", "alias", id, "idErr", idErr, "aliasErr", aliasErr)
 
-			return nil, fmt.Errorf("failed to get document by ID or alias: %w | %w", idErr, aliasErr)
+			return nil, fmt.Errorf("%w", errDocumentAnnotationNotFound)
 		}
 
 		document = documents[0]
@@ -133,7 +140,9 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 
 	for idx := range ids {
 		document, err := backend.GetDocumentByIDOrAlias(ids[idx])
-		if err != nil {
+		if errors.Is(err, errDocumentAnnotationNotFound) {
+			return []*sbom.Document{}, nil
+		} else if err != nil {
 			return nil, err
 		}
 
@@ -144,7 +153,7 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 }
 
 func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
-	taggedDocuments, err := backend.GetDocumentsByAnnotation("tag", tags...)
+	taggedDocuments, err := backend.GetDocumentsByAnnotation(BomctlAnnotationTag, tags...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
 	}

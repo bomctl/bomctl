@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -46,13 +47,13 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
-			docAlias, err := backend.GetDocumentAlias(document.Metadata.Id)
+			docAlias, err := backend.GetDocumentUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias)
 			if err != nil {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
-				backend.Logger.Fatal(err, "alias", docAlias)
+			if err := backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationAlias, docAlias); err != nil {
+				backend.Logger.Fatal(err, "name", db.BomctlAnnotationAlias, "value", docAlias)
 			}
 		},
 	}
@@ -76,18 +77,18 @@ func aliasSetCmd() *cobra.Command {
 				backend.Logger.Fatal("Failed to get document", "documentID", args[0], "err", err)
 			}
 
-			docAlias, err := backend.GetDocumentAlias(document.Metadata.Id)
+			docAlias, err := backend.GetDocumentUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias)
 			if err != nil {
 				backend.Logger.Fatal(err)
 			}
 
-			if err := backend.RemoveAnnotations(document.Metadata.Id, "alias", docAlias); err != nil {
-				backend.Logger.Fatal(err, "alias", docAlias)
+			if err := backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationAlias, docAlias); err != nil {
+				backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
 			}
 
 			if len(args) > 1 {
-				if err := backend.AddAnnotations(document.Metadata.Id, "alias", args[1]); err != nil { //nolint:revive
-					backend.Logger.Fatal(err, "alias", docAlias)
+				if err := backend.SetUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias, args[1]); err != nil { //nolint:revive
+					backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
 				}
 			}
 		},

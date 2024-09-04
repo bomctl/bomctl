@@ -52,12 +52,12 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	}
 
 	if opts.Alias != "" {
-		if err := backend.AddAnnotations(document.Metadata.Id, "alias", opts.Alias); err != nil {
+		if err := backend.SetUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias, opts.Alias); err != nil {
 			return fmt.Errorf("failed to set alias: %w", err)
 		}
 	}
 
-	if err := backend.AddAnnotations(document.Metadata.Id, "tag", opts.Tags...); err != nil {
+	if err := backend.AddAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, opts.Tags...); err != nil {
 		return fmt.Errorf("failed to set tags: %w", err)
 	}
 

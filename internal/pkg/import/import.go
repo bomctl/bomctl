@@ -31,7 +31,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func readSbomDocument(sbomReader *reader.Reader, inputFile *os.File) (*sbom.Document, error) {
+func parseDocument(sbomReader *reader.Reader, inputFile *os.File) (*sbom.Document, error) {
 	data, err := io.ReadAll(inputFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from %s: %w", inputFile.Name(), err)
@@ -51,12 +51,12 @@ func saveDocument(backend *db.Backend, document *sbom.Document, alias string, ta
 	}
 
 	if alias != "" {
-		if err := backend.AddAnnotations(document.Metadata.Id, "alias", alias); err != nil {
+		if err := backend.SetUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias, alias); err != nil {
 			return fmt.Errorf("failed to set alias: %w", err)
 		}
 	}
 
-	if err := backend.AddAnnotations(document.Metadata.Id, "tag", tags...); err != nil {
+	if err := backend.AddAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, tags...); err != nil {
 		return fmt.Errorf("failed to set tags: %w", err)
 	}
 
@@ -72,7 +72,7 @@ func Import(opts *options.ImportOptions) error {
 	sbomReader := reader.New()
 
 	for idx := range opts.InputFiles {
-		document, err := readSbomDocument(sbomReader, opts.InputFiles[idx])
+		document, err := parseDocument(sbomReader, opts.InputFiles[idx])
 		if err != nil {
 			return fmt.Errorf("failed to read SBOM document %w", err)
 		}

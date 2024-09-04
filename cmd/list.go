@@ -65,9 +65,11 @@ func listCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
-			documents, err = backend.FilterDocumentsByTag(documents, tags...)
-			if err != nil {
-				backend.Logger.Fatalf("failed to get documents: %v", err)
+			if len(tags) > 0 {
+				documents, err = backend.FilterDocumentsByTag(documents, tags...)
+				if err != nil {
+					backend.Logger.Fatalf("failed to get documents: %v", err)
+				}
 			}
 
 			rows := [][]string{}
@@ -125,7 +127,7 @@ func getRow(doc *sbom.Document, backend *db.Backend) []string {
 		id = doc.Metadata.Id
 	}
 
-	alias, err := backend.GetDocumentAlias(doc.Metadata.Id)
+	alias, err := backend.GetDocumentUniqueAnnotation(doc.Metadata.Id, db.BomctlAnnotationAlias)
 	if err != nil {
 		backend.Logger.Fatalf("failed to get alias: %v", err)
 	}
