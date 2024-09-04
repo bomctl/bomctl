@@ -91,9 +91,84 @@ TBD
 
 TBD
 
-### List (Planned)
+### List (Implemented)
 
-TBD
+Lists the SBOM documents in the local cache.
+
+```shell
+Usage:
+  bomctl list [flags] SBOM_ID...
+
+Aliases:
+  list, ls
+
+Flags:
+  -h, --help              help for list
+      --tag stringArray   Tag(s) used to filter documents (can be specified multiple times)
+```
+
+### Import (Implemented)
+
+Imports SBOM file(s) from stdin or from the local filesystem.
+
+```shell
+Usage:
+  bomctl import [flags] { - | FILE...}
+
+Flags:
+      --alias stringArray   Readable identifier(s) to apply to imported document(s) (specify multiple times for multiple documents)
+  -h, --help                help for import
+      --tag stringArray     Tag(s) to apply to all imported documents (can be specified multiple times)
+```
+
+### Export (Implemented)
+
+Export stored SBOM documents to the filesystem.
+
+```shell
+Usage:
+  bomctl export [flags] SBOM_ID...
+
+Flags:
+  -e, --encoding string    output encoding [spdx: [json], cyclonedx: [json, xml]] (default "json")
+  -f, --format string      output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
+  -h, --help               help for export
+  -o, --output-file FILE   path to output file
+```
+
+### Alias (Implemented)
+
+Edit the alias for an SBOM document.
+
+```shell
+Usage:
+  bomctl alias [command]
+
+Available Commands:
+  remove      Remove the alias for a specific document
+  set         Set the alias for a specific document
+
+Flags:
+  -h, --help   help for alias
+```
+
+### Tag (Implemented)
+
+Edit the tags of an SBOM document.
+
+```shell
+Usage:
+  bomctl tag [command]
+
+Available Commands:
+  add         Add tags to a document
+  clear       Clear the tags of a document
+  list        List the tags of a document
+  remove      Remove the tags of a document
+
+Flags:
+  -h, --help   help for tag
+```
 
 ### Merge (Planned)
 
