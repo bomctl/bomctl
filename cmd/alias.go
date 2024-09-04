@@ -86,10 +86,9 @@ func aliasSetCmd() *cobra.Command {
 				backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
 			}
 
-			if len(args) > 1 {
-				if err := backend.SetUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias, args[1]); err != nil { //nolint:revive
-					backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
-				}
+			if err := backend.SetUniqueAnnotation(document.Metadata.Id,
+				db.BomctlAnnotationAlias, args[1]); err != nil {
+				backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
 			}
 		},
 	}

@@ -137,7 +137,7 @@ func tagRemoveCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to get document: %v", err)
 			}
 
-			err = backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, args[1:]...) //nolint:revive
+			err = backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, args[1:]...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to remove tags: %v", err)
 			}
