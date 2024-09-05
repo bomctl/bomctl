@@ -22,9 +22,10 @@ import (
 	"context"
 	"os"
 
-	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/formats"
+
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 )
 
 type (
