@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/git/git.go
+// SPDX-FileName: internal/pkg/client/git/fetch.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -20,23 +20,22 @@ package git
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"regexp"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-type Fetcher struct{}
+type Client struct{}
 
-func (*Fetcher) Name() string {
+func (*Client) Name() string {
 	return "Git"
 }
 
-func (*Fetcher) RegExp() *regexp.Regexp {
+func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s%s$",
 			`((?:git\+)?(?P<scheme>https?|git|ssh):\/\/)?`,
@@ -48,10 +47,10 @@ func (*Fetcher) RegExp() *regexp.Regexp {
 	)
 }
 
-func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
+func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	results := map[string]string{}
-	pattern := fetcher.RegExp()
-	match := pattern.FindStringSubmatch(fetchURL)
+	pattern := client.RegExp()
+	match := pattern.FindStringSubmatch(rawURL)
 
 	for idx, name := range match {
 		results[pattern.SubexpNames()[idx]] = name
@@ -81,23 +80,17 @@ func (fetcher *Fetcher) Parse(fetchURL string) *url.ParsedURL {
 	}
 }
 
-func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, error) {
-	// Create temp directory to clone into.
-	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp directory: %w", err)
-	}
+func cloneRepo(tempDir string, parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
+	opts *options.Options,
+) (*git.Repository, error) {
+	refName := plumbing.NewBranchReferenceName(parsedRepoURL.GitRef)
 
-	defer os.RemoveAll(tmpDir)
-
-	refName := plumbing.NewBranchReferenceName(parsedURL.GitRef)
-
-	// Copy parsedURL, excluding auth, git ref, and fragment.
+	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
 	baseURL := &url.ParsedURL{
-		Scheme:   parsedURL.Scheme,
-		Hostname: parsedURL.Hostname,
-		Path:     parsedURL.Path,
-		Port:     parsedURL.Port,
+		Scheme:   parsedRepoURL.Scheme,
+		Hostname: parsedRepoURL.Hostname,
+		Path:     parsedRepoURL.Path,
+		Port:     parsedRepoURL.Port,
 	}
 
 	cloneOpts := &git.CloneOptions{
@@ -109,17 +102,12 @@ func (*Fetcher) Fetch(parsedURL *url.ParsedURL, auth *url.BasicAuth) ([]byte, er
 		Depth:         1,
 	}
 
+	opts.Logger.Debug("Cloning git repo: %s", baseURL)
 	// Clone the repository into the temp directory
-	_, err = git.PlainClone(tmpDir, false, cloneOpts)
+	repo, err := git.PlainClone(tempDir, false, cloneOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}
 
-	// Read the file specified in the URL fragment
-	sbomData, err := os.ReadFile(filepath.Join(tmpDir, parsedURL.Fragment))
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file %s: %w", parsedURL.Fragment, err)
-	}
-
-	return sbomData, nil
+	return repo, nil
 }

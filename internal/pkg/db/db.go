@@ -19,37 +19,65 @@
 package db
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
-	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 )
 
-const DatabaseFile string = "bomctl.db"
+const (
+	DatabaseFile  string = "bomctl.db"
+	EntDebugLevel int    = 2
+)
 
 type (
 	Backend struct {
 		*ent.Backend
-		Logger *log.Logger
+		*log.Logger
+		Verbosity int
 	}
+
+	BackendKey struct{}
 
 	Option func(*Backend)
 )
 
-func NewBackend(opts ...Option) *Backend {
-	backend := &Backend{
-		Backend: ent.NewBackend(),
-		Logger:  utils.NewLogger("db"),
+var errBackendMissingFromContext = errors.New("failed to get database backend from command context")
+
+func BackendFromContext(ctx context.Context) (*Backend, error) {
+	backend, ok := ctx.Value(BackendKey{}).(*Backend)
+	if !ok {
+		return nil, errBackendMissingFromContext
 	}
+
+	return backend, nil
+}
+
+func NewBackend(opts ...Option) (*Backend, error) {
+	backend := &Backend{Backend: ent.NewBackend(), Logger: logger.New("db")}
 
 	for _, opt := range opts {
 		opt(backend)
 	}
 
-	return backend
+	if backend.Verbosity >= EntDebugLevel {
+		backend.Backend.Debug()
+	}
+
+	if backend.Backend.Options.DatabaseFile == "" {
+		backend.Backend.Options.DatabaseFile = DatabaseFile
+	}
+
+	if err := backend.InitClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize backend client: %w", err)
+	}
+
+	return backend, nil
 }
 
 // AddDocument adds the protobom Document to the database.
@@ -73,44 +101,16 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 	return document, nil
 }
 
-// Debug enables debug logging for all database transactions.
-func (backend *Backend) Debug(debug bool) *Backend {
-	backend.Options.Debug = debug
-
-	return backend
-}
-
-// WithLogger sets the logger for the backend.
-func (backend *Backend) WithLogger(logger *log.Logger) *Backend {
-	backend.Logger = logger
-
-	return backend
-}
-
-// WithDatabaseFile sets the database file for the backend.
-func (backend *Backend) WithDatabaseFile(file string) *Backend {
-	backend.Options.DatabaseFile = file
-
-	return backend
-}
-
-// Debug enables debug logging for all database transactions.
-func Debug(debug bool) Option {
-	return func(backend *Backend) {
-		backend.Debug(debug)
-	}
-}
-
-// WithLogger sets the logger for the backend.
-func WithLogger(logger *log.Logger) Option {
-	return func(backend *Backend) {
-		backend.WithLogger(logger)
-	}
-}
-
 // WithDatabaseFile sets the database file for the backend.
 func WithDatabaseFile(file string) Option {
 	return func(backend *Backend) {
-		backend.WithDatabaseFile(file)
+		backend.Backend.Options.DatabaseFile = file
+	}
+}
+
+// WithVerbosity sets the SQL debugging level for the backend.
+func WithVerbosity(verbosity int) Option {
+	return func(backend *Backend) {
+		backend.Verbosity = verbosity
 	}
 }

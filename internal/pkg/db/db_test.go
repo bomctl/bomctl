@@ -55,10 +55,8 @@ func (dbs *dbSuite) SetupSuite() {
 		dbs.documents = append(dbs.documents, doc)
 	}
 
-	dbs.backend = db.NewBackend()
-	dbs.backend.Options.DatabaseFile = db.DatabaseFile
-
-	if err := dbs.backend.InitClient(); err != nil {
+	dbs.backend, err = db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
+	if err != nil {
 		dbs.T().Fatalf("%v", err)
 	}
 }

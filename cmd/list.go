@@ -21,15 +21,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 const (
@@ -49,46 +45,25 @@ const (
 )
 
 func listCmd() *cobra.Command {
-	documentIDs := []string{}
-
 	listCmd := &cobra.Command{
 		Use:     "list [flags] SBOM_ID...",
 		Aliases: []string{"ls"},
 		Short:   "List SBOM documents in local cache",
 		Long:    "List SBOM documents in local cache",
-		PreRun: func(_ *cobra.Command, args []string) {
-			documentIDs = append(documentIDs, args...)
-		},
-		Run: func(cmd *cobra.Command, _ []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			backend := db.NewBackend().
-				Debug(verbosity >= minDebugLevel).
-				WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)).
-				WithLogger(utils.NewLogger("list"))
-
-			if err := backend.InitClient(); err != nil {
-				backend.Logger.Fatalf("failed to initialize backend client: %v", err)
-			}
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+			backend.Logger.SetPrefix("list")
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocumentsByID(documentIDs...)
+			documents, err := backend.GetDocumentsByID(args...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
 			rows := [][]string{}
 			for _, document := range documents {
-				id := document.Metadata.Name
-				if id == "" {
-					id = document.Metadata.Id
-				}
-
-				rows = append(rows, []string{
-					id, document.Metadata.Version, fmt.Sprint(len(document.NodeList.Nodes)),
-				})
+				rows = append(rows, getRow(document))
 			}
 
 			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
@@ -130,4 +105,13 @@ func styleFunc(row, col int) lipgloss.Style {
 		Width(width).
 		AlignHorizontal(align).
 		MaxHeight(rowMaxHeight)
+}
+
+func getRow(doc *sbom.Document) []string {
+	id := doc.Metadata.Name
+	if id == "" {
+		id = doc.Metadata.Id
+	}
+
+	return []string{id, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
 }

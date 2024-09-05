@@ -34,7 +34,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
 )
 
 var (
@@ -43,19 +42,20 @@ var (
 )
 
 func exportCmd() *cobra.Command {
-	opts := &export.Options{
-		Options: options.New(options.WithLogger(utils.NewLogger("export"))),
-	}
-
+	opts := &options.ExportOptions{}
 	outputFile := outputFileValue("")
 
 	exportCmd := &cobra.Command{
-		Use:    "export [flags] SBOM_ID...",
-		Args:   cobra.MinimumNArgs(1),
-		Short:  "Export stored SBOM(s) to filesystem",
-		Long:   "Export stored SBOM(s) to filesystem",
-		PreRun: preRun(opts.Options),
+		Use:   "export [flags] SBOM_ID...",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Export stored SBOM(s) to filesystem",
+		Long:  "Export stored SBOM(s) to filesystem",
 		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd)
+			backend := backendFromContext(cmd)
+
+			defer backend.CloseClient()
+
 			formatString, err := cmd.Flags().GetString("format")
 			cobra.CheckErr(err)
 
@@ -114,7 +114,7 @@ func encodingOptions() map[string][]string {
 }
 
 func formatHelp() string {
-	return fmt.Sprintf("output format [%s]", strings.Join(formatOptions(), ", "))
+	return fmt.Sprintf("SBOM output format [%s]", strings.Join(formatOptions(), ", "))
 }
 
 func formatOptions() []string {

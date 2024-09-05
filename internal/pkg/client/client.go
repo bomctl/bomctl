@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/import/import.go
+// SPDX-FileName: internal/pkg/client/client.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,42 +16,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package imprt
+package client
 
 import (
-	"bytes"
+	"errors"
 	"fmt"
-	"io"
 
-	"github.com/protobom/protobom/pkg/reader"
-
-	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/client/git"
+	"github.com/bomctl/bomctl/internal/pkg/client/http"
+	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func Import(opts *options.ImportOptions) error {
-	backend, err := db.BackendFromContext(opts.Context())
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
+var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
 
-	sbomReader := reader.New()
+type Client interface {
+	url.Parser
+	Name() string
+	Fetch(string, *options.FetchOptions) ([]byte, error)
+	Push(string, string, *options.PushOptions) error
+}
 
-	for idx := range opts.InputFiles {
-		data, err := io.ReadAll(opts.InputFiles[idx])
-		if err != nil {
-			return fmt.Errorf("failed to read from %s: %w", opts.InputFiles[idx].Name(), err)
-		}
-
-		document, err := sbomReader.ParseStream(bytes.NewReader(data))
-		if err != nil {
-			return fmt.Errorf("failed to parse %s: %w", opts.InputFiles[idx].Name(), err)
-		}
-
-		if err := backend.AddDocument(document); err != nil {
-			return fmt.Errorf("failed to store document: %w", err)
+func New(sbomURL string) (Client, error) {
+	for _, client := range []Client{&git.Client{}, &http.Client{}, &oci.Client{}} {
+		if parsedURL := client.Parse(sbomURL); parsedURL != nil {
+			return client, nil
 		}
 	}
 
-	return nil
+	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
 }

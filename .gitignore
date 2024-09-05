@@ -17,6 +17,7 @@
 !/.markdownlint.yml
 !/.markdownlintignore
 !/.pre-commit-config.yaml
+!/.taskfiles/*.yml
 !/.vscode/adr.code-snippets
 !/.vscode/extensions.json
 !/.vscode/header.code-snippets
@@ -25,6 +26,9 @@
 !/.vscode/tasks.json
 !/.yamllint
 !/docs/**/*.md
+!/docs/images/*.png
+!/docs/images/*.svg
+!/Taskfile.yml
 
 # Whitelist patterns found anywhere in project
 !.gitignore
