@@ -4,13 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/options"
 )
-
-type AliasOptions struct {
-	*options.Options
-	UseAlias bool
-}
 
 const (
 	aliasRemoveMinArgNum = 1
@@ -47,6 +41,10 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
+			if document == nil {
+				backend.Logger.Fatal(errDocumentNotFound)
+			}
+
 			docAlias, err := backend.GetDocumentUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias)
 			if err != nil {
 				backend.Logger.Fatal(err, "documentID", args[0])
@@ -75,6 +73,10 @@ func aliasSetCmd() *cobra.Command {
 			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document", "documentID", args[0], "err", err)
+			}
+
+			if document == nil {
+				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
 			docAlias, err := backend.GetDocumentUniqueAnnotation(document.Metadata.Id, db.BomctlAnnotationAlias)

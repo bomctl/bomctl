@@ -39,6 +39,11 @@ type (
 
 	Option func(*Options)
 
+	AliasOptions struct {
+		*Options
+		UseAlias bool
+	}
+
 	ExportOptions struct {
 		*Options
 		OutputFile *os.File

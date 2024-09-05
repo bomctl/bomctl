@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	tagAddArgNum       int = 2
-	tagClearArgNum     int = 1
-	tagListArgNum      int = 1
-	tagRemoveMinArgNum int = 2
+	tagAddMinArgs     int = 2
+	tagClearExactArgs int = 1
+	tagListExactArgs  int = 1
+	tagRemoveMinArgs  int = 2
 )
 
 func tagCmd() *cobra.Command {
@@ -33,7 +33,7 @@ func tagAddCmd() *cobra.Command {
 		Use:   "add [flags] SBOM_ID TAGS...",
 		Short: "Add tags to a document",
 		Long:  "Add tags to a document",
-		Args:  cobra.MinimumNArgs(tagAddArgNum),
+		Args:  cobra.MinimumNArgs(tagAddMinArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -42,6 +42,10 @@ func tagAddCmd() *cobra.Command {
 			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatalf("failed to get document: %v", err)
+			}
+
+			if document == nil {
+				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
 			if err := backend.AddAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, args[1:]...); err != nil {
@@ -58,7 +62,7 @@ func tagClearCmd() *cobra.Command {
 		Use:   "clear [flags] SBOM_ID...",
 		Short: "Clear the tags of a document",
 		Long:  "Clear the tags of a document",
-		Args:  cobra.ExactArgs(tagClearArgNum),
+		Args:  cobra.ExactArgs(tagClearExactArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -67,6 +71,10 @@ func tagClearCmd() *cobra.Command {
 			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatalf("failed to get document: %v", err)
+			}
+
+			if document == nil {
+				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
 			annotationsToRemove, err := backend.GetDocumentAnnotations(document.Metadata.Id, db.BomctlAnnotationTag)
@@ -95,7 +103,7 @@ func tagListCmd() *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "List the tags of a document",
 		Long:    "List the tags of a document",
-		Args:    cobra.ExactArgs(tagListArgNum),
+		Args:    cobra.ExactArgs(tagListExactArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -104,6 +112,10 @@ func tagListCmd() *cobra.Command {
 			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatal("Failed to get document", "err", err)
+			}
+
+			if document == nil {
+				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
 			annotations, err := backend.GetDocumentAnnotations(document.Metadata.Id, db.BomctlAnnotationTag)
@@ -126,7 +138,7 @@ func tagRemoveCmd() *cobra.Command {
 		Aliases: []string{"rm"},
 		Short:   "Remove the tags of a document",
 		Long:    "Remove the tags of a document",
-		Args:    cobra.MinimumNArgs(tagRemoveMinArgNum),
+		Args:    cobra.MinimumNArgs(tagRemoveMinArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -135,6 +147,10 @@ func tagRemoveCmd() *cobra.Command {
 			document, err := backend.GetDocumentByIDOrAlias(args[0])
 			if err != nil {
 				backend.Logger.Fatalf("failed to get document: %v", err)
+			}
+
+			if document == nil {
+				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
 			err = backend.RemoveAnnotations(document.Metadata.Id, db.BomctlAnnotationTag, args[1:]...)

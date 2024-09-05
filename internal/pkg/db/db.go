@@ -52,10 +52,7 @@ type (
 	Option func(*Backend)
 )
 
-var (
-	errBackendMissingFromContext  = errors.New("failed to get database backend from command context")
-	errDocumentAnnotationNotFound = errors.New("no documents found with named annotation")
-)
+var errBackendMissingFromContext = errors.New("failed to get database backend from command context")
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
 	backend, ok := ctx.Value(BackendKey{}).(*Backend)
@@ -110,14 +107,19 @@ func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
 }
 
 func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) {
-	document, idErr := backend.GetDocumentByID(id)
+	document, err := backend.GetDocumentByID(id)
+	if err != nil {
+		backend.Logger.Debug("Document could not be retrieved by ID", "id", id, "err", err)
+	}
 
 	if document == nil {
 		documents, aliasErr := backend.GetDocumentsByAnnotation(BomctlAnnotationAlias, id)
-		if aliasErr != nil || len(documents) == 0 {
-			backend.Logger.Debug("Document could not be retrieved", "alias", id, "idErr", idErr, "aliasErr", aliasErr)
+		if aliasErr != nil {
+			return nil, fmt.Errorf("document could not be retrieved: %w", aliasErr)
+		}
 
-			return nil, fmt.Errorf("%w", errDocumentAnnotationNotFound)
+		if len(documents) == 0 {
+			return nil, nil
 		}
 
 		document = documents[0]
@@ -140,10 +142,12 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 
 	for idx := range ids {
 		document, err := backend.GetDocumentByIDOrAlias(ids[idx])
-		if errors.Is(err, errDocumentAnnotationNotFound) {
+		if err != nil {
+			return nil, fmt.Errorf("failed to get documents by ID: %w", err)
+		}
+
+		if document == nil {
 			return []*sbom.Document{}, nil
-		} else if err != nil {
-			return nil, err
 		}
 
 		documents[idx] = document
