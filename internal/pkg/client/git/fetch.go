@@ -22,9 +22,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
+	"strings"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
@@ -39,38 +37,20 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 			return nil, fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
+
 	// Create temp directory to clone into.
-	tmpDir, err := os.MkdirTemp(os.TempDir(), "repo")
+	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	defer os.RemoveAll(tmpDir)
-
-	refName := plumbing.NewBranchReferenceName(parsedURL.GitRef)
-
-	// Copy parsedURL, excluding auth, git ref, and fragment.
-	baseURL := &url.ParsedURL{
-		Scheme:   parsedURL.Scheme,
-		Hostname: parsedURL.Hostname,
-		Path:     parsedURL.Path,
-		Port:     parsedURL.Port,
-	}
-
-	cloneOpts := &git.CloneOptions{
-		URL:           baseURL.String(),
-		Auth:          auth,
-		RemoteName:    "origin",
-		ReferenceName: refName,
-		SingleBranch:  true,
-		Depth:         1,
-	}
-
 	// Clone the repository into the temp directory
-	_, err = git.PlainClone(tmpDir, false, cloneOpts)
+	_, err = cloneRepo(tmpDir, parsedURL, auth, opts.Options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
 	}
+
+	defer os.RemoveAll(tmpDir)
 
 	// Read the file specified in the URL fragment
 	sbomData, err := os.ReadFile(filepath.Join(tmpDir, parsedURL.Fragment))

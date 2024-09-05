@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/utils/logger.go
+// SPDX-FileName: internal/pkg/client/git/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // ------------------------------------------------------------------------
@@ -16,25 +16,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
-package logger
 
-import (
-	"os"
+package git
 
-	"github.com/charmbracelet/log"
+var (
+	CloneRepo   = cloneRepo
+	AddFile     = addFile
+	GetDocument = getDocument
 )
-
-const levelWidth = 5
-
-func New(prefix string) *log.Logger {
-	// Set displayed width of log level in messages to show full level name
-	styles := log.DefaultStyles()
-	for _, level := range []log.Level{log.DebugLevel, log.ErrorLevel, log.FatalLevel, log.InfoLevel, log.WarnLevel} {
-		styles.Levels[level] = styles.Levels[level].MaxWidth(levelWidth).Width(levelWidth)
-	}
-
-	logger := log.NewWithOptions(os.Stderr, log.Options{Prefix: prefix, Level: log.GetLevel()})
-	logger.SetStyles(styles)
-
-	return logger
-}
