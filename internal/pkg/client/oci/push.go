@@ -18,7 +18,17 @@
 // ------------------------------------------------------------------------
 package oci
 
-import "github.com/bomctl/bomctl/internal/pkg/options"
+import (
+	"io"
+
+	"github.com/protobom/protobom/pkg/sbom"
+
+	"github.com/bomctl/bomctl/internal/pkg/options"
+)
+
+func (*Client) AddFile(_rw io.ReadWriter, _doc *sbom.Document, _opts *options.PushOptions) error {
+	return nil
+}
 
 func (*Client) Push(_id, _pushUL string, _opts *options.PushOptions) error {
 	return nil

@@ -40,7 +40,7 @@ var TestDataDir = filepath.Join("..", "..", "db", "testdata")
 
 type gitSuite struct {
 	suite.Suite
-	tempDir string
+	tmpDir  string
 	repo    *gogit.Repository
 	opts    *options.Options
 	backend *db.Backend
@@ -49,21 +49,26 @@ type gitSuite struct {
 	docs    []*sbom.Document
 }
 
-func (gs *gitSuite) SetupSuite() {
+func (gs *gitSuite) BeforeTest(_suiteName, _testName string) {
 	dir, err := os.MkdirTemp("", "testrepo")
 	if err != nil {
 		gs.T().Fatalf("failed to create temporary directory: %v", err)
 	}
 
-	gs.tempDir = dir
+	gs.tmpDir = dir
+	gs.gc = &git.Client{}
+	gs.gc.SetTmpDir(gs.tmpDir)
 
-	r, err := gogit.PlainInit(dir, false)
+	r, err := gogit.PlainInit(gs.tmpDir, false)
 	if err != nil {
 		gs.T().Fatalf("failed to initialize git repo: %v", err)
 	}
 
 	gs.repo = r
+	gs.gc.SetRepo(r)
+}
 
+func (gs *gitSuite) SetupSuite() {
 	sboms, err := os.ReadDir(TestDataDir)
 	if err != nil {
 		gs.T().Fatalf("%v", err)
@@ -102,16 +107,16 @@ func (gs *gitSuite) SetupSuite() {
 }
 
 func (gs *gitSuite) TearDownSuite() {
-	err := os.RemoveAll(gs.tempDir)
+	err := os.RemoveAll(gs.tmpDir)
 	if err != nil {
-		gs.T().Logf("Error removing repo file %s", db.DatabaseFile)
+		gs.T().Fatalf("Error removing repo file %s", db.DatabaseFile)
 	}
 
 	gs.backend.CloseClient()
 
 	if _, err := os.Stat(db.DatabaseFile); err == nil {
 		if err := os.Remove(db.DatabaseFile); err != nil {
-			gs.T().Logf("Error removing database file %s", db.DatabaseFile)
+			gs.T().Fatalf("Error removing database file %s", db.DatabaseFile)
 		}
 	}
 }

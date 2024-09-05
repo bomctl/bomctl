@@ -19,8 +19,14 @@
 
 package git
 
-var (
-	CloneRepo   = cloneRepo
-	AddFile     = addFile
-	GetDocument = getDocument
-)
+import "github.com/go-git/go-git/v5"
+
+var GetDocument = getDocument
+
+func (client *Client) SetRepo(repo *git.Repository) {
+	client.repo = repo
+}
+
+func (client *Client) SetTmpDir(tmpDir string) {
+	client.tmpDir = tmpDir
+}

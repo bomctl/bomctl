@@ -19,12 +19,12 @@
 package git
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/protobom/protobom/pkg/sbom"
@@ -34,6 +34,46 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
+
+var errAssertReadWriterType = errors.New("type assertion failed")
+
+func (client *Client) AddFile(rw io.ReadWriter, doc *sbom.Document, opts *options.PushOptions) error {
+	file, ok := rw.(*os.File)
+	if !ok {
+		return fmt.Errorf("%w", errAssertReadWriterType)
+	}
+
+	relPath, err := filepath.Rel(client.tmpDir, file.Name())
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	wt, err := client.repo.Worktree()
+	if err != nil {
+		return fmt.Errorf("failed to create worktree for %s: %w", relPath, err)
+	}
+
+	opts.Logger.Debug("Writing document to: %s", relPath)
+
+	// Write the file specified in the URL fragment
+	if err := writer.New(writer.WithFormat(opts.Format)).WriteFile(doc, relPath); err != nil {
+		return fmt.Errorf("failed to write file %s: %w", relPath, err)
+	}
+
+	// Stage written sbom for addition
+	_, err = wt.Add(relPath)
+	if err != nil {
+		return fmt.Errorf("failed to stage file %s for commit: %w", relPath, err)
+	}
+
+	// Commit written SBOM file to cloned repo
+	_, err = wt.Commit(fmt.Sprintf("bomctl push of %s", relPath), &git.CommitOptions{All: true})
+	if err != nil {
+		return fmt.Errorf("failed to commit file %s: %w", relPath, err)
+	}
+
+	return nil
+}
 
 func (client *Client) Push(id, pushURL string, opts *options.PushOptions) error {
 	doc, err := getDocument(id, opts.Options)
@@ -50,31 +90,31 @@ func (client *Client) Push(id, pushURL string, opts *options.PushOptions) error 
 		}
 	}
 
-	// Create temp directory to clone into.
-	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-"))
-	if err != nil {
-		return fmt.Errorf("failed to create temp directory: %w", err)
-	}
-
 	// Clone the repository into the temp directory
-	repo, err := cloneRepo(tmpDir, parsedURL, auth, opts.Options)
-	if err != nil {
+	if err := client.cloneRepo(parsedURL, auth, opts.Options); err != nil {
 		return fmt.Errorf("failed to clone Git repository: %w", err)
 	}
 
 	// Defer removing the temp directory with the cloned repo, to clean up
-	defer os.RemoveAll(tmpDir)
+	defer client.removeTmpDir()
 
-	filePath := filepath.Join(tmpDir, parsedURL.Fragment)
+	filePath := filepath.Join(client.tmpDir, parsedURL.Fragment)
 
-	err = addFile(repo, filePath, opts, doc, parsedURL)
+	if err := os.MkdirAll(filepath.Dir(filePath), fs.ModeAppend); err != nil {
+		return fmt.Errorf("failed to create required parent directory %s: %w", parsedURL.Fragment, err)
+	}
+
+	file, err := os.Create(filePath)
 	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	if err := client.AddFile(file, doc, opts); err != nil {
 		return fmt.Errorf("failed to commit file %s: %w", filePath, err)
 	}
 
 	// Push changes to Repo remote
-	err = pushFile(repo, parsedURL, auth)
-	if err != nil {
+	if err := pushFile(client.repo, parsedURL, auth); err != nil {
 		return fmt.Errorf("failed to push to remote %s: %w", parsedURL, err)
 	}
 
@@ -85,47 +125,6 @@ func pushFile(repo *git.Repository, parsedURL *url.ParsedURL, auth *url.BasicAut
 	err := repo.Push(&git.PushOptions{Auth: auth})
 	if err != nil {
 		return fmt.Errorf("failed to push to remote %s: %w", parsedURL, err)
-	}
-
-	return nil
-}
-
-func addFile(repo *git.Repository, filePath string, opts *options.PushOptions,
-	doc *sbom.Document, parsedURL *url.ParsedURL,
-) error {
-	wr := writer.New(writer.WithFormat(opts.Format))
-
-	wt, err := repo.Worktree()
-	if err != nil {
-		return fmt.Errorf("failed to create worktree for %s: %w", parsedURL.Fragment, err)
-	}
-
-	opts.Logger.Debug("Creating any needed directories prior to creating file")
-
-	if _, err := os.Stat(path.Dir(filePath)); os.IsNotExist(err) {
-		err = os.MkdirAll(path.Dir(filePath), fs.ModePerm) // fs.ModePerm == 0777
-		if err != nil {
-			return fmt.Errorf("failed to create required parent directory %s: %w", parsedURL.Fragment, err)
-		}
-	}
-
-	opts.Logger.Debug("Writing document to: %s", parsedURL.Fragment)
-	// Write the file specified in the URL fragment
-	err = wr.WriteFile(doc, filePath)
-	if err != nil {
-		return fmt.Errorf("failed to write file %s: %w", parsedURL.Fragment, err)
-	}
-
-	// Stage written sbom for addition
-	_, err = wt.Add(parsedURL.Fragment)
-	if err != nil {
-		return fmt.Errorf("failed to stage file %s for commit: %w", parsedURL.Fragment, err)
-	}
-
-	// Commit written SBOM file to cloned repo
-	_, err = wt.Commit(fmt.Sprintf("bomctl push of %s", filePath), &git.CommitOptions{All: true})
-	if err != nil {
-		return fmt.Errorf("failed to commit file %s: %w", filePath, err)
 	}
 
 	return nil

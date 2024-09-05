@@ -20,7 +20,9 @@ package git
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -29,7 +31,10 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-type Client struct{}
+type Client struct {
+	repo   *git.Repository
+	tmpDir string
+}
 
 func (*Client) Name() string {
 	return "Git"
@@ -80,9 +85,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func cloneRepo(tempDir string, parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
-	opts *options.Options,
-) (*git.Repository, error) {
+func (client *Client) cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) error {
 	refName := plumbing.NewBranchReferenceName(parsedRepoURL.GitRef)
 
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
@@ -102,12 +105,28 @@ func cloneRepo(tempDir string, parsedRepoURL *url.ParsedURL, auth *url.BasicAuth
 		Depth:         1,
 	}
 
-	opts.Logger.Debug("Cloning git repo: %s", baseURL)
-	// Clone the repository into the temp directory
-	repo, err := git.PlainClone(tempDir, false, cloneOpts)
+	opts.Logger.Debug("Cloning git repo", "url", baseURL)
+
+	// Create temp directory to clone into.
+	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedRepoURL.Path, "/", "-"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
+		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	return repo, nil
+	client.tmpDir = tmpDir
+
+	// Clone the repository into the temp directory
+	repo, err := git.PlainClone(client.tmpDir, false, cloneOpts)
+	if err != nil {
+		return fmt.Errorf("failed to clone Git repository: %w", err)
+	}
+
+	client.repo = repo
+
+	return nil
+}
+
+func (client *Client) removeTmpDir() {
+	defer os.RemoveAll(client.tmpDir)
+	client.tmpDir = ""
 }

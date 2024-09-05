@@ -21,6 +21,9 @@ package client
 import (
 	"errors"
 	"fmt"
+	"io"
+
+	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
@@ -33,6 +36,7 @@ var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid 
 
 type Client interface {
 	url.Parser
+	AddFile(io.ReadWriter, *sbom.Document, *options.PushOptions) error
 	Name() string
 	Fetch(string, *options.FetchOptions) ([]byte, error)
 	Push(string, string, *options.PushOptions) error

@@ -19,13 +19,14 @@
 package git_test
 
 import (
-	"path"
+	"io/fs"
+	"os"
+	"path/filepath"
 
 	"github.com/protobom/protobom/pkg/formats"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func (gs *gitSuite) TestPush() {
@@ -46,26 +47,27 @@ func (gs *gitSuite) TestPush() {
 }
 
 func (gs *gitSuite) TestAddFile() {
-	pOptions := options.PushOptions{
+	opts := options.PushOptions{
 		Options: gs.opts,
 		Format:  formats.CDX15JSON,
 	}
 
-	parsedURL := &url.ParsedURL{
-		Scheme:   "https",
-		Username: "git",
-		Hostname: "github.com",
-		Path:     "test/repo.git",
-		GitRef:   "main",
-		Fragment: "test/file.sbom",
+	testFile := filepath.Join(gs.tmpDir, "test", "file.sbom")
+
+	if err := os.MkdirAll(filepath.Dir(testFile), fs.ModePerm); err != nil {
+		gs.FailNow("failed creating directory")
 	}
 
-	err := git.AddFile(gs.repo, path.Join(gs.tempDir, "test", "file.sbom"), &pOptions, gs.doc, parsedURL)
+	file, err := os.Create(testFile)
 	if err != nil {
-		gs.T().Logf("Error testing addFile: %s", err.Error())
+		gs.FailNow("failed creating file")
 	}
 
-	gs.Assert().FileExists(path.Join(gs.tempDir, "test", "file.sbom"))
+	if err := gs.gc.AddFile(file, gs.doc, &opts); err != nil {
+		gs.FailNowf("Error testing AddFile", "%s", err.Error())
+	}
+
+	gs.Require().FileExists(testFile)
 }
 
 func (gs *gitSuite) TestGetDocument() {
