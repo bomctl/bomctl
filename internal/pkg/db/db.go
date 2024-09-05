@@ -113,9 +113,9 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 	}
 
 	if document == nil {
-		documents, aliasErr := backend.GetDocumentsByAnnotation(BomctlAnnotationAlias, id)
-		if aliasErr != nil {
-			return nil, fmt.Errorf("document could not be retrieved: %w", aliasErr)
+		documents, err := backend.GetDocumentsByAnnotation(BomctlAnnotationAlias, id)
+		if err != nil {
+			return nil, fmt.Errorf("document could not be retrieved: %w", err)
 		}
 
 		if len(documents) == 0 {
