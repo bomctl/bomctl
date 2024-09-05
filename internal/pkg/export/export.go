@@ -34,8 +34,6 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	opts.Logger.Info("Exporting document", "sbomID", sbomID)
-
 	wr := writer.New(writer.WithFormat(opts.Format))
 
 	document, err := backend.GetDocumentByID(sbomID)
@@ -45,6 +43,8 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 
 	if opts.OutputFile != nil {
 		// Write the SBOM document bytes to file.
+		opts.Logger.Info("Exporting document", "sbomID", sbomID)
+
 		if err := wr.WriteFile(document, opts.OutputFile.Name()); err != nil {
 			return fmt.Errorf("%w", err)
 		}
