@@ -18,15 +18,13 @@
 // ------------------------------------------------------------------------
 package http
 
-import (
-	"io"
+import "github.com/bomctl/bomctl/internal/pkg/options"
 
-	"github.com/protobom/protobom/pkg/sbom"
+func (*Client) AddFile(_name, _id string, _opts *options.PushOptions) error {
+	return nil
+}
 
-	"github.com/bomctl/bomctl/internal/pkg/options"
-)
-
-func (*Client) AddFile(_rw io.ReadWriter, _doc *sbom.Document, _opts *options.PushOptions) error {
+func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
 	return nil
 }
 

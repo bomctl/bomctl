@@ -20,7 +20,9 @@ package git
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -32,8 +34,10 @@ import (
 )
 
 type Client struct {
-	repo   *git.Repository
-	tmpDir string
+	repo     *git.Repository
+	worktree *git.Worktree
+	basePath string
+	tmpDir   string
 }
 
 func (*Client) Name() string {
@@ -85,16 +89,18 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func (client *Client) cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) error {
-	refName := plumbing.NewBranchReferenceName(parsedRepoURL.GitRef)
+func (client *Client) cloneRepo(parsedURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) (err error) {
+	client.basePath = parsedURL.Fragment
 
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
 	baseURL := &url.ParsedURL{
-		Scheme:   parsedRepoURL.Scheme,
-		Hostname: parsedRepoURL.Hostname,
-		Path:     parsedRepoURL.Path,
-		Port:     parsedRepoURL.Port,
+		Scheme:   parsedURL.Scheme,
+		Hostname: parsedURL.Hostname,
+		Path:     parsedURL.Path,
+		Port:     parsedURL.Port,
 	}
+
+	refName := plumbing.NewBranchReferenceName(parsedURL.GitRef)
 
 	cloneOpts := &git.CloneOptions{
 		URL:           baseURL.String(),
@@ -108,20 +114,23 @@ func (client *Client) cloneRepo(parsedRepoURL *url.ParsedURL, auth *url.BasicAut
 	opts.Logger.Debug("Cloning git repo", "url", baseURL)
 
 	// Create temp directory to clone into.
-	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedRepoURL.Path, "/", "-"))
-	if err != nil {
-		return fmt.Errorf("failed to create temp directory: %w", err)
+	if client.tmpDir, err = os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-")); err != nil {
+		return fmt.Errorf("creating temp directory: %w", err)
 	}
 
-	client.tmpDir = tmpDir
+	// Create any remaining path components.
+	if err = os.MkdirAll(filepath.Join(client.tmpDir, filepath.Dir(client.basePath)), fs.ModePerm); err != nil {
+		return fmt.Errorf("%w", err)
+	}
 
 	// Clone the repository into the temp directory
-	repo, err := git.PlainClone(client.tmpDir, false, cloneOpts)
-	if err != nil {
-		return fmt.Errorf("failed to clone Git repository: %w", err)
+	if client.repo, err = git.PlainClone(client.tmpDir, false, cloneOpts); err != nil {
+		return fmt.Errorf("cloning Git repository: %w", err)
 	}
 
-	client.repo = repo
+	if client.worktree, err = client.repo.Worktree(); err != nil {
+		return fmt.Errorf("creating worktree: %w", err)
+	}
 
 	return nil
 }
