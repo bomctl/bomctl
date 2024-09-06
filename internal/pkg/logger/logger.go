@@ -33,7 +33,7 @@ func New(prefix string) *log.Logger {
 		styles.Levels[level] = styles.Levels[level].MaxWidth(levelWidth).Width(levelWidth)
 	}
 
-	logger := log.NewWithOptions(os.Stdout, log.Options{Prefix: prefix, Level: log.GetLevel()})
+	logger := log.NewWithOptions(os.Stderr, log.Options{Prefix: prefix, Level: log.GetLevel()})
 	logger.SetStyles(styles)
 
 	return logger

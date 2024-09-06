@@ -21,7 +21,6 @@
 
 run:
   concurrency: 6
-  go: 1.22.0
   timeout: 5m
 
 issues:
@@ -51,6 +50,7 @@ linters:
   enable:
     - asciicheck
     - bodyclose
+    - copyloopvar
     - cyclop
     - dogsled
     - dupl
@@ -59,7 +59,6 @@ linters:
     - errcheck
     - errorlint
     - exhaustive
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
