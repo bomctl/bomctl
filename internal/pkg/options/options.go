@@ -56,6 +56,11 @@ type (
 		InputFiles []*os.File
 	}
 
+	MergeOptions struct {
+		*Options
+		DocumentName string
+	}
+
 	PushOptions struct {
 		*Options
 		Format   formats.Format

@@ -21,7 +21,9 @@ package export
 import (
 	"fmt"
 	"os"
+	"slices"
 
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -43,6 +45,8 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 		return fmt.Errorf("%w", err)
 	}
 
+	cleanupEdges(document)
+
 	if opts.OutputFile != nil {
 		// Write the SBOM document bytes to file.
 		if err := wr.WriteFile(document, opts.OutputFile.Name()); err != nil {
@@ -56,4 +60,23 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 	}
 
 	return nil
+}
+
+// With the M2M relationship of NodeLists and Nodes, there needs to be a check/removal of root nodes in other
+// docuements so that the current document can serialize correctly.
+func cleanupEdges(document *sbom.Document) {
+	nodeIDs := []string{}
+	for _, node := range document.NodeList.Nodes {
+		nodeIDs = append(nodeIDs, node.Id)
+	}
+
+	edges := []*sbom.Edge{}
+
+	for _, edge := range document.NodeList.Edges {
+		if slices.Contains(nodeIDs, edge.From) {
+			edges = append(edges, edge)
+		}
+	}
+
+	document.NodeList.Edges = edges
 }
