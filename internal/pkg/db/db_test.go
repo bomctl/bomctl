@@ -123,6 +123,8 @@ func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
 		slices.Sort(toIDs)
 
 		if len(toIDs) > 0 {
+			slices.Sort(toIDs)
+
 			edgeType := sbom.Edge_Type_value[typedEdge.edgeType]
 
 			consolidated = append(consolidated, &sbom.Edge{

@@ -65,6 +65,11 @@ type (
 		Tags       []string
 	}
 
+	MergeOptions struct {
+		*Options
+		DocumentName string
+	}
+
 	PushOptions struct {
 		*Options
 		Format   formats.Format
