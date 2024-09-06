@@ -9,7 +9,7 @@ import (
 const (
 	aliasRemoveMinArgNum = 1
 	aliasRemoveMaxArgNum = 2
-	aliasSetArgNum       = 2
+	aliasSetExactArgNum  = 2
 )
 
 func aliasCmd() *cobra.Command {
@@ -64,7 +64,7 @@ func aliasSetCmd() *cobra.Command {
 		Use:   "set [flags] SBOM_ID NEW_ALIAS",
 		Short: "Set the alias for a specific document",
 		Long:  "Set the alias for a specific document",
-		Args:  cobra.ExactArgs(aliasSetArgNum),
+		Args:  cobra.ExactArgs(aliasSetExactArgNum),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
