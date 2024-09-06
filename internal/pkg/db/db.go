@@ -52,7 +52,10 @@ type (
 	Option func(*Backend)
 )
 
-var errBackendMissingFromContext = errors.New("failed to get database backend from command context")
+var (
+	errBackendMissingFromContext = errors.New("failed to get database backend from command context")
+	errMultipleDocuments         = errors.New("multiple documents matching ID")
+)
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
 	backend, ok := ctx.Value(BackendKey{}).(*Backend)
@@ -95,21 +98,25 @@ func (backend *Backend) AddDocument(document *sbom.Document) error {
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
-func (backend *Backend) GetDocumentByID(id string) (*sbom.Document, error) {
-	document, err := backend.Retrieve(id, nil)
-	if err != nil {
-		backend.Logger.Debug("Document could not be retrieved", "id", id, "err", err)
-
-		return nil, fmt.Errorf("failed to retrieve document: %w", err)
+func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) {
+	switch documents, getDocsErr := backend.GetDocumentsByID(id); {
+	case getDocsErr != nil:
+		err = fmt.Errorf("querying documents: %w", getDocsErr)
+	case len(documents) == 0:
+		doc = nil
+	case len(documents) > 1:
+		err = fmt.Errorf("%w %s", errMultipleDocuments, id)
+	default:
+		doc = documents[0]
 	}
 
-	return document, nil
+	return doc, err
 }
 
 func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) {
 	document, err := backend.GetDocumentByID(id)
 	if err != nil {
-		backend.Logger.Debug("Document could not be retrieved by ID", "id", id, "err", err)
+		return nil, fmt.Errorf("document could not be retrieved: %w", err)
 	}
 
 	if document == nil {
