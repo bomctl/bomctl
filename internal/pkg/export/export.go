@@ -66,14 +66,14 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 // docuements so that the current document can serialize correctly.
 func cleanupEdges(document *sbom.Document) {
 	nodeIDs := []string{}
-	for _, node := range document.NodeList.Nodes {
-		nodeIDs = append(nodeIDs, node.Id)
+	for _, node := range document.GetNodeList().GetNodes() {
+		nodeIDs = append(nodeIDs, node.GetId())
 	}
 
 	edges := []*sbom.Edge{}
 
-	for _, edge := range document.NodeList.Edges {
-		if slices.Contains(nodeIDs, edge.From) {
+	for _, edge := range document.GetNodeList().GetEdges() {
+		if slices.Contains(nodeIDs, edge.GetFrom()) {
 			edges = append(edges, edge)
 		}
 	}

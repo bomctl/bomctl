@@ -92,7 +92,7 @@ func (gs *gitSuite) SetupSuite() {
 	for _, document := range gs.docs {
 		err := gs.backend.AddDocument(document)
 		if err != nil {
-			gs.Fail("failed retrieving document", "id", document.Metadata.Id)
+			gs.Fail("failed retrieving document", "id", document.GetMetadata().GetId())
 		}
 	}
 
