@@ -110,6 +110,7 @@ linters:
     - unconvert
     - unparam
     - unused
+    - varnamelen
     - wastedassign
     - whitespace
     - wrapcheck

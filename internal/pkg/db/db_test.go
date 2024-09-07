@@ -110,13 +110,13 @@ func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
 		edgeType string
 	}][]string)
 
-	for _, e := range edges {
+	for _, edge := range edges {
 		key := struct {
 			fromID   string
 			edgeType string
-		}{e.GetFrom(), e.GetType().String()}
+		}{edge.GetFrom(), edge.GetType().String()}
 
-		edgeMap[key] = append(edgeMap[key], e.GetTo()...)
+		edgeMap[key] = append(edgeMap[key], edge.GetTo()...)
 	}
 
 	for typedEdge, toIDs := range edgeMap {

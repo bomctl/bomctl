@@ -138,16 +138,16 @@ func getSBOMDescriptor(successors []ocispec.Descriptor) (*ocispec.Descriptor, er
 		sbomDigests    []string
 	)
 
-	for _, s := range successors {
+	for _, successor := range successors {
 		if slices.Contains([]string{
 			"application/vnd.cyclonedx",
 			"application/vnd.cyclonedx+json",
 			"application/spdx",
 			"application/spdx+json",
 			"text/spdx",
-		}, s.MediaType) {
-			sbomDescriptor = s
-			sbomDigests = append(sbomDigests, s.Digest.String())
+		}, successor.MediaType) {
+			sbomDescriptor = successor
+			sbomDigests = append(sbomDigests, successor.Digest.String())
 		}
 	}
 

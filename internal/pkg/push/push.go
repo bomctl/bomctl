@@ -118,7 +118,7 @@ func getExtRefPath(destPath, docID, docName string, opts *options.PushOptions) s
 	return (destDir + fileName + ext)
 }
 
-func pushExtRefDoc(ref *sbom.ExternalReference, be *db.Backend, destPath string, opts *options.PushOptions) error {
+func pushExtRefDoc(ref *sbom.ExternalReference, backend *db.Backend, destPath string, opts *options.PushOptions) error {
 	opts.Logger.Info("Fetching External Ref Bom from URL", "refUrl", ref.GetUrl())
 
 	// Parse push options into fetch
@@ -134,7 +134,7 @@ func pushExtRefDoc(ref *sbom.ExternalReference, be *db.Backend, destPath string,
 	}
 
 	// check local db to see if this file already exists
-	docID, docName, err := getDocumentInfo(be, doc)
+	docID, docName, err := getDocumentInfo(backend, doc)
 	if err != nil {
 		return fmt.Errorf("failed to import external ref bom: %w", err)
 	}

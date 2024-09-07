@@ -43,22 +43,22 @@ var (
 	errCastFailure  = errors.New("failed to cast object")
 )
 
-func (m *MergerBase[T]) MergeProtoMessage(t T) (err error) {
+func (m *MergerBase[T]) MergeProtoMessage(msg T) (err error) {
 	switch base := any(m.Base).(type) {
 	case *sbom.Metadata:
-		return mergeMetadata(base, t)
+		return mergeMetadata(base, msg)
 	case *sbom.Node:
-		return mergeNode(base, t)
+		return mergeNode(base, msg)
 	case *sbom.NodeList:
-		return mergeNodeList(base, t)
+		return mergeNodeList(base, msg)
 	case *sbom.Person:
-		return mergePerson(base, t)
+		return mergePerson(base, msg)
 	case *sbom.Tool:
-		return mergeTool(base, t)
+		return mergeTool(base, msg)
 	case *sbom.DocumentType:
-		return mergeDocumentType(base, t)
+		return mergeDocumentType(base, msg)
 	default:
-		return fmt.Errorf("%w: %T", errMergeFailure, t)
+		return fmt.Errorf("%w: %T", errMergeFailure, msg)
 	}
 }
 
