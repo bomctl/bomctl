@@ -136,10 +136,10 @@ func formatOptions() []string {
 	return append(spdxFormats, cdxFormats...)
 }
 
-func parseFormat(fs, encoding string) (formats.Format, error) {
+func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	results := map[string]string{}
 	pattern := regexp.MustCompile("^(?P<name>[^-]+)(?:-(?P<version>.*))?")
-	match := pattern.FindStringSubmatch(fs)
+	match := pattern.FindStringSubmatch(formatStr)
 
 	for idx, name := range match {
 		results[pattern.SubexpNames()[idx]] = name
@@ -152,7 +152,7 @@ func parseFormat(fs, encoding string) (formats.Format, error) {
 		return formats.EmptyFormat, err
 	}
 
-	if err := validateEncoding(fs, encoding); err != nil {
+	if err := validateEncoding(formatStr, encoding); err != nil {
 		return formats.EmptyFormat, err
 	}
 
