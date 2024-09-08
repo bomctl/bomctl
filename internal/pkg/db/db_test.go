@@ -74,25 +74,25 @@ func (dbs *dbSuite) TearDownSuite() {
 func (dbs *dbSuite) TestAddDocument() {
 	for _, document := range dbs.documents {
 		if err := dbs.backend.AddDocument(document); err != nil {
-			dbs.Fail("failed storing document", "id", document.Metadata.Id)
+			dbs.Fail("failed storing document", "id", document.GetMetadata().GetId())
 		}
 	}
 }
 
 func (dbs *dbSuite) TestGetDocumentByID() {
 	for _, document := range dbs.documents {
-		retrieved, err := dbs.backend.GetDocumentByID(document.Metadata.Id)
+		retrieved, err := dbs.backend.GetDocumentByID(document.GetMetadata().GetId())
 		if err != nil {
-			dbs.Fail("failed retrieving document", "id", document.Metadata.Id)
+			dbs.Fail("failed retrieving document", "id", document.GetMetadata().GetId())
 		}
 
-		expectedEdges := consolidateEdges(document.NodeList.Edges)
-		actualEdges := consolidateEdges(retrieved.NodeList.Edges)
+		expectedEdges := consolidateEdges(document.GetNodeList().GetEdges())
+		actualEdges := consolidateEdges(retrieved.GetNodeList().GetEdges())
 
-		dbs.Require().Equal(document.Metadata.Id, retrieved.Metadata.Id)
-		dbs.Require().Len(retrieved.NodeList.Nodes, len(document.NodeList.Nodes))
+		dbs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
+		dbs.Require().Len(retrieved.GetNodeList().GetNodes(), len(document.GetNodeList().GetNodes()))
 		dbs.Require().Equal(expectedEdges, actualEdges)
-		dbs.Require().Equal(document.NodeList.RootElements, retrieved.NodeList.RootElements)
+		dbs.Require().Equal(document.GetNodeList().GetRootElements(), retrieved.GetNodeList().GetRootElements())
 	}
 }
 
@@ -110,13 +110,13 @@ func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
 		edgeType string
 	}][]string)
 
-	for _, e := range edges {
+	for _, edge := range edges {
 		key := struct {
 			fromID   string
 			edgeType string
-		}{e.From, e.Type.String()}
+		}{edge.GetFrom(), edge.GetType().String()}
 
-		edgeMap[key] = append(edgeMap[key], e.To...)
+		edgeMap[key] = append(edgeMap[key], edge.GetTo()...)
 	}
 
 	for typedEdge, toIDs := range edgeMap {
@@ -133,7 +133,7 @@ func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
 		}
 	}
 
-	slices.SortStableFunc(consolidated, func(a, b *sbom.Edge) int { return cmp.Compare(a.From, b.From) })
+	slices.SortStableFunc(consolidated, func(a, b *sbom.Edge) int { return cmp.Compare(a.GetFrom(), b.GetFrom()) })
 
 	return consolidated
 }

@@ -108,10 +108,10 @@ func styleFunc(row, col int) lipgloss.Style {
 }
 
 func getRow(doc *sbom.Document) []string {
-	id := doc.Metadata.Name
+	id := doc.GetMetadata().GetName()
 	if id == "" {
-		id = doc.Metadata.Id
+		id = doc.GetMetadata().GetId()
 	}
 
-	return []string{id, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
+	return []string{id, doc.GetMetadata().GetVersion(), fmt.Sprint(len(doc.GetNodeList().GetNodes()))}
 }

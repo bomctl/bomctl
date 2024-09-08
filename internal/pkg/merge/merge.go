@@ -46,7 +46,7 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 	// Make document list a map so it can sort by the ids provided
 	documentMap := make(map[string]*sbom.Document)
 	for _, doc := range documents {
-		documentMap[doc.Metadata.Id] = doc
+		documentMap[doc.GetMetadata().GetId()] = doc
 	}
 
 	merged, err := performTopLevelMerge(documentIDs, documentMap, opts)
@@ -58,13 +58,13 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 		return "", err
 	}
 
-	backend.Logger.Info("Adding merged document", "sbomID", merged.Metadata.Id)
+	backend.Logger.Info("Adding merged document", "sbomID", merged.GetMetadata().GetId())
 
 	if err := backend.AddDocument(merged); err != nil {
 		merged.Metadata.Id = ""
 	}
 
-	return merged.Metadata.Id, err
+	return merged.GetMetadata().GetId(), err
 }
 
 func performTopLevelMerge(sbomIDs []string, documentMap map[string]*sbom.Document,
@@ -86,12 +86,12 @@ func performTopLevelMerge(sbomIDs []string, documentMap map[string]*sbom.Documen
 
 	for _, sbomID := range sbomIDs {
 		// Protobom performs add/update on all nodes in list and re-points edges to nodelist
-		err = NewMerger(merged.NodeList).MergeProtoMessage(documentMap[sbomID].NodeList)
+		err = NewMerger(merged.GetNodeList()).MergeProtoMessage(documentMap[sbomID].GetNodeList())
 		if err != nil {
 			return nil, fmt.Errorf("failed to merge nodelist: %w", err)
 		}
 
-		err = NewMerger(merged.Metadata).MergeProtoMessage(documentMap[sbomID].Metadata)
+		err = NewMerger(merged.GetMetadata()).MergeProtoMessage(documentMap[sbomID].GetMetadata())
 		if err != nil {
 			return nil, fmt.Errorf("failed to merge metadata: %w", err)
 		}
@@ -107,8 +107,8 @@ func mergeRootNodes(merged *sbom.Document) error {
 	mergedRootNode.Id = uuid.New().URN()
 
 	// Augment new root node with other root node data
-	for _, root := range merged.NodeList.RootElements {
-		rootNode := merged.NodeList.GetNodeByID(root)
+	for _, root := range merged.GetNodeList().GetRootElements() {
+		rootNode := merged.GetNodeList().GetNodeByID(root)
 
 		err = NewMerger(mergedRootNode).MergeProtoMessage(rootNode)
 		if err != nil {
@@ -117,19 +117,19 @@ func mergeRootNodes(merged *sbom.Document) error {
 	}
 
 	// Repoint all existing root edges to new root element
-	for _, edge := range merged.NodeList.Edges {
-		if slices.Contains(merged.NodeList.RootElements, edge.From) {
-			edge.From = mergedRootNode.Id
+	for _, edge := range merged.GetNodeList().GetEdges() {
+		if slices.Contains(merged.GetNodeList().GetRootElements(), edge.GetFrom()) {
+			edge.From = mergedRootNode.GetId()
 		}
 	}
 
 	// Reset root node
-	oldRootElements := merged.NodeList.RootElements
+	oldRootElements := merged.GetNodeList().GetRootElements()
 	merged.NodeList.RootElements = nil
 
 	// Add root node first so when the old ones get removed from nodelist, it doesn't reset the edges
-	merged.NodeList.AddRootNode(mergedRootNode)
-	merged.NodeList.RemoveNodes(oldRootElements)
+	merged.GetNodeList().AddRootNode(mergedRootNode)
+	merged.GetNodeList().RemoveNodes(oldRootElements)
 
 	return nil
 }

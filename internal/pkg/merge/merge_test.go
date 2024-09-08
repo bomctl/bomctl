@@ -72,7 +72,7 @@ func (ms *mergeSuite) SetupSuite() {
 	for _, document := range ms.docs {
 		err := ms.backend.AddDocument(document)
 		if err != nil {
-			ms.Fail("failed retrieving document", "id", document.Metadata.Id)
+			ms.Fail("failed retrieving document", "id", document.GetMetadata().GetId())
 		}
 	}
 
@@ -94,7 +94,7 @@ func (ms *mergeSuite) TestMerge() {
 		Options: ms.opts,
 	}
 
-	docID, err := merge.Merge([]string{ms.docs[0].Metadata.Id, ms.docs[1].Metadata.Id}, opts)
+	docID, err := merge.Merge([]string{ms.docs[0].GetMetadata().GetId(), ms.docs[1].GetMetadata().GetId()}, opts)
 
 	ms.Require().NoError(err)
 
@@ -103,15 +103,15 @@ func (ms *mergeSuite) TestMerge() {
 		ms.Fail("Failed to get merged document from DB")
 	}
 
-	if ms.docs[0].Metadata.Name != "" {
-		ms.Equal(ms.docs[0].Metadata.Name, mergedDoc.Metadata.Name)
-	} else if ms.docs[0].Metadata.Name == "" && ms.docs[1].Metadata.Name != "" {
-		ms.Equal(ms.docs[1].Metadata.Name, mergedDoc.Metadata.Name)
+	if ms.docs[0].GetMetadata().GetName() != "" {
+		ms.Equal(ms.docs[0].GetMetadata().GetName(), mergedDoc.GetMetadata().GetName())
+	} else if ms.docs[0].GetMetadata().GetName() == "" && ms.docs[1].GetMetadata().GetName() != "" {
+		ms.Equal(ms.docs[1].GetMetadata().GetName(), mergedDoc.GetMetadata().GetName())
 	}
 
-	expectedToolLength := len(ms.docs[0].Metadata.Tools) + len(ms.docs[1].Metadata.Tools)
+	expectedToolLength := len(ms.docs[0].GetMetadata().GetTools()) + len(ms.docs[1].GetMetadata().GetTools())
 
-	ms.Len(mergedDoc.Metadata.Tools, expectedToolLength)
+	ms.Len(mergedDoc.GetMetadata().GetTools(), expectedToolLength)
 }
 
 func TestMergeSuite(t *testing.T) {
