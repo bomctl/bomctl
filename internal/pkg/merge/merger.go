@@ -43,22 +43,22 @@ var (
 	errCastFailure  = errors.New("failed to cast object")
 )
 
-func (m *MergerBase[T]) MergeProtoMessage(t T) (err error) {
+func (m *MergerBase[T]) MergeProtoMessage(msg T) (err error) {
 	switch base := any(m.Base).(type) {
 	case *sbom.Metadata:
-		return mergeMetadata(base, t)
+		return mergeMetadata(base, msg)
 	case *sbom.Node:
-		return mergeNode(base, t)
+		return mergeNode(base, msg)
 	case *sbom.NodeList:
-		return mergeNodeList(base, t)
+		return mergeNodeList(base, msg)
 	case *sbom.Person:
-		return mergePerson(base, t)
+		return mergePerson(base, msg)
 	case *sbom.Tool:
-		return mergeTool(base, t)
+		return mergeTool(base, msg)
 	case *sbom.DocumentType:
-		return mergeDocumentType(base, t)
+		return mergeDocumentType(base, msg)
 	default:
-		return fmt.Errorf("%w: %T", errMergeFailure, t)
+		return fmt.Errorf("%w: %T", errMergeFailure, msg)
 	}
 }
 
@@ -68,13 +68,13 @@ func mergeMetadata(base *sbom.Metadata, t proto.Message) error {
 		return fmt.Errorf("%w: %T", errCastFailure, other)
 	}
 
-	base.Comment = mergeStrings(base.Comment, other.Comment)
-	base.Id = mergeStrings(base.Id, other.Id)
-	base.Name = mergeStrings(base.Name, other.Name)
-	base.Version = mergeStrings(base.Version, other.Version)
+	base.Comment = mergeStrings(base.GetComment(), other.GetComment())
+	base.Id = mergeStrings(base.GetId(), other.GetId())
+	base.Name = mergeStrings(base.GetName(), other.GetName())
+	base.Version = mergeStrings(base.GetVersion(), other.GetVersion())
 
-	if base.Date == nil && other.Date != nil {
-		base.Date = other.Date
+	if base.GetDate() == nil && other.GetDate() != nil {
+		base.Date = other.GetDate()
 	}
 
 	err := mergeMetadataSlices(base, other)
@@ -88,17 +88,17 @@ func mergeMetadata(base *sbom.Metadata, t proto.Message) error {
 func mergeMetadataSlices(base, other *sbom.Metadata) error {
 	var err error
 
-	base.Tools, err = mergeTools(base.Tools, other.Tools)
+	base.Tools, err = mergeTools(base.GetTools(), other.GetTools())
 	if err != nil {
 		return err
 	}
 
-	base.Authors, err = mergePersons(base.Authors, other.Authors)
+	base.Authors, err = mergePersons(base.GetAuthors(), other.GetAuthors())
 	if err != nil {
 		return err
 	}
 
-	base.DocumentTypes, err = mergeDocumentTypes(base.DocumentTypes, other.DocumentTypes)
+	base.DocumentTypes, err = mergeDocumentTypes(base.GetDocumentTypes(), other.GetDocumentTypes())
 
 	return err
 }
@@ -117,7 +117,7 @@ func dedupeTools(tools []*sbom.Tool) ([]*sbom.Tool, error) {
 	toolMap := make(map[string]*sbom.Tool)
 
 	for _, tool := range tools {
-		key := fmt.Sprintf("%s-%s", tool.Name, tool.Version)
+		key := fmt.Sprintf("%s-%s", tool.GetName(), tool.GetVersion())
 		if _, exists := toolMap[key]; !exists {
 			toolMap[key] = tool
 			dedupedList = append(dedupedList, tool)
@@ -153,9 +153,9 @@ func mergeNodeList(base *sbom.NodeList, t proto.Message) error {
 
 	mergedNodeList := base.Union(other)
 
-	base.Nodes = mergedNodeList.Nodes
-	base.Edges = mergedNodeList.Edges
-	base.RootElements = mergedNodeList.RootElements
+	base.Nodes = mergedNodeList.GetNodes()
+	base.Edges = mergedNodeList.GetEdges()
+	base.RootElements = mergedNodeList.GetRootElements()
 
 	return nil
 }
@@ -166,13 +166,13 @@ func mergePerson(base *sbom.Person, t proto.Message) error {
 		return fmt.Errorf("%w: %T", errCastFailure, t)
 	}
 
-	base.Email = mergeStrings(base.Email, other.Email)
-	base.Name = mergeStrings(base.Name, other.Name)
-	base.Phone = mergeStrings(base.Phone, other.Phone)
-	base.Url = mergeStrings(base.Url, other.Url)
+	base.Email = mergeStrings(base.GetEmail(), other.GetEmail())
+	base.Name = mergeStrings(base.GetName(), other.GetName())
+	base.Phone = mergeStrings(base.GetPhone(), other.GetPhone())
+	base.Url = mergeStrings(base.GetUrl(), other.GetUrl())
 
 	var err error
-	base.Contacts, err = mergePersons(base.Contacts, other.Contacts)
+	base.Contacts, err = mergePersons(base.GetContacts(), other.GetContacts())
 
 	return err
 }
@@ -191,7 +191,7 @@ func dedupePersons(persons []*sbom.Person) ([]*sbom.Person, error) {
 	personMap := make(map[string]*sbom.Person)
 
 	for _, person := range persons {
-		email := person.Email
+		email := person.GetEmail()
 		if _, exists := personMap[email]; !exists {
 			personMap[email] = person
 			dedupedList = append(dedupedList, person)
@@ -214,9 +214,9 @@ func mergeTool(base *sbom.Tool, t proto.Message) error {
 		return fmt.Errorf("%w: %T", errCastFailure, t)
 	}
 
-	base.Name = mergeStrings(base.Name, other.Name)
-	base.Vendor = mergeStrings(base.Vendor, other.Vendor)
-	base.Version = mergeStrings(base.Version, other.Version)
+	base.Name = mergeStrings(base.GetName(), other.GetName())
+	base.Vendor = mergeStrings(base.GetVendor(), other.GetVendor())
+	base.Version = mergeStrings(base.GetVersion(), other.GetVersion())
 
 	return nil
 }
@@ -227,16 +227,19 @@ func mergeDocumentType(base *sbom.DocumentType, t proto.Message) error {
 		return fmt.Errorf("%w: %T", errCastFailure, t)
 	}
 
-	if (base.Name == nil || *base.Name == "") && other.Name != nil {
-		base.Name = other.Name
+	if base.GetName() == "" && other.GetName() != "" {
+		name := other.GetName()
+		base.Name = &name
 	}
 
 	if base.Type == nil && other.Type != nil {
-		base.Type = other.Type
+		typ := other.GetType()
+		base.Type = &typ
 	}
 
-	if (base.Description == nil || *base.Description == "") && other.Description != nil {
-		base.Description = other.Description
+	if base.GetDescription() == "" && other.GetDescription() != "" {
+		desc := other.GetDescription()
+		base.Description = &desc
 	}
 
 	return nil
@@ -256,7 +259,7 @@ func dedupeDocumentTypes(documentTypes []*sbom.DocumentType) ([]*sbom.DocumentTy
 	documentTypeMap := make(map[string]*sbom.DocumentType)
 
 	for _, documentType := range documentTypes {
-		key := *documentType.Name
+		key := documentType.GetName()
 		if _, exists := documentTypeMap[key]; !exists {
 			documentTypeMap[key] = documentType
 			dedupedList = append(dedupedList, documentType)
