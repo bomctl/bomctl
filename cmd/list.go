@@ -37,9 +37,9 @@ const (
 	columnIdxNumNodes
 
 	columnWidthID       = 47
-	columnWidthAlias    = 10
-	columnWidthVersion  = 10
-	columnWidthNumNodes = 10
+	columnWidthAlias    = 12
+	columnWidthVersion  = 9
+	columnWidthNumNodes = 9
 
 	paddingHorizontal = 1
 	paddingVertical   = 0
@@ -112,6 +112,10 @@ func styleFunc(row, col int) lipgloss.Style {
 		}
 	case columnIdxAlias:
 		width = columnWidthAlias
+
+		if row != rowHeaderIdx {
+			align = lipgloss.Left
+		}
 	case columnIdxVersion:
 		width = columnWidthVersion
 	case columnIdxNumNodes:
