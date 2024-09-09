@@ -98,7 +98,7 @@ func (backend *Backend) AddDocument(document *sbom.Document) error {
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
-func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) {
+func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) { //nolint:varnamelen
 	switch documents, getDocsErr := backend.GetDocumentsByID(id); {
 	case getDocsErr != nil:
 		err = fmt.Errorf("querying documents: %w", getDocsErr)
@@ -113,7 +113,7 @@ func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err erro
 	return doc, err
 }
 
-func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) {
+func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) { //nolint:varnamelen
 	document, err := backend.GetDocumentByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("document could not be retrieved: %w", err)
@@ -171,13 +171,13 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 
 	taggedDocumentIDs := make([]string, len(taggedDocuments))
 	for idx := range taggedDocuments {
-		taggedDocumentIDs[idx] = taggedDocuments[idx].Metadata.Id
+		taggedDocumentIDs[idx] = taggedDocuments[idx].GetMetadata().GetId()
 	}
 
 	filteredDocuments := []*sbom.Document{}
 
 	for _, doc := range documents {
-		if slices.Contains(taggedDocumentIDs, doc.Metadata.Id) {
+		if slices.Contains(taggedDocumentIDs, doc.GetMetadata().GetId()) {
 			filteredDocuments = append(filteredDocuments, doc)
 		}
 	}

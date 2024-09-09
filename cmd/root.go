@@ -37,6 +37,7 @@ const (
 	modeUserRead  = 0o400
 	modeUserWrite = 0o200
 	modeUserExec  = 0o100
+	cliTableWidth = 80
 )
 
 type optionsKey struct{}

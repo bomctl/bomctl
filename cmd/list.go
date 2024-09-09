@@ -41,6 +41,8 @@ const (
 	columnWidthVersion  = 9
 	columnWidthNumNodes = 9
 
+	cellSideCount = 2
+
 	paddingHorizontal = 1
 	paddingVertical   = 0
 
@@ -130,17 +132,17 @@ func styleFunc(row, col int) lipgloss.Style {
 }
 
 func getRow(doc *sbom.Document, backend *db.Backend) []string {
-	id := doc.GetMetadata().GetName()
+	id := doc.GetMetadata().GetName() //nolint:varnamelen
 	if id == "" {
 		id = doc.GetMetadata().GetId()
 	}
 
-	alias, err := backend.GetDocumentUniqueAnnotation(doc.Metadata.Id, db.BomctlAnnotationAlias)
+	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.BomctlAnnotationAlias)
 	if err != nil {
 		backend.Logger.Fatalf("failed to get alias: %v", err)
 	}
 
-	aliasMaxDisplayLength := columnWidthAlias - (paddingHorizontal * 2)
+	aliasMaxDisplayLength := columnWidthAlias - (paddingHorizontal * cellSideCount)
 
 	if len(alias) > aliasMaxDisplayLength {
 		alias = alias[:aliasMaxDisplayLength-1] + "…"
