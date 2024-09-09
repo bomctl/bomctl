@@ -32,10 +32,12 @@ import (
 
 const (
 	columnIdxID = iota
+	columnIdxAlias
 	columnIdxVersion
 	columnIdxNumNodes
 
-	columnWidthID       = 50
+	columnWidthID       = 48
+	columnWidthAlias    = 10
 	columnWidthVersion  = 10
 	columnWidthNumNodes = 10
 
@@ -108,6 +110,8 @@ func styleFunc(row, col int) lipgloss.Style {
 		if row != rowHeaderIdx {
 			align = lipgloss.Left
 		}
+	case columnIdxAlias:
+		width = columnWidthAlias
 	case columnIdxVersion:
 		width = columnWidthVersion
 	case columnIdxNumNodes:
@@ -130,6 +134,12 @@ func getRow(doc *sbom.Document, backend *db.Backend) []string {
 	alias, err := backend.GetDocumentUniqueAnnotation(doc.Metadata.Id, db.BomctlAnnotationAlias)
 	if err != nil {
 		backend.Logger.Fatalf("failed to get alias: %v", err)
+	}
+
+	aliasMaxDisplayLength := columnWidthAlias - (paddingHorizontal * 2)
+
+	if len(alias) > aliasMaxDisplayLength {
+		alias = alias[:aliasMaxDisplayLength-1] + "…"
 	}
 
 	return []string{id, alias, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
