@@ -139,7 +139,7 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 	if len(ids) == 0 {
 		documents, err := backend.GetDocumentsByID()
 		if err != nil {
-			return nil, fmt.Errorf("failed to get documents by ID: %w", err)
+			return nil, fmt.Errorf("failed to get documents: %w", err)
 		}
 
 		return documents, nil

@@ -96,6 +96,7 @@ Edit the alias for an SBOM document.
 bomctl alias [command]
 
 Subcommands:
+  list        List all aliases
   remove      Remove the alias for a specific document
   set         Set the alias for a specific document
 

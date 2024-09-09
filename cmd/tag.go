@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -123,9 +124,16 @@ func tagListCmd() *cobra.Command {
 				backend.Logger.Fatal("Failed to get document tags", "err", err)
 			}
 
-			for _, annotation := range annotations {
-				fmt.Fprintln(os.Stdout, annotation.Value)
+			sortedAnnotations := make([]string, len(annotations))
+
+			for idx := range annotations {
+				sortedAnnotations[idx] = annotations[idx].Value
 			}
+
+			sort.Strings(sortedAnnotations)
+
+			fmt.Printf("\nTags for %v\n%v\n", args[0], strings.Repeat("─", 80))
+			fmt.Printf("%v\n\n", strings.Join(sortedAnnotations, "\n"))
 		},
 	}
 

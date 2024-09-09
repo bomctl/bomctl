@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -19,13 +23,51 @@ func aliasCmd() *cobra.Command {
 		Long:  "Edit the alias for a document",
 	}
 
-	aliasCmd.AddCommand(aliasRemoveCmd(), aliasSetCmd())
+	aliasCmd.AddCommand(aliasListCmd(), aliasRemoveCmd(), aliasSetCmd())
 
 	return aliasCmd
 }
 
+func aliasListCmd() *cobra.Command {
+	aliasListCmd := &cobra.Command{
+		Use:     "list [flags]",
+		Aliases: []string{"ls"},
+		Short:   "List all aliases",
+		Long:    "List all aliases",
+		Args:    cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			backend := backendFromContext(cmd)
+
+			defer backend.CloseClient()
+
+			documents, err := backend.GetDocumentsByID()
+			if err != nil {
+				backend.Logger.Fatal(err)
+			}
+
+			aliasDefinitions := []string{}
+
+			for _, doc := range documents {
+				alias, err := backend.GetDocumentUniqueAnnotation(doc.Metadata.Id, db.BomctlAnnotationAlias)
+				if err != nil {
+					backend.Logger.Fatalf("failed to get alias: %v", err)
+				}
+
+				aliasDefinitions = append(aliasDefinitions, fmt.Sprintf("%v -> %v", alias, doc.Metadata.Id))
+			}
+
+			sort.Strings(aliasDefinitions)
+
+			fmt.Printf("\nAlias Definitions\n%v\n", strings.Repeat("─", 80))
+			fmt.Printf("%v\n\n", strings.Join(aliasDefinitions, "\n"))
+		},
+	}
+
+	return aliasListCmd
+}
+
 func aliasRemoveCmd() *cobra.Command {
-	aliasCmd := &cobra.Command{
+	aliasRemoveCmd := &cobra.Command{
 		Use:     "remove [flags] SBOM_ID",
 		Aliases: []string{"rm"},
 		Short:   "Remove the alias for a specific document",
@@ -56,7 +98,7 @@ func aliasRemoveCmd() *cobra.Command {
 		},
 	}
 
-	return aliasCmd
+	return aliasRemoveCmd
 }
 
 func aliasSetCmd() *cobra.Command {
