@@ -36,7 +36,7 @@ const (
 	columnIdxVersion
 	columnIdxNumNodes
 
-	columnWidthID       = 48
+	columnWidthID       = 47
 	columnWidthAlias    = 10
 	columnWidthVersion  = 10
 	columnWidthNumNodes = 10
