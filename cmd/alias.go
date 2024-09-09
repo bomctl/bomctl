@@ -53,7 +53,7 @@ func aliasListCmd() *cobra.Command {
 					backend.Logger.Fatalf("failed to get alias: %v", err)
 				}
 
-				aliasDefinitions = append(aliasDefinitions, fmt.Sprintf("%v -> %v", alias, doc.Metadata.Id))
+				aliasDefinitions = append(aliasDefinitions, fmt.Sprintf("%v → %v", alias, doc.Metadata.Id))
 			}
 
 			sort.Strings(aliasDefinitions)
