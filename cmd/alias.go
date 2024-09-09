@@ -32,8 +32,8 @@ func aliasListCmd() *cobra.Command {
 	aliasListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Aliases: []string{"ls"},
-		Short:   "List all aliases",
-		Long:    "List all aliases",
+		Short:   "List all alias definitions",
+		Long:    "List all alias definitions",
 		Args:    cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
