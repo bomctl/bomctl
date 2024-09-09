@@ -134,7 +134,7 @@ func tagListCmd() *cobra.Command {
 
 func tagRemoveCmd() *cobra.Command {
 	removeCmd := &cobra.Command{
-		Use:     "remove [flags] SBOM_ID",
+		Use:     "remove [flags] SBOM_ID TAGS...",
 		Aliases: []string{"rm"},
 		Short:   "Remove the tags of a document",
 		Long:    "Remove the tags of a document",
