@@ -97,6 +97,7 @@ linters:
     - prealloc
     - predeclared
     - promlinter
+    - protogetter
     - revive
     - staticcheck
     - stylecheck
@@ -109,6 +110,7 @@ linters:
     - unconvert
     - unparam
     - unused
+    - varnamelen
     - wastedassign
     - whitespace
     - wrapcheck

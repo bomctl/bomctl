@@ -96,7 +96,7 @@ func GetRemoteDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Docume
 }
 
 func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
-	extRefs, err := backend.GetExternalReferencesByDocumentID(document.Metadata.Id, "BOM")
+	extRefs, err := backend.GetExternalReferencesByDocumentID(document.GetMetadata().GetId(), "BOM")
 	if err != nil {
 		return fmt.Errorf("error getting external references: %w", err)
 	}
@@ -113,7 +113,7 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 			defer extRefsOpt.OutputFile.Close() //nolint:revive
 		}
 
-		if err := Fetch(ref.Url, &extRefsOpt); err != nil {
+		if err := Fetch(ref.GetUrl(), &extRefsOpt); err != nil {
 			return err
 		}
 	}

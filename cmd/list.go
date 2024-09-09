@@ -126,9 +126,9 @@ func styleFunc(row, col int) lipgloss.Style {
 }
 
 func getRow(doc *sbom.Document, backend *db.Backend) []string {
-	id := doc.Metadata.Name
+	id := doc.GetMetadata().GetName()
 	if id == "" {
-		id = doc.Metadata.Id
+		id = doc.GetMetadata().GetId()
 	}
 
 	alias, err := backend.GetDocumentUniqueAnnotation(doc.Metadata.Id, db.BomctlAnnotationAlias)
@@ -142,5 +142,5 @@ func getRow(doc *sbom.Document, backend *db.Backend) []string {
 		alias = alias[:aliasMaxDisplayLength-1] + "…"
 	}
 
-	return []string{id, alias, doc.Metadata.Version, fmt.Sprint(len(doc.NodeList.Nodes))}
+	return []string{id, alias, doc.GetMetadata().GetVersion(), fmt.Sprint(len(doc.GetNodeList().GetNodes()))}
 }

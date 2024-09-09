@@ -38,7 +38,7 @@ func (gs *gitSuite) TestPush() {
 			UseTree: false,
 		}
 
-		err := gs.gc.Push(document.Metadata.Id, rawURL, opts)
+		err := gs.gc.Push(document.GetMetadata().GetId(), rawURL, opts)
 		if err != nil {
 			gs.T().Logf("Error testing Push: %s", err.Error())
 		}
@@ -70,13 +70,13 @@ func (gs *gitSuite) TestAddFile() {
 
 func (gs *gitSuite) TestGetDocument() {
 	for _, document := range gs.docs {
-		retrieved, err := git.GetDocument(document.Metadata.Id, gs.opts)
+		retrieved, err := git.GetDocument(document.GetMetadata().GetId(), gs.opts)
 		if err != nil {
-			gs.FailNow("failed retrieving document", "id", document.Metadata.Id)
+			gs.FailNow("failed retrieving document", "id", document.GetMetadata().GetId())
 		}
 
-		gs.Require().Equal(document.Metadata.Id, retrieved.Metadata.Id)
-		gs.Require().Len(retrieved.NodeList.Nodes, len(document.NodeList.Nodes))
-		gs.Require().Equal(document.NodeList.RootElements, retrieved.NodeList.RootElements)
+		gs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
+		gs.Require().Len(retrieved.GetNodeList().GetNodes(), len(document.GetNodeList().GetNodes()))
+		gs.Require().Equal(document.GetNodeList().GetRootElements(), retrieved.GetNodeList().GetRootElements())
 	}
 }
