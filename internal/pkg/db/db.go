@@ -22,6 +22,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"slices"
 
 	"github.com/charmbracelet/log"
@@ -32,8 +33,8 @@ import (
 )
 
 const (
-	BomctlAnnotationAlias string = "bomctl_annotation_alias"
-	BomctlAnnotationTag   string = "bomctl_annotation_tag"
+	AliasAnnotation string = "bomctl_annotation_alias"
+	TagAnnotation   string = "bomctl_annotation_tag"
 
 	DatabaseFile string = "bomctl.db"
 
@@ -55,6 +56,8 @@ type (
 var (
 	errBackendMissingFromContext = errors.New("failed to get database backend from command context")
 	errMultipleDocuments         = errors.New("multiple documents matching ID")
+	errInvalidAlias              = errors.New("invalid alias provided")
+	errAliasAlreadyExists        = errors.New("alias already exists")
 )
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
@@ -120,7 +123,7 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 	}
 
 	if document == nil {
-		switch documents, getDocErr := backend.GetDocumentsByAnnotation(BomctlAnnotationAlias, id); {
+		switch documents, getDocErr := backend.GetDocumentsByAnnotation(AliasAnnotation, id); {
 		case getDocErr != nil:
 			err = fmt.Errorf("document could not be retrieved: %w", getDocErr)
 		case len(documents) == 0:
@@ -164,7 +167,7 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 }
 
 func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
-	taggedDocuments, err := backend.GetDocumentsByAnnotation(BomctlAnnotationTag, tags...)
+	taggedDocuments, err := backend.GetDocumentsByAnnotation(TagAnnotation, tags...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
 	}
@@ -185,6 +188,44 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 	documents = filteredDocuments
 
 	return documents, nil
+}
+
+func (backend *Backend) SetAlias(documentID string, alias string) (err error) {
+	if err := backend.validateNewAlias(alias); err != nil {
+		return fmt.Errorf("failed to set alias: %w", err)
+	}
+
+	docAlias, err := backend.GetDocumentUniqueAnnotation(documentID, AliasAnnotation)
+	if err != nil {
+		return fmt.Errorf("failed to set alias: %w", err)
+	}
+
+	if err := backend.RemoveAnnotations(documentID, AliasAnnotation, docAlias); err != nil {
+		return fmt.Errorf("failed to remove previous alias: %w", err)
+	}
+
+	if err := backend.SetUniqueAnnotation(documentID, AliasAnnotation, alias); err != nil {
+		return fmt.Errorf("failed to set alias: %w", err)
+	}
+
+	return nil
+}
+
+func (backend *Backend) validateNewAlias(alias string) (err error) {
+	if isEmptyOrWhitespace := regexp.MustCompile(`^\s*$`).MatchString(alias); isEmptyOrWhitespace {
+		return errInvalidAlias
+	}
+
+	switch documents, getDocErr := backend.GetDocumentsByAnnotation(AliasAnnotation, alias); {
+	case getDocErr != nil:
+		err = fmt.Errorf("error checking for existing alias: %w", getDocErr)
+	case len(documents) == 0:
+		err = nil
+	default:
+		err = errAliasAlreadyExists
+	}
+
+	return err
 }
 
 // WithDatabaseFile sets the database file for the backend.

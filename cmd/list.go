@@ -137,7 +137,7 @@ func getRow(doc *sbom.Document, backend *db.Backend) []string {
 		id = doc.GetMetadata().GetId()
 	}
 
-	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.BomctlAnnotationAlias)
+	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation)
 	if err != nil {
 		backend.Logger.Fatalf("failed to get alias: %v", err)
 	}

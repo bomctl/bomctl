@@ -51,13 +51,12 @@ func saveDocument(backend *db.Backend, document *sbom.Document, alias string, ta
 	}
 
 	if alias != "" {
-		if err := backend.SetUniqueAnnotation(document.GetMetadata().GetId(),
-			db.BomctlAnnotationAlias, alias); err != nil {
-			return fmt.Errorf("failed to set alias: %w", err)
+		if err := backend.SetAlias(document.GetMetadata().GetId(), alias); err != nil {
+			return fmt.Errorf("%w", err)
 		}
 	}
 
-	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.BomctlAnnotationTag, tags...); err != nil {
+	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
 		return fmt.Errorf("failed to set tags: %w", err)
 	}
 

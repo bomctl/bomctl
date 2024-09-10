@@ -49,7 +49,7 @@ func aliasListCmd() *cobra.Command {
 			aliasDefinitions := []string{}
 
 			for _, doc := range documents {
-				alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.BomctlAnnotationAlias)
+				alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation)
 				if err != nil {
 					backend.Logger.Fatalf("failed to get alias: %v", err)
 				}
@@ -88,15 +88,14 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
-			docAlias, err := backend.GetDocumentUniqueAnnotation(document.GetMetadata().GetId(),
-				db.BomctlAnnotationAlias)
+			docAlias, err := backend.GetDocumentUniqueAnnotation(document.GetMetadata().GetId(), db.AliasAnnotation)
 			if err != nil {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
 			if err := backend.RemoveAnnotations(document.GetMetadata().GetId(),
-				db.BomctlAnnotationAlias, docAlias); err != nil {
-				backend.Logger.Fatal(err, "name", db.BomctlAnnotationAlias, "value", docAlias)
+				db.AliasAnnotation, docAlias); err != nil {
+				backend.Logger.Fatal(err, "name", db.AliasAnnotation, "value", docAlias)
 			}
 		},
 	}
@@ -124,20 +123,8 @@ func aliasSetCmd() *cobra.Command {
 				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
-			docAlias, err := backend.GetDocumentUniqueAnnotation(document.GetMetadata().GetId(),
-				db.BomctlAnnotationAlias)
-			if err != nil {
-				backend.Logger.Fatal(err)
-			}
-
-			if err := backend.RemoveAnnotations(document.GetMetadata().GetId(),
-				db.BomctlAnnotationAlias, docAlias); err != nil {
-				backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
-			}
-
-			if err := backend.SetUniqueAnnotation(document.GetMetadata().GetId(),
-				db.BomctlAnnotationAlias, args[1]); err != nil {
-				backend.Logger.Fatal(err, db.BomctlAnnotationAlias, docAlias)
+			if err := backend.SetAlias(document.GetMetadata().GetId(), args[1]); err != nil {
+				backend.Logger.Fatal(err, "documentID", document.GetMetadata().GetId(), "alias", args[1])
 			}
 		},
 	}
