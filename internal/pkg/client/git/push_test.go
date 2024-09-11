@@ -19,53 +19,62 @@
 package git_test
 
 import (
-	"path"
+	"io/fs"
+	"os"
+	"path/filepath"
 
+	gogit "github.com/go-git/go-git/v5"
 	"github.com/protobom/protobom/pkg/formats"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func (gs *gitSuite) TestPush() {
+	rawURL := "git+https://git@github.com:12345/test/repo.git@main#sbom.cdx.json"
+
+	opts := &options.PushOptions{
+		Options: gs.opts,
+		Format:  formats.CDX15JSON,
+		UseTree: false,
+	}
+
 	for _, document := range gs.docs {
-		rawURL := "git+https://git@github.com:12345/test/repo.git@main#sbom.cdx.json"
-
-		opts := &options.PushOptions{
-			Options: gs.opts,
-			Format:  formats.CDX15JSON,
-			UseTree: false,
+		if err := gs.gc.AddFile(rawURL, document.GetMetadata().GetId(), opts); err != nil {
+			gs.Assert().NoErrorf(err, "Error staging file: %v", err)
 		}
+	}
 
-		err := gs.gc.Push(document.GetMetadata().GetId(), rawURL, opts)
-		if err != nil {
-			gs.T().Logf("Error testing Push: %s", err.Error())
-		}
+	if err := gs.gc.Push("", rawURL, opts); err != nil {
+		gs.Assert().NoError(err, "Error testing Push: %v", err)
 	}
 }
 
 func (gs *gitSuite) TestAddFile() {
-	pOptions := options.PushOptions{
+	opts := &options.PushOptions{
 		Options: gs.opts,
 		Format:  formats.CDX15JSON,
 	}
 
-	parsedURL := &url.ParsedURL{
-		Scheme:   "https",
-		Username: "git",
-		Hostname: "github.com",
-		Path:     "test/repo.git",
-		GitRef:   "main",
-		Fragment: "test/file.sbom",
+	gs.gc.SetCloneFunc(func(string, bool, *gogit.CloneOptions) (*gogit.Repository, error) {
+		return gs.repo, nil
+	})
+
+	testFile := filepath.Join(gs.tmpDir, "test", "sbom.cdx.json")
+
+	if err := os.MkdirAll(filepath.Dir(testFile), fs.ModePerm); err != nil {
+		gs.FailNow("failed creating directory")
 	}
 
-	gs.Require().NoError(
-		git.AddFile(gs.repo, path.Join(gs.tmpDir, "test", "file.sbom"), &pOptions, gs.docs[0], parsedURL),
-		"Error testing addFile",
-	)
+	if err := gs.gc.AddFile(
+		"git+https://git@github.com:12345/test/repo.git@main#test/sbom.cdx.json",
+		gs.docs[0].GetMetadata().GetId(),
+		opts,
+	); err != nil {
+		gs.FailNowf("Error testing AddFile", "%s", err.Error())
+	}
 
-	gs.Require().FileExists(path.Join(gs.tmpDir, "test", "file.sbom"))
+	gs.Require().FileExists(testFile)
 }
 
 func (gs *gitSuite) TestGetDocument() {

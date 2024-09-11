@@ -36,6 +36,8 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
+var TestDataDir = filepath.Join("..", "..", "db", "testdata")
+
 type gitSuite struct {
 	suite.Suite
 	tmpDir  string
@@ -46,15 +48,15 @@ type gitSuite struct {
 	docs    []*sbom.Document
 }
 
-func (gs *gitSuite) SetupSuite() {
+func (gs *gitSuite) BeforeTest(_suiteName, _testName string) {
 	var err error
 
 	if gs.tmpDir, err = os.MkdirTemp("", "testrepo"); err != nil {
-		gs.T().Fatalf("Failed to create temporary directory: %v", err)
+		gs.T().Fatalf("failed to create temporary directory: %v", err)
 	}
 
 	if gs.repo, err = gogit.PlainInit(gs.tmpDir, false); err != nil {
-		gs.T().Fatalf("Failed to initialize Git repo: %v", err)
+		gs.T().Fatalf("failed to initialize git repo: %v", err)
 	}
 
 	repoConfig := config.NewConfig()
@@ -65,19 +67,31 @@ func (gs *gitSuite) SetupSuite() {
 		gs.T().Fatalf("Failed to set Git repo config: %v", err)
 	}
 
-	if gs.backend, err = db.NewBackend(db.WithDatabaseFile(db.DatabaseFile)); err != nil {
+	gs.gc.SetRepo(gs.repo)
+
+	worktree, err := gs.repo.Worktree()
+	if err != nil {
+		gs.T().Fatalf("failed to initialize git worktree: %v", err)
+	}
+
+	gs.gc.SetWorktree(worktree)
+}
+
+func (gs *gitSuite) SetupSuite() {
+	backend, err := db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
+	if err != nil {
 		gs.T().Fatalf("%v", err)
 	}
 
-	testdataDir := filepath.Join("..", "..", "db", "testdata")
+	gs.backend = backend
 
-	sboms, err := os.ReadDir(testdataDir)
+	sboms, err := os.ReadDir(TestDataDir)
 	if err != nil {
 		gs.T().Fatalf("%v", err)
 	}
 
 	for sbomIdx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[sbomIdx].Name()))
+		sbomData, err := os.ReadFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
 		if err != nil {
 			gs.T().Fatalf("%v", err)
 		}

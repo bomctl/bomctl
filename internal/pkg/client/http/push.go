@@ -20,6 +20,14 @@ package http
 
 import "github.com/bomctl/bomctl/internal/pkg/options"
 
+func (*Client) AddFile(_name, _id string, _opts *options.PushOptions) error {
+	return nil
+}
+
+func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
+	return nil
+}
+
 func (*Client) Push(_id, _pushURL string, _opts *options.PushOptions) error {
 	return nil
 }

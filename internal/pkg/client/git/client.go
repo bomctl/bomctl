@@ -22,14 +22,21 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/storage/memory"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-type Client struct{}
+type Client struct {
+	repo      *git.Repository
+	worktree  *git.Worktree
+	cloneFunc func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error)
+	basePath  string
+}
 
 func (*Client) Name() string {
 	return "Git"
@@ -80,34 +87,35 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func cloneRepo(tempDir string, parsedRepoURL *url.ParsedURL, auth *url.BasicAuth,
-	opts *options.Options,
-) (*git.Repository, error) {
-	refName := plumbing.NewBranchReferenceName(parsedRepoURL.GitRef)
+func (client *Client) cloneRepo(parsedURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) (err error) {
+	client.basePath = parsedURL.Fragment
 
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
 	baseURL := &url.ParsedURL{
-		Scheme:   parsedRepoURL.Scheme,
-		Hostname: parsedRepoURL.Hostname,
-		Path:     parsedRepoURL.Path,
-		Port:     parsedRepoURL.Port,
+		Scheme:   parsedURL.Scheme,
+		Hostname: parsedURL.Hostname,
+		Path:     parsedURL.Path,
+		Port:     parsedURL.Port,
 	}
 
 	cloneOpts := &git.CloneOptions{
 		URL:           baseURL.String(),
 		Auth:          auth,
-		RemoteName:    "origin",
-		ReferenceName: refName,
+		RemoteName:    git.DefaultRemoteName,
+		ReferenceName: plumbing.NewBranchReferenceName(parsedURL.GitRef),
 		SingleBranch:  true,
 		Depth:         1,
 	}
 
-	opts.Logger.Debug("Cloning git repo: %s", baseURL)
-	// Clone the repository into the temp directory
-	repo, err := git.PlainClone(tempDir, false, cloneOpts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
+	opts.Logger.Debug("Cloning git repo", "url", baseURL)
+
+	if client.repo, err = git.Clone(memory.NewStorage(), memfs.New(), cloneOpts); err != nil {
+		return fmt.Errorf("cloning Git repository: %w", err)
 	}
 
-	return repo, nil
+	if client.worktree, err = client.repo.Worktree(); err != nil {
+		return fmt.Errorf("creating worktree: %w", err)
+	}
+
+	return nil
 }
