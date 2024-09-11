@@ -60,8 +60,8 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 
 	backend.Logger.Info("Adding merged document", "sbomID", merged.GetMetadata().GetId())
 
-	if err := backend.AddDocument(merged); err != nil {
-		merged.Metadata.Id = ""
+	if err := backend.Store(merged, nil); err != nil {
+		return "", fmt.Errorf("%w", err)
 	}
 
 	return merged.GetMetadata().GetId(), err

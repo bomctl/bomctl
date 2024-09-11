@@ -120,8 +120,7 @@ func rootCmd() *cobra.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			cacheDir, err := cmd.Flags().GetString("cache-dir")
-			cobra.CheckErr(err)
+			cacheDir := viper.GetString("cache_dir")
 
 			// Get first top-level subcommand.
 			subcmd := cmd
