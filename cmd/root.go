@@ -34,10 +34,10 @@ import (
 )
 
 const (
+	cliTableWidth = 80
 	modeUserRead  = 0o400
 	modeUserWrite = 0o200
 	modeUserExec  = 0o100
-	cliTableWidth = 80
 )
 
 type optionsKey struct{}
@@ -159,13 +159,13 @@ func rootCmd() *cobra.Command {
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
 
+	rootCmd.AddCommand(aliasCmd())
 	rootCmd.AddCommand(exportCmd())
 	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(importCmd())
 	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(mergeCmd())
 	rootCmd.AddCommand(pushCmd())
-	rootCmd.AddCommand(aliasCmd())
 	rootCmd.AddCommand(tagCmd())
 	rootCmd.AddCommand(versionCmd())
 

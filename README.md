@@ -126,9 +126,11 @@ Ability to retrieve SBOM files over several protocols, including HTTPS, OCI, and
 bomctl fetch [flags] SBOM_URL...
 
 Flags:
+      --alias string       Readable identifier to apply to document
   -h, --help               help for fetch
       --netrc              Use .netrc file for authentication to remote hosts
   -o, --output-file FILE   Path to output file
+      --tag stringArray    Tag(s) to apply to document (can be specified multiple times)
 ```
 
 This includes recursive loading of external references in an SBOM to other SBOMs and placing them into the persistent cache. If SBOMs are access controlled, a user's [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) file can be used to authenticate.

@@ -132,7 +132,7 @@ func styleFunc(row, col int) lipgloss.Style {
 }
 
 func getRow(doc *sbom.Document, backend *db.Backend) []string {
-	id := doc.GetMetadata().GetName() //nolint:varnamelen
+	id := doc.GetMetadata().GetName()
 	if id == "" {
 		id = doc.GetMetadata().GetId()
 	}

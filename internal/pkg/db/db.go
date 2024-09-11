@@ -101,7 +101,7 @@ func (backend *Backend) AddDocument(document *sbom.Document) error {
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
-func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) { //nolint:varnamelen
+func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) {
 	switch documents, getDocsErr := backend.GetDocumentsByID(id); {
 	case getDocsErr != nil:
 		err = fmt.Errorf("querying documents: %w", getDocsErr)
@@ -116,7 +116,7 @@ func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err erro
 	return doc, err
 }
 
-func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) { //nolint:varnamelen
+func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error) {
 	document, err := backend.GetDocumentByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("document could not be retrieved: %w", err)
