@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	gogit "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
@@ -49,11 +50,19 @@ func (gs *gitSuite) SetupSuite() {
 	var err error
 
 	if gs.tmpDir, err = os.MkdirTemp("", "testrepo"); err != nil {
-		gs.T().Fatalf("failed to create temporary directory: %v", err)
+		gs.T().Fatalf("Failed to create temporary directory: %v", err)
 	}
 
 	if gs.repo, err = gogit.PlainInit(gs.tmpDir, false); err != nil {
-		gs.T().Fatalf("failed to initialize git repo: %v", err)
+		gs.T().Fatalf("Failed to initialize Git repo: %v", err)
+	}
+
+	repoConfig := config.NewConfig()
+	repoConfig.Author.Name = "bomctl-unit-test"
+	repoConfig.Author.Email = "bomctl-unit-test@users.noreply.github.com"
+
+	if err := gs.repo.SetConfig(repoConfig); err != nil {
+		gs.T().Fatalf("Failed to set Git repo config: %v", err)
 	}
 
 	if gs.backend, err = db.NewBackend(db.WithDatabaseFile(db.DatabaseFile)); err != nil {
