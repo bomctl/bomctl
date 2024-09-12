@@ -75,7 +75,8 @@ func aliasListCmd() *cobra.Command {
 				}
 
 				if alias != "" {
-					aliasDefinitions = append(aliasDefinitions, fmt.Sprintf("%v → %v", alias, doc.GetMetadata().GetId()))
+					aliasDefinitions = append(aliasDefinitions,
+						fmt.Sprintf("%v → %v", alias, doc.GetMetadata().GetId()))
 				}
 			}
 
