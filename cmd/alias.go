@@ -19,6 +19,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -27,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
@@ -122,12 +124,15 @@ func aliasRemoveCmd() *cobra.Command {
 }
 
 func aliasSetCmd() *cobra.Command {
+	opts := &options.AliasOptions{}
+
 	aliasSetCmd := &cobra.Command{
 		Use:   "set [flags] SBOM_ID NEW_ALIAS",
 		Short: "Set the alias for a specific document",
 		Long:  "Set the alias for a specific document",
 		Args:  cobra.ExactArgs(aliasSetExactArgNum),
 		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
@@ -141,11 +146,18 @@ func aliasSetCmd() *cobra.Command {
 				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
-			if err := backend.SetAlias(document.GetMetadata().GetId(), args[1]); err != nil {
-				backend.Logger.Fatal(err, "documentID", document.GetMetadata().GetId(), "alias", args[1])
+			if err := backend.SetAlias(document.GetMetadata().GetId(), args[1], opts.Force); err != nil {
+				if errors.Is(err, db.ErrDocumentAliasExists) {
+					backend.Logger.Fatal(
+						"The document already has an alias. To replace it, re-run the command with the --force flag")
+				} else {
+					backend.Logger.Fatal(err, "documentID", document.GetMetadata().GetId(), "alias", args[1])
+				}
 			}
 		},
 	}
+
+	aliasSetCmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Force replacing an existing alias, if there is one")
 
 	return aliasSetCmd
 }

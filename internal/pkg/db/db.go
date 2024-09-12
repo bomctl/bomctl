@@ -57,7 +57,8 @@ var (
 	errBackendMissingFromContext = errors.New("failed to get database backend from command context")
 	errMultipleDocuments         = errors.New("multiple documents matching ID")
 	errInvalidAlias              = errors.New("invalid alias provided")
-	errAliasAlreadyExists        = errors.New("alias already exists")
+	errDuplicateAlias            = errors.New("alias already exists")
+	ErrDocumentAliasExists       = errors.New("the document already has an alias")
 )
 
 func BackendFromContext(ctx context.Context) (*Backend, error) {
@@ -166,6 +167,20 @@ func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document
 	return documents, nil
 }
 
+func (backend *Backend) GetDocumentTags(id string) ([]string, error) {
+	annotations, err := backend.GetDocumentAnnotations(id, TagAnnotation)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get document tags: %w", err)
+	}
+
+	tags := make([]string, len(annotations))
+	for idx := range annotations {
+		tags[idx] = annotations[idx].Value
+	}
+
+	return tags, nil
+}
+
 func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
 	taggedDocuments, err := backend.GetDocumentsByAnnotation(TagAnnotation, tags...)
 	if err != nil {
@@ -190,7 +205,7 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 	return documents, nil
 }
 
-func (backend *Backend) SetAlias(documentID, alias string) (err error) {
+func (backend *Backend) SetAlias(documentID, alias string, force bool) (err error) { //nolint:revive
 	if err := backend.validateNewAlias(alias); err != nil {
 		return fmt.Errorf("failed to set alias: %w", err)
 	}
@@ -200,8 +215,14 @@ func (backend *Backend) SetAlias(documentID, alias string) (err error) {
 		return fmt.Errorf("failed to set alias: %w", err)
 	}
 
-	if err := backend.RemoveAnnotations(documentID, AliasAnnotation, docAlias); err != nil {
-		return fmt.Errorf("failed to remove previous alias: %w", err)
+	if docAlias != "" {
+		if !force {
+			return ErrDocumentAliasExists
+		}
+
+		if err := backend.RemoveAnnotations(documentID, AliasAnnotation, docAlias); err != nil {
+			return fmt.Errorf("failed to remove previous alias: %w", err)
+		}
 	}
 
 	if err := backend.SetUniqueAnnotation(documentID, AliasAnnotation, alias); err != nil {
@@ -222,7 +243,7 @@ func (backend *Backend) validateNewAlias(alias string) (err error) {
 	case len(documents) == 0:
 		err = nil
 	default:
-		err = errAliasAlreadyExists
+		err = errDuplicateAlias
 	}
 
 	return err

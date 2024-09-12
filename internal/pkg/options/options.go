@@ -41,7 +41,7 @@ type (
 
 	AliasOptions struct {
 		*Options
-		UseAlias bool
+		Force bool
 	}
 
 	ExportOptions struct {
@@ -68,6 +68,8 @@ type (
 	MergeOptions struct {
 		*Options
 		DocumentName string
+		Alias        string
+		Tags         []string
 	}
 
 	PushOptions struct {

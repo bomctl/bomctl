@@ -52,7 +52,7 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 	}
 
 	if opts.Alias != "" {
-		if err := backend.SetAlias(doc.GetMetadata().GetId(), opts.Alias); err != nil {
+		if err := backend.SetAlias(doc.GetMetadata().GetId(), opts.Alias, false); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

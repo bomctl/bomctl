@@ -51,7 +51,7 @@ func saveDocument(backend *db.Backend, document *sbom.Document, alias string, ta
 	}
 
 	if alias != "" {
-		if err := backend.SetAlias(document.GetMetadata().GetId(), alias); err != nil {
+		if err := backend.SetAlias(document.GetMetadata().GetId(), alias, false); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

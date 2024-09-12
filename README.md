@@ -196,8 +196,10 @@ Merge specified cached SBOM documents.
   bomctl merge [flags] DOCUMENT_ID...
 
 Flags:
-  -h, --help          help for merge
-  -n, --name string   Name of merged document
+      --alias string      Readable identifier to apply to merged document
+  -h, --help              help for merge
+  -n, --name string       Name of merged document
+      --tag stringArray   Tag(s) to apply to merged document (can be specified multiple times)
 ```
 
 ## Roadmap

@@ -35,7 +35,7 @@ func mergeCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 		Short: "Merge SBOM documents in local storage",
 		Long: fmt.Sprintf("%s%s%s",
-			"Merge SBOM documents in local storage. The left most specified document ID takes priority with the ",
+			"Merge SBOM documents in local storage. The leftmost specified document ID takes priority with the ",
 			"intent of only updating the field if the existing value is empty. Lists are de-duplicated based off of ",
 			"a combination of fields depending on the type",
 		),
@@ -58,6 +58,9 @@ func mergeCmd() *cobra.Command {
 	}
 
 	mergeCmd.Flags().StringP("name", "n", "", "Name of merged document")
+	mergeCmd.Flags().StringVar(&opts.Alias, "alias", "", "Readable identifier to apply to merged document")
+	mergeCmd.Flags().StringArrayVar(&opts.Tags, "tag", []string{},
+		"Tag(s) to apply to merged document (can be specified multiple times)")
 
 	return mergeCmd
 }
