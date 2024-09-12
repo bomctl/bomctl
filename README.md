@@ -94,6 +94,9 @@ cd bomctl
 
 Edit the alias for an SBOM document.
 
+> [!NOTE]
+> An SBOM document can only have a single alias and each alias must be globally unique.
+
 ```shell
 bomctl alias [command]
 
