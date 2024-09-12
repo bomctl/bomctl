@@ -84,8 +84,14 @@ func exportCmd() *cobra.Command {
 				defer opts.OutputFile.Close()
 			}
 
-			for _, id := range args {
-				if err := export.Export(id, opts); err != nil {
+			// Get the documents to obtain their IDs, in case the provided IDs were aliases.
+			documents, err := backend.GetDocumentsByIDOrAlias(args...)
+			if err != nil {
+				opts.Logger.Fatal(err, "documentIDs", args)
+			}
+
+			for _, document := range documents {
+				if err := export.Export(document.GetMetadata().GetId(), opts); err != nil {
 					opts.Logger.Fatal(err)
 				}
 			}
