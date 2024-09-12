@@ -45,19 +45,19 @@ func parseDocument(sbomReader *reader.Reader, inputFile *os.File) (*sbom.Documen
 	return sbomDocument, nil
 }
 
-func saveDocument(backend *db.Backend, document *sbom.Document, alias string, tags ...string) error {
+func saveDocument(backend *db.Backend, document *sbom.Document, alias string, opts *options.ImportOptions) error {
 	if err := backend.AddDocument(document); err != nil {
 		return fmt.Errorf("failed to store document: %w", err)
 	}
 
 	if alias != "" {
 		if err := backend.SetAlias(document.GetMetadata().GetId(), alias, false); err != nil {
-			return fmt.Errorf("%w", err)
+			opts.Logger.Warn("Alias could not be set.", "err", err)
 		}
 	}
 
-	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
-		return fmt.Errorf("failed to set tags: %w", err)
+	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
 	return nil
@@ -82,7 +82,7 @@ func Import(opts *options.ImportOptions) error {
 			alias = opts.Alias[idx]
 		}
 
-		if err := saveDocument(backend, document, alias, opts.Tags...); err != nil {
+		if err := saveDocument(backend, document, alias, opts); err != nil {
 			return fmt.Errorf("failed to save document: %w", err)
 		}
 	}

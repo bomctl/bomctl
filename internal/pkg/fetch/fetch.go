@@ -53,12 +53,12 @@ func Fetch(sbomURL string, opts *options.FetchOptions) error {
 
 	if opts.Alias != "" {
 		if err := backend.SetAlias(doc.GetMetadata().GetId(), opts.Alias, false); err != nil {
-			return fmt.Errorf("%w", err)
+			opts.Logger.Warn("Alias could not be set.", "err", err)
 		}
 	}
 
 	if err := backend.AddAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
-		return fmt.Errorf("failed to set tags: %w", err)
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
 	// Fetch externally referenced BOMs

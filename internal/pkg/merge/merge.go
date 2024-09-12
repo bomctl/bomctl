@@ -65,12 +65,12 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 
 	if opts.Alias != "" {
 		if err := backend.SetAlias(merged.GetMetadata().GetId(), opts.Alias, false); err != nil {
-			return "", fmt.Errorf("%w", err)
+			opts.Logger.Warn("Alias could not be set.", "err", err)
 		}
 	}
 
 	if err := backend.AddAnnotations(merged.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
-		return "", fmt.Errorf("failed to set tags: %w", err)
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
 	return merged.GetMetadata().GetId(), err
