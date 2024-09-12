@@ -84,9 +84,11 @@ cd bomctl
 - Operations are performed on the cached SBOMs
   - [alias](#alias)
   - [list](#list)
+  - [merge](#merge)
   - [tag](#tag)
 - SBOMs are outputted out of the cache
   - [export](#export)
+  - [push](#push)
 
 ### Alias
 
@@ -171,6 +173,35 @@ Flags:
       --tag stringArray   Tag(s) used to filter documents (can be specified multiple times)
 ```
 
+### Merge
+
+Merge specified cached SBOM documents.
+
+```shell
+  bomctl merge [flags] DOCUMENT_ID...
+
+Flags:
+      --alias string      Readable identifier to apply to merged document
+  -h, --help              help for merge
+  -n, --name string       Name of merged document
+      --tag stringArray   Tag(s) to apply to merged document (can be specified multiple times)
+```
+
+### Push
+
+Push stored SBOM file to remote URL or filesystem.
+
+```shell
+  bomctl push [flags] SBOM_ID DEST_PATH
+
+Flags:
+  -e, --encoding string   output encoding [spdx: [json], cyclonedx: [json, xml]] (default "json")
+  -f, --format string     SBOM output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
+  -h, --help              help for push
+      --netrc             Use .netrc file for authentication to remote hosts
+      --tree              Recursively push all SBOMs in external reference tree
+```
+
 ### Tag
 
 Edit the tags of an SBOM document.
@@ -186,20 +217,6 @@ Subcommands:
 
 Flags:
   -h, --help   help for tag
-```
-
-### Merge
-
-Merge specified cached SBOM documents.
-
-```shell
-  bomctl merge [flags] DOCUMENT_ID...
-
-Flags:
-      --alias string      Readable identifier to apply to merged document
-  -h, --help              help for merge
-  -n, --name string       Name of merged document
-      --tag stringArray   Tag(s) to apply to merged document (can be specified multiple times)
 ```
 
 ## Roadmap
