@@ -16,14 +16,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
+
 package git_test
 
 import (
-	"io/fs"
-	"os"
-	"path/filepath"
+	"fmt"
 
-	gogit "github.com/go-git/go-git/v5"
 	"github.com/protobom/protobom/pkg/formats"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
@@ -31,7 +29,7 @@ import (
 )
 
 func (gs *gitSuite) TestPush() {
-	rawURL := "git+https://git@github.com:12345/test/repo.git@main#sbom.cdx.json"
+	pushURL := fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx.json", gs.server.URL)
 
 	opts := &options.PushOptions{
 		Options: gs.opts,
@@ -39,15 +37,8 @@ func (gs *gitSuite) TestPush() {
 		UseTree: false,
 	}
 
-	for _, document := range gs.docs {
-		if err := gs.gc.AddFile(rawURL, document.GetMetadata().GetId(), opts); err != nil {
-			gs.Assert().NoErrorf(err, "Error staging file: %v", err)
-		}
-	}
-
-	if err := gs.gc.Push("", rawURL, opts); err != nil {
-		gs.Assert().NoError(err, "Error testing Push: %v", err)
-	}
+	gs.Require().NoError(gs.gc.AddFile(pushURL, gs.docs[0].GetMetadata().GetId(), opts))
+	gs.Require().NoError(gs.gc.Push("", pushURL, opts))
 }
 
 func (gs *gitSuite) TestAddFile() {
@@ -56,25 +47,20 @@ func (gs *gitSuite) TestAddFile() {
 		Format:  formats.CDX15JSON,
 	}
 
-	gs.gc.SetCloneFunc(func(string, bool, *gogit.CloneOptions) (*gogit.Repository, error) {
-		return gs.repo, nil
-	})
-
-	testFile := filepath.Join(gs.tmpDir, "test", "sbom.cdx.json")
-
-	if err := os.MkdirAll(filepath.Dir(testFile), fs.ModePerm); err != nil {
-		gs.FailNow("failed creating directory")
-	}
-
 	if err := gs.gc.AddFile(
-		"git+https://git@github.com:12345/test/repo.git@main#test/sbom.cdx.json",
+		fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx.json", gs.server.URL),
 		gs.docs[0].GetMetadata().GetId(),
 		opts,
 	); err != nil {
 		gs.FailNowf("Error testing AddFile", "%s", err.Error())
 	}
 
-	gs.Require().FileExists(testFile)
+	// Get worktree status.
+	status, err := gs.gc.Worktree().Status()
+	gs.Require().NoError(err)
+
+	// File must be staged with a status of "A" (added).
+	gs.Require().Equal("A", string(status.File("path/to/sbom.cdx.json").Staging))
 }
 
 func (gs *gitSuite) TestGetDocument() {

@@ -16,6 +16,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
+
 package git
 
 import (
@@ -32,10 +33,9 @@ import (
 )
 
 type Client struct {
-	repo      *git.Repository
-	worktree  *git.Worktree
-	cloneFunc func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error)
-	basePath  string
+	repo     *git.Repository
+	worktree *git.Worktree
+	basePath string
 }
 
 func (*Client) Name() string {

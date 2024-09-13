@@ -16,16 +16,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ------------------------------------------------------------------------
+
 package git_test
 
 import (
 	"context"
+	"fmt"
+	"net/http/cgi"
+	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/go-git/go-billy/v5/osfs"
 	gogit "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/cache"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/serverinfo"
+	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
@@ -36,45 +47,107 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var TestDataDir = filepath.Join("..", "..", "db", "testdata")
-
 type gitSuite struct {
 	suite.Suite
 	tmpDir  string
-	repo    *gogit.Repository
 	opts    *options.Options
 	backend *db.Backend
 	gc      *git.Client
+	server  *httptest.Server
 	docs    []*sbom.Document
+}
+
+func (gs *gitSuite) setupGitServer() {
+	gs.T().Helper()
+
+	// Create server root and test repository directories.
+	serverRoot := filepath.Join(gs.tmpDir, "git-test-server")
+	repoDir := filepath.Join(serverRoot, "test", "repo.git")
+	gs.Require().NoError(os.MkdirAll(repoDir, os.ModePerm))
+
+	// Create storage for test Git server repository.
+	repoFS := osfs.New(repoDir)
+	storer := filesystem.NewStorage(repoFS, cache.NewObjectLRUDefault())
+
+	// Initialize test Git server repository.
+	repo, err := gogit.InitWithOptions(storer, repoFS, gogit.InitOptions{DefaultBranch: plumbing.Main})
+	gs.Require().NoError(err)
+
+	worktree, err := repo.Worktree()
+	gs.Require().NoError(err)
+
+	// Create initial commit and pack Git objects.
+	_, err = worktree.Commit("Initial commit", &gogit.CommitOptions{
+		AllowEmptyCommits: true,
+		Author: &object.Signature{
+			Name:  "bomctl-unit-test",
+			Email: "bomctl-unit-test@users.noreply.github.com",
+			When:  time.Now(),
+		},
+	})
+	gs.Require().NoError(err)
+	gs.Require().NoError(repo.Storer.PackRefs())
+	gs.Require().NoError(serverinfo.UpdateServerInfo(storer, repoFS))
+
+	// Update test Git server repository config to bare and unset worktree.
+	// This is to allow clients to update the server repository's main branch.
+	repoConfig, err := repo.Config()
+	gs.Require().NoError(err)
+
+	repoConfig.Core.IsBare = true
+	repoConfig.Core.Worktree = ""
+
+	gs.Require().NoError(repo.SetConfig(repoConfig), "Failed to set Git repo config")
+
+	// Get path to git executable.
+	gitPath, err := exec.LookPath("git")
+	gs.Require().NoError(err, "Unable to find git executable")
+
+	// Create CGI handler to handle Git smart protocol requests.
+	gitHandler := &cgi.Handler{
+		Path: gitPath,
+		Args: []string{
+			"-c", "http.getanyfile",
+			"-c", "http.receivepack",
+			"-c", "http.uploadpack",
+			"http-backend",
+		},
+		Env: []string{fmt.Sprintf("GIT_PROJECT_ROOT=%s", serverRoot), "GIT_HTTP_EXPORT_ALL=true"},
+	}
+
+	// Start the test server.
+	gs.server = httptest.NewServer(gitHandler)
 }
 
 func (gs *gitSuite) BeforeTest(_suiteName, _testName string) {
 	var err error
 
-	if gs.tmpDir, err = os.MkdirTemp("", "testrepo"); err != nil {
-		gs.T().Fatalf("failed to create temporary directory: %v", err)
-	}
+	gs.tmpDir, err = os.MkdirTemp("", "git-client-test")
+	gs.Require().NoErrorf(err, "Failed to create temporary directory: %v", err)
 
-	if gs.repo, err = gogit.PlainInit(gs.tmpDir, false); err != nil {
-		gs.T().Fatalf("failed to initialize git repo: %v", err)
-	}
+	gs.setupGitServer()
 
-	repoConfig := config.NewConfig()
+	pushOpts := &options.PushOptions{Options: gs.opts}
+	gs.Require().NoError(
+		gs.gc.PreparePush(
+			fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx", gs.server.URL),
+			pushOpts,
+		),
+	)
+
+	repoConfig, err := gs.gc.Repo().Config()
+	gs.Require().NoError(err)
+
 	repoConfig.Author.Name = "bomctl-unit-test"
 	repoConfig.Author.Email = "bomctl-unit-test@users.noreply.github.com"
 
-	if err := gs.repo.SetConfig(repoConfig); err != nil {
-		gs.T().Fatalf("Failed to set Git repo config: %v", err)
-	}
+	gs.Require().NoError(gs.gc.Repo().SetConfig(repoConfig), "Failed to set Git repo config")
+}
 
-	gs.gc.SetRepo(gs.repo)
+func (gs *gitSuite) AfterTest(_suiteName, _testName string) {
+	gs.server.Close()
 
-	worktree, err := gs.repo.Worktree()
-	if err != nil {
-		gs.T().Fatalf("failed to initialize git worktree: %v", err)
-	}
-
-	gs.gc.SetWorktree(worktree)
+	defer os.RemoveAll(gs.tmpDir)
 }
 
 func (gs *gitSuite) SetupSuite() {
@@ -85,13 +158,15 @@ func (gs *gitSuite) SetupSuite() {
 
 	gs.backend = backend
 
-	sboms, err := os.ReadDir(TestDataDir)
+	testdataDir := filepath.Join("..", "..", "db", "testdata")
+
+	sboms, err := os.ReadDir(testdataDir)
 	if err != nil {
 		gs.T().Fatalf("%v", err)
 	}
 
 	for sbomIdx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
+		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[sbomIdx].Name()))
 		if err != nil {
 			gs.T().Fatalf("%v", err)
 		}
@@ -110,6 +185,8 @@ func (gs *gitSuite) SetupSuite() {
 }
 
 func (gs *gitSuite) TearDownSuite() {
+	gs.server.Close()
+
 	err := os.RemoveAll(gs.tmpDir)
 	if err != nil {
 		gs.T().Fatalf("Error removing repo file %s", db.DatabaseFile)
