@@ -60,3 +60,6 @@ jobs:
         with:
           install-mode: goinstall
           version: c2e095c022a97360f7fff5d49fbc11f273be929a # v1.60.3
+
+      - name: Check Go file license headers
+        run: .github/scripts/check-go-headers.sh
