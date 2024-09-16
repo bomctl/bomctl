@@ -6,27 +6,28 @@ prioritizes the relationships between components in a SBOM document and between 
 
 ```mermaid
 timeline
-    title SBOM Project Timeline
+    title Bomctl Project Roadmap
 
-    Missing_Architecture(2023-09-01, 2023-11-01) "Missing Architecture"
-    Indirect_Multi_Document_Linking(2023-09-01, 2023-10-01) "Indirect Multi-Document Linking (2 Months)"
-    Storing_and_Retreiving_Source_SBOMs(2023-10-01, 2023-11-01) "Storing and Retreiving Source SBOMs Without Modification (2 Months)"
-    Fetch_and_Push_Integration(2023-11-01, 2024-02-01) "Fetch and Push Integration with Commercial SBOM Registries (3 Months)"
-    Signature_and_Attestation_Verification(2024-02-01, 2024-03-01) "Signature and Attestation Verification (2 Months)"
+    section Core Architecture
+        Near (0-2 Months) : Indirect Multi-Document Linking
+                          : Storing and Retreiving Source SBOMs Without Modification
 
-    Complex_Commands(2024-03-01, 2024-06-01) "Complex Commands"
-    Document_and_Document_Relationship(2024-03-01, 2024-03-31) "Document and Document Relationship Commands (1 Month)"
-    SBOM_Graph_Manipulation(2024-03-31, 2024-07-01) "SBOM Graph Manipulation Commands (4 Months)"
-    Signing_and_Attestations(2024-07-01, 2024-08-01) "Signing and Attestations Commands (2 Months)"
-    Visualization_Commands(2024-08-01, 2024-10-01) "Visualization Commands (3 Months)"
+        Mid (2-6 Months)  : Fetch and Push Integration with Commercial SBOM Registries
+                          : Signature and Attestation Verification
 
-    Indirect_Multi_Document_Linking -->|Key questions| Storing_and_Retreiving_Source_SBOMs
-    Storing_and_Retreiving_Source_SBOMs -->|Architectural decision| Fetch_and_Push_Integration
-    Fetch_and_Push_Integration -->|Integration| Signature_and_Attestation_Verification
-    Signature_and_Attestation_Verification -->|Verification| Document_and_Document_Relationship
-    Document_and_Document_Relationship -->|Relationship commands| SBOM_Graph_Manipulation
-    SBOM_Graph_Manipulation -->|Graph manipulation| Signing_and_Attestations
-    Signing_and_Attestations -->|Attestations commands| Visualization
+    section Commands
+        Near (0-2 Months) : `link`
+                          : `merge`
+                          : `diff`
+                          : `visualize`
+
+        Mid (2-6 Months)  : `redact`
+                          : `trim`
+                          : `verify`
+                          : `sign`
+
+        Far (6+ Months)   : `split`
+                          : `enrich`
 ```
 
 ## Missing Architecture
@@ -68,27 +69,27 @@ SBOM registry to recursively fetch SBOMs (instead of using URLs).
 
 Teams will be signing and attesting to SBOMs how should this be tied into `bomctl`?
 
-## Complexe Commands
+## Commands
 
 ### Document and Document Relationship Commands (1 Month)
 
 - `link`
   - Ability to create external references between documents
-- `Merge`
+- `merge`
   - Merge fields from similar components in two or more SBOM documents
   - Merge components and component dependencies from two or more SBOM documents
   - Flatten multiple SBOM document component dependencies into a single SBOM document
-- `Split`
+- `split`
   - Split an SBOM dependency tree into multiple files based on purl type or component identifier
 
 ### SBOM Graph Manipulation Commands (4 Months)
 
-- `Enrich`
+- `enrich`
   - Use the [Transparency Exchange API](https://github.com/CycloneDX/transparency-exchange-api) to find enrich sbom components with additional data.
   - Interface with [GUAC](https://guac.sh/)
-- `Redact`
+- `redact`
   - Redact fields by regular expressions or field name while keeping tracibility to the original document
-- `Trim`
+- `trim`
   - Trim an SBOM dependency tree based on purl type or component identifier
 
 ## Signing and Attestations Commands (2 Months)
@@ -100,7 +101,7 @@ Teams will be signing and attesting to SBOMs how should this be tied into `bomct
 
 ### Visualization Commands (3 Months)
 
-- `Diff`
+- `diff`
   - Generating diffs between components and component dependencies
   - Generating diffs of component properties
   - Creating diffs in machine readable and human readable formats
