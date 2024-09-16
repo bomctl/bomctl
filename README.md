@@ -214,9 +214,9 @@ bomctl tag [command]
 
 Subcommands:
   add         Add tags to a document
-  clear       Clear the tags of a document
+  clear       Clear all tags from a document
   list        List the tags of a document
-  remove      Remove the tags of a document
+  remove      Remove specified tags from a document
 
 Flags:
   -h, --help   help for tag

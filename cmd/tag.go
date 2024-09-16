@@ -82,8 +82,8 @@ func tagAddCmd() *cobra.Command {
 func tagClearCmd() *cobra.Command {
 	clearCmd := &cobra.Command{
 		Use:   "clear [flags] SBOM_ID...",
-		Short: "Clear the tags of a document",
-		Long:  "Clear the tags of a document",
+		Short: "Clear all tags from a document",
+		Long:  "Clear all tags from a document",
 		Args:  cobra.ExactArgs(tagClearExactArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
@@ -154,8 +154,8 @@ func tagRemoveCmd() *cobra.Command {
 	removeCmd := &cobra.Command{
 		Use:     "remove [flags] SBOM_ID TAGS...",
 		Aliases: []string{"rm"},
-		Short:   "Remove the tags of a document",
-		Long:    "Remove the tags of a document",
+		Short:   "Remove specified tags from a document",
+		Long:    "Remove specified tags from a document",
 		Args:    cobra.MinimumNArgs(tagRemoveMinArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
