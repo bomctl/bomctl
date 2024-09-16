@@ -84,7 +84,7 @@
   "go.coverMode": "atomic",
   "go.coverOnSave": true,
   "go.coverOnSingleTest": true,
-  "go.lintFlags": ["--fast", "--allow-parallel-runners", "--config=.golangci.yml"],
+  "go.lintFlags": ["--fast"],
   "go.lintOnSave": "file",
   "go.lintTool": "golangci-lint",
   "go.testFlags": ["-race", "-covermode=atomic"],

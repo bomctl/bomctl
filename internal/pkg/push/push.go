@@ -86,10 +86,10 @@ func processExtRefDocs(sbomID, destPath string, opts *options.PushOptions) error
 
 // checks local db for fetched document identifiers,
 // returns local data if found, otherwise uses fetched data.
-func getDocumentInfo(be *db.Backend, doc *sbom.Document) (id, name string, err error) {
-	existingDoc, err := be.GetDocumentByID(doc.GetMetadata().GetId())
+func getDocumentInfo(backend *db.Backend, doc *sbom.Document) (id, name string, err error) {
+	existingDoc, err := backend.GetDocumentByID(doc.GetMetadata().GetId())
 	if err != nil {
-		if err = be.AddDocument(doc); err != nil {
+		if err = backend.Store(doc, nil); err != nil {
 			return "", "", fmt.Errorf("failed to store document: %w", err)
 		}
 
@@ -129,7 +129,7 @@ func pushExtRefDoc(ref *sbom.ExternalReference, backend *db.Backend, destPath st
 	}
 
 	// call fetch wrapper function to fetch extref doc object
-	doc, err := fetch.GetRemoteDocument(ref.GetUrl(), fetchOpts)
+	doc, err := fetch.Fetch(ref.GetUrl(), fetchOpts)
 	if err != nil {
 		return fmt.Errorf("error fetching external reference docs: %w", err)
 	}

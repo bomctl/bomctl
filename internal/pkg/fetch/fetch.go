@@ -28,7 +28,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
@@ -36,27 +35,12 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func Fetch(sbomURL string, opts *options.FetchOptions) error {
+func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 	backend, err := db.BackendFromContext(opts.Context())
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 
-	doc, err := GetRemoteDocument(sbomURL, opts)
-	if err != nil {
-		return err
-	}
-
-	// Insert fetched document data into database.
-	if err := backend.AddDocument(doc); err != nil {
-		return fmt.Errorf("error adding document: %w", err)
-	}
-
-	// Fetch externally referenced BOMs
-	return fetchExternalReferences(doc, backend, opts)
-}
-
-func GetRemoteDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
@@ -76,14 +60,22 @@ func GetRemoteDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Docume
 		}
 	}
 
-	sbomReader := reader.New()
-
-	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
+	// Insert fetched document data into database.
+	doc, err := backend.AddDocument(sbomData)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
+		return nil, fmt.Errorf("adding document: %w", err)
 	}
 
-	return document, nil
+	if err := backend.SetUniqueAnnotation(
+		doc.GetMetadata().GetId(), db.SourceURLAnnotation, sbomURL,
+	); err != nil {
+		return nil, fmt.Errorf(
+			"applying unique annotation %s to %s: %w", db.SourceURLAnnotation, doc.GetMetadata().GetId(), err,
+		)
+	}
+
+	// Fetch externally referenced BOMs
+	return doc, fetchExternalReferences(doc, backend, opts)
 }
 
 func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
@@ -93,18 +85,18 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 	}
 
 	for _, ref := range extRefs {
-		extRefsOpt := *opts
-		if extRefsOpt.OutputFile != nil {
+		extRefOpts := *opts
+		if extRefOpts.OutputFile != nil {
 			out, err := getRefFile(opts.OutputFile)
 			if err != nil {
 				return err
 			}
 
-			extRefsOpt.OutputFile = out
-			defer extRefsOpt.OutputFile.Close() //nolint:revive
+			extRefOpts.OutputFile = out
+			defer extRefOpts.OutputFile.Close() //nolint:revive
 		}
 
-		if err := Fetch(ref.GetUrl(), &extRefsOpt); err != nil {
+		if _, err := Fetch(ref.GetUrl(), &extRefOpts); err != nil {
 			return err
 		}
 	}

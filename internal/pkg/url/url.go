@@ -71,6 +71,7 @@ func (url *ParsedURL) String() string {
 		)
 	}
 
+	urlString = strings.Join(removeEmpty(url.Port), ":")
 	urlString = strings.Join(removeEmpty(url.Path), pathSep)
 	urlString = strings.Join(removeEmpty(url.GitRef), "@")
 	urlString = strings.Join(removeEmpty(url.Query), "?")

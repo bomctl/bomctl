@@ -20,20 +20,30 @@
 package db
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 
 	"github.com/charmbracelet/log"
+	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/protobom/protobom/pkg/storage"
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/logger"
 )
 
 const (
-	DatabaseFile  string = "bomctl.db"
-	EntDebugLevel int    = 2
+	SourceDataAnnotation   string = "bomctl_annotation_source_data"
+	SourceHashAnnotation   string = "bomctl_annotation_source_hash"
+	SourceFormatAnnotation string = "bomctl_annotation_source_format"
+	SourceURLAnnotation    string = "bomctl_annotation_source_url"
+
+	DatabaseFile string = "bomctl.db"
+
+	EntDebugLevel int = 2
 )
 
 type (
@@ -81,13 +91,43 @@ func NewBackend(opts ...Option) (*Backend, error) {
 	return backend, nil
 }
 
-// AddDocument adds the protobom Document to the database.
-func (backend *Backend) AddDocument(document *sbom.Document) error {
-	if err := backend.Store(document, nil); err != nil {
-		return fmt.Errorf("failed to store document: %w", err)
+// AddDocument adds the protobom Document to the database and annotates with its source data, hash, and format.
+func (backend *Backend) AddDocument(sbomData []byte) (*sbom.Document, error) {
+	sbomReader := reader.New()
+
+	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
+	if err != nil {
+		return nil, fmt.Errorf("parsing SBOM data: %w", err)
 	}
 
-	return nil
+	hash := sha256.Sum256(sbomData)
+	opts := &storage.StoreOptions{
+		BackendOptions: &ent.BackendOptions{
+			Annotations: ent.Annotations{
+				{
+					Name:     SourceDataAnnotation,
+					Value:    string(sbomData),
+					IsUnique: true,
+				},
+				{
+					Name:     SourceHashAnnotation,
+					Value:    string(hash[:]),
+					IsUnique: true,
+				},
+				{
+					Name:     SourceFormatAnnotation,
+					Value:    sbomReader.Options.Format.Type(),
+					IsUnique: true,
+				},
+			},
+		},
+	}
+
+	if err := backend.Store(document, opts); err != nil {
+		return nil, fmt.Errorf("storing document %s: %w", document.GetMetadata().GetId(), err)
+	}
+
+	return document, nil
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
