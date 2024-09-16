@@ -44,11 +44,15 @@ tasks:
 
   go:
     desc: Lint Golang code files
-    cmd:
-      task: run
-      vars:
-        CLI_NAME: golangci-lint{{exeExt}}
-        CLI_ARGS: [run, --verbose]
+    cmds:
+      - task: run
+        vars:
+          CLI_NAME: golangci-lint{{exeExt}}
+          CLI_ARGS: [run, --verbose]
+
+      - task: run
+        vars:
+          CLI_NAME: .github/scripts/check-go-headers.sh
 
   markdown:
     desc: Lint markdown files

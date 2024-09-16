@@ -176,6 +176,7 @@ endef
 .PHONY: lint-go
 lint-go: # Lint Golang code files
 	${call run-lint,golangci-lint,run --verbose}
+	${call run-lint,.github/scripts/check-go-headers.sh}
 
 .PHONY: lint-go-fix
 lint-go-fix: # Fix golangci-lint findings
