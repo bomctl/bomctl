@@ -26,7 +26,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/stretchr/testify/suite"
 
@@ -40,7 +39,12 @@ type dbSuite struct {
 }
 
 func (dbs *dbSuite) SetupSuite() {
-	rdr := reader.New()
+	backend, err := db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
+	if err != nil {
+		dbs.T().Fatalf("%v", err)
+	}
+
+	dbs.backend = backend
 
 	sboms, err := os.ReadDir("testdata")
 	if err != nil {
@@ -48,17 +52,17 @@ func (dbs *dbSuite) SetupSuite() {
 	}
 
 	for sbomIdx := range sboms {
-		doc, err := rdr.ParseFile(filepath.Join("testdata", sboms[sbomIdx].Name()))
+		sbomData, err := os.ReadFile(filepath.Join("testdata", sboms[sbomIdx].Name()))
 		if err != nil {
 			dbs.T().Fatalf("%v", err)
 		}
 
-		dbs.documents = append(dbs.documents, doc)
-	}
+		doc, err := dbs.backend.AddDocument(sbomData)
+		if err != nil {
+			dbs.FailNow("failed storing document", "err", err)
+		}
 
-	dbs.backend, err = db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
-	if err != nil {
-		dbs.T().Fatalf("%v", err)
+		dbs.documents = append(dbs.documents, doc)
 	}
 }
 
@@ -68,14 +72,6 @@ func (dbs *dbSuite) TearDownSuite() {
 	if _, err := os.Stat(db.DatabaseFile); err == nil {
 		if err := os.Remove(db.DatabaseFile); err != nil {
 			dbs.T().Logf("Error removing database file %s", db.DatabaseFile)
-		}
-	}
-}
-
-func (dbs *dbSuite) TestAddDocument() {
-	for _, document := range dbs.documents {
-		if err := dbs.backend.AddDocument(document); err != nil {
-			dbs.Fail("failed storing document", "id", document.GetMetadata().GetId())
 		}
 	}
 }
@@ -125,7 +121,6 @@ func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
 			slices.Sort(toIDs)
 
 			edgeType := sbom.Edge_Type_value[typedEdge.edgeType]
-
 			consolidated = append(consolidated, &sbom.Edge{
 				Type: sbom.Edge_Type(edgeType),
 				From: typedEdge.fromID,

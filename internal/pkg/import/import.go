@@ -20,11 +20,8 @@
 package imprt
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-
-	"github.com/protobom/protobom/pkg/reader"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -36,21 +33,14 @@ func Import(opts *options.ImportOptions) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	sbomReader := reader.New()
-
 	for idx := range opts.InputFiles {
 		data, err := io.ReadAll(opts.InputFiles[idx])
 		if err != nil {
 			return fmt.Errorf("failed to read from %s: %w", opts.InputFiles[idx].Name(), err)
 		}
 
-		document, err := sbomReader.ParseStream(bytes.NewReader(data))
-		if err != nil {
-			return fmt.Errorf("failed to parse %s: %w", opts.InputFiles[idx].Name(), err)
-		}
-
-		if err := backend.AddDocument(document); err != nil {
-			return fmt.Errorf("failed to store document: %w", err)
+		if _, err := backend.AddDocument(data); err != nil {
+			return fmt.Errorf("%w", err)
 		}
 	}
 

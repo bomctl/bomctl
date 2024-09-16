@@ -26,7 +26,7 @@ import (
 	"testing"
 
 	gogit "github.com/go-git/go-git/v5"
-	"github.com/protobom/protobom/pkg/reader"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
@@ -37,82 +37,76 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-var TestDataDir = filepath.Join("..", "..", "db", "testdata")
-
 type gitSuite struct {
 	suite.Suite
-	tempDir string
+	tmpDir  string
 	repo    *gogit.Repository
 	opts    *options.Options
 	backend *db.Backend
 	gc      *git.Client
-	doc     *sbom.Document
 	docs    []*sbom.Document
 }
 
 func (gs *gitSuite) SetupSuite() {
-	dir, err := os.MkdirTemp("", "testrepo")
-	if err != nil {
-		gs.T().Fatalf("failed to create temporary directory: %v", err)
+	var err error
+
+	if gs.tmpDir, err = os.MkdirTemp("", "testrepo"); err != nil {
+		gs.T().Fatalf("Failed to create temporary directory: %v", err)
 	}
 
-	gs.tempDir = dir
-
-	r, err := gogit.PlainInit(dir, false)
-	if err != nil {
-		gs.T().Fatalf("failed to initialize git repo: %v", err)
+	if gs.repo, err = gogit.PlainInit(gs.tmpDir, false); err != nil {
+		gs.T().Fatalf("Failed to initialize Git repo: %v", err)
 	}
 
-	gs.repo = r
+	repoConfig := config.NewConfig()
+	repoConfig.Author.Name = "bomctl-unit-test"
+	repoConfig.Author.Email = "bomctl-unit-test@users.noreply.github.com"
 
-	sboms, err := os.ReadDir(TestDataDir)
+	if err := gs.repo.SetConfig(repoConfig); err != nil {
+		gs.T().Fatalf("Failed to set Git repo config: %v", err)
+	}
+
+	if gs.backend, err = db.NewBackend(db.WithDatabaseFile(db.DatabaseFile)); err != nil {
+		gs.T().Fatalf("%v", err)
+	}
+
+	testdataDir := filepath.Join("..", "..", "db", "testdata")
+
+	sboms, err := os.ReadDir(testdataDir)
 	if err != nil {
 		gs.T().Fatalf("%v", err)
 	}
 
-	rdr := reader.New()
 	for sbomIdx := range sboms {
-		doc, err := rdr.ParseFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
+		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[sbomIdx].Name()))
 		if err != nil {
 			gs.T().Fatalf("%v", err)
+		}
+
+		doc, err := gs.backend.AddDocument(sbomData)
+		if err != nil {
+			gs.FailNow("failed storing document", "err", err)
 		}
 
 		gs.docs = append(gs.docs, doc)
 	}
 
-	gs.opts = options.New().
-		WithCacheDir(viper.GetString("cache_dir"))
-
-	gs.backend, err = db.NewBackend(
-		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-	)
-	if err != nil {
-		gs.T().Fatalf("%v", err)
-	}
-
-	for _, document := range gs.docs {
-		err := gs.backend.AddDocument(document)
-		if err != nil {
-			gs.Fail("failed retrieving document", "id", document.GetMetadata().GetId())
-		}
-	}
-
+	gs.opts = options.New().WithCacheDir(viper.GetString("cache_dir"))
 	gs.opts = gs.opts.WithContext(context.WithValue(context.Background(), db.BackendKey{}, gs.backend))
-
 	gs.gc = &git.Client{}
 }
 
 func (gs *gitSuite) TearDownSuite() {
-	err := os.RemoveAll(gs.tempDir)
+	err := os.RemoveAll(gs.tmpDir)
 	if err != nil {
-		gs.T().Logf("Error removing repo file %s", db.DatabaseFile)
+		gs.T().Fatalf("Error removing repo file %s", db.DatabaseFile)
 	}
 
 	gs.backend.CloseClient()
 
 	if _, err := os.Stat(db.DatabaseFile); err == nil {
 		if err := os.Remove(db.DatabaseFile); err != nil {
-			gs.T().Logf("Error removing database file %s", db.DatabaseFile)
+			gs.T().Fatalf("Error removing database file %s", db.DatabaseFile)
 		}
 	}
 }
