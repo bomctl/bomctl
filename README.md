@@ -181,7 +181,7 @@ Once this architecture is established, more complex operations can be implemente
   - Merge components and component dependencies from two or more SBOM documents
   - Flatten multiple SBOM document component dependencies into a single SBOM document
 - `redact`
-  - Redact fields by regular expressions or field name while keeping tracibility to the original document
+  - Redact fields by regular expressions or field name while keeping traceability to the original document
 - `split`
   - Split an SBOM dependency tree into multiple files based on purl type or component identifier
 - `trim`
