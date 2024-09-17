@@ -60,6 +60,18 @@ func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 		}
 	}
 
+	doc, err := saveDocument(sbomURL, sbomData, backend, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save document: %w", err)
+	}
+
+	// Fetch externally referenced BOMs
+	return doc, fetchExternalReferences(doc, backend, opts)
+}
+
+func saveDocument(sbomURL string, sbomData []byte, backend *db.Backend, opts *options.FetchOptions) (
+	*sbom.Document, error,
+) {
 	// Insert fetched document data into database.
 	doc, err := backend.AddDocument(sbomData)
 	if err != nil {
@@ -74,8 +86,17 @@ func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 		)
 	}
 
-	// Fetch externally referenced BOMs
-	return doc, fetchExternalReferences(doc, backend, opts)
+	if opts.Alias != "" {
+		if err := backend.SetAlias(doc.GetMetadata().GetId(), opts.Alias, false); err != nil {
+			opts.Logger.Warn("Alias could not be set.", "err", err)
+		}
+	}
+
+	if err := backend.AddAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
+	}
+
+	return doc, nil
 }
 
 func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
