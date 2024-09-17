@@ -163,7 +163,8 @@ Flags:
 ## Roadmap
 
 The project is focused on building an architecture that enables reading in, operating on, and reading
-out collections of SBOM files independent of format. This project requires an architecture that prioritizes the relationships between components in a SBOM document and between SBOM documents.
+out collections of SBOM files independent of format. This project requires an architecture that
+prioritizes the relationships between components in a SBOM document and between SBOM documents.
 
 - [Complete Roadmap](ROADMAP.md)
 
