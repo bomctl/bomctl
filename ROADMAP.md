@@ -51,7 +51,7 @@ Some users of `bomctl` will need SBOMs ingested into the cache outputted without
 Reasons would be:
 
 - Ability to verify signatures of SBOMs that are moved from one system to the next with `bomctl`
-- SBOMs with data not supported protobom can be preserved if the SBOM is not modified
+- SBOMs with data not supported by protobom can be preserved if the SBOM is not modified
 
 The biggest architectural decision is how should be maintain tracibility from a component to the
 SBOM it originally came from.
