@@ -39,16 +39,15 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 
 	backend.Logger.Info("Merging documents", "documentIDs", documentIDs)
 
-	documents, err := backend.GetDocumentsByID(documentIDs...)
+	// Make document list a map so it can sort by the ids provided
+	documentMap, tags, err := getSourceData(backend, documentIDs)
 	if err != nil {
-		return "", fmt.Errorf("%w", err)
+		return "", fmt.Errorf("failed to get sorce data: %w", err)
 	}
 
-	// Make document list a map so it can sort by the ids provided
-	documentMap := make(map[string]*sbom.Document)
-	for _, doc := range documents {
-		documentMap[doc.GetMetadata().GetId()] = doc
-	}
+	tags = append(tags, opts.Tags...)
+	slices.Sort(tags)
+	tags = slices.Compact(tags)
 
 	merged, err := performTopLevelMerge(documentIDs, documentMap, opts)
 	if err != nil {
@@ -65,7 +64,44 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 		return "", fmt.Errorf("%w", err)
 	}
 
+	if opts.Alias != "" {
+		if err := backend.SetAlias(merged.GetMetadata().GetId(), opts.Alias, false); err != nil {
+			opts.Logger.Warn("Alias could not be set.", "err", err)
+		}
+	}
+
+	if err := backend.AddAnnotations(merged.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
+	}
+
 	return merged.GetMetadata().GetId(), err
+}
+
+func getSourceData(backend *db.Backend, documentIDs []string) (documentMap map[string]*sbom.Document, tags []string,
+	err error,
+) {
+	documents, err := backend.GetDocumentsByIDOrAlias(documentIDs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w", err)
+	}
+
+	documentMap = make(map[string]*sbom.Document)
+	tags = []string{}
+
+	for idx := range documents {
+		documentID := documents[idx].GetMetadata().GetId()
+		documentIDs[idx] = documentID
+		documentMap[documentID] = documents[idx]
+
+		documentTags, err := backend.GetDocumentTags(documentID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get sorce document tags: %w", err)
+		}
+
+		tags = append(tags, documentTags...)
+	}
+
+	return documentMap, tags, nil
 }
 
 func performTopLevelMerge(sbomIDs []string, documentMap map[string]*sbom.Document,

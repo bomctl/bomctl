@@ -232,3 +232,6 @@ linters-settings:
 
   testifylint:
     enable-all: true
+
+  varnamelen:
+    ignore-names: [id]

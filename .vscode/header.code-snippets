@@ -5,7 +5,7 @@
     "body": [
       "$LINE_COMMENT -----------------------------------------------------------------------------",
       "$LINE_COMMENT SPDX-FileCopyrightText: Copyright © ${CURRENT_YEAR:<current year>} bomctl a Series of LF Projects, LLC",
-      "$LINE_COMMENT SPDX-FileName: ${RELATIVE_FILEPATH:<file name>}",
+      "$LINE_COMMENT SPDX-FileName: ${RELATIVE_FILEPATH/(\\\\)/\\//g}",
       "$LINE_COMMENT SPDX-FileType: SOURCE",
       "$LINE_COMMENT SPDX-License-Identifier: Apache-2.0",
       "$LINE_COMMENT -----------------------------------------------------------------------------",
