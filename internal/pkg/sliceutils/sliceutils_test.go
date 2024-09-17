@@ -257,7 +257,7 @@ func (ss *sliceutilsSuite) TestNext() {
 	}
 }
 
-func TestStoreSuite(t *testing.T) {
+func TestSliceUtilsSuite(t *testing.T) {
 	t.Parallel()
 	suite.Run(t, new(sliceutilsSuite))
 }
