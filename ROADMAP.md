@@ -60,7 +60,7 @@ SBOM it originally came from.
 
 One of the big usecases for `bomctl` is the ability to fetch and push SBOMs from different SBOM
 registries. Many will be COTS or SaaS services and we'll need to simplify interactions 
-with these.
+with them.
 
 For example, If SBOMs have external references that are serial numbers, can we search a SaaS
 SBOM registry to recursively fetch SBOMs (instead of using URLs).
