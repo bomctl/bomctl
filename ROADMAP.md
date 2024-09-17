@@ -59,7 +59,7 @@ SBOM it originally came from.
 ### `fetch` and `push` Integration with Commercial SBOM Registries (3 Months)
 
 One of the big usecases for `bomctl` is the ability to fetch and push SBOMs from different SBOM
-registries. Many will be COTS or SaaS services and we'll need to simplify interactions 
+registries. Many will be COTS or SaaS services and we'll need to simplify interactions
 with them.
 
 For example, If SBOMs have external references that are serial numbers, can we search a SaaS
