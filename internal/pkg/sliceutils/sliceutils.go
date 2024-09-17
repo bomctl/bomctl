@@ -113,7 +113,7 @@ func Extract[T any, E any](items []T, cond func(T) E) []E {
 }
 
 // Filter returns a slice of items from the original slice that satisfy the specified condition.
-// If cond is nil, checks whether all items are a value other than zero value (truthy).
+// If cond is nil, items equal to the underlying type's zero value (falsy) are filtered out.
 //
 // # Example:
 //
