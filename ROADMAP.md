@@ -53,7 +53,7 @@ Reasons would be:
 - Ability to verify signatures of SBOMs that are moved from one system to the next with `bomctl`
 - SBOMs with data not supported by protobom can be preserved if the SBOM is not modified
 
-The biggest architectural decision is how should be maintain tracibility from a component to the
+The biggest architectural decision is how should we maintain traceability from a component to the
 SBOM it originally came from.
 
 ### `fetch` and `push` Integration with Commercial SBOM Registries (3 Months)
