@@ -59,7 +59,7 @@ func Push(sbomID, pushURL string, opts *options.PushOptions) error {
 	}
 
 	// Finalize and push.
-	if err := pushClient.Push(sbomID, pushURL, opts); err != nil {
+	if err := pushClient.Push(pushURL, opts); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 

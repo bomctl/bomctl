@@ -38,7 +38,7 @@ type Client interface {
 	Name() string
 	Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error)
 	PreparePush(pushURL string, opts *options.PushOptions) error
-	Push(id, pushURL string, opts *options.PushOptions) error
+	Push(pushURL string, opts *options.PushOptions) error
 }
 
 func New(sbomURL string) (Client, error) {

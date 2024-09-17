@@ -20,16 +20,30 @@
 package oci
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
 	"regexp"
+
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/v2/content/memory"
+	"oras.land/oras-go/v2/registry/remote"
+	orasauth "oras.land/oras-go/v2/registry/remote/auth"
+	"oras.land/oras-go/v2/registry/remote/retry"
 
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
 
-type Client struct{}
+type Client struct {
+	ctx         context.Context
+	store       *memory.Store
+	repo        *remote.Repository
+	descriptors []ocispec.Descriptor
+}
 
 func (*Client) Name() string {
 	return "OCI"
@@ -89,4 +103,37 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		Tag:      results["tag"],
 		Digest:   results["digest"],
 	}
+}
+
+func (client *Client) createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (err error) {
+	client.ctx = context.Background()
+	client.store = memory.New()
+
+	repoPath := path.Join(parsedURL.Hostname, parsedURL.Path)
+
+	if client.repo, err = remote.NewRepository(repoPath); err != nil {
+		return fmt.Errorf("creating OCI registry repository %s: %w", repoPath, err)
+	}
+
+	if auth != nil {
+		client.repo.Client = &orasauth.Client{
+			Client: retry.DefaultClient,
+			Cache:  orasauth.DefaultCache,
+			Credential: orasauth.StaticCredential(parsedURL.Hostname, orasauth.Credential{
+				Username: auth.Username,
+				Password: auth.Password,
+			}),
+		}
+	}
+
+	return nil
+}
+
+func descriptorJSON(obj *ocispec.Descriptor) string {
+	output, err := json.MarshalIndent(obj, "", "  ")
+	if err != nil {
+		return ""
+	}
+
+	return string(output)
 }

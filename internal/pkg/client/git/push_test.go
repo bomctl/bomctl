@@ -38,7 +38,7 @@ func (gs *gitSuite) TestPush() {
 	}
 
 	gs.Require().NoError(gs.gc.AddFile(pushURL, gs.docs[0].GetMetadata().GetId(), opts))
-	gs.Require().NoError(gs.gc.Push("", pushURL, opts))
+	gs.Require().NoError(gs.gc.Push(pushURL, opts))
 }
 
 func (gs *gitSuite) TestAddFile() {

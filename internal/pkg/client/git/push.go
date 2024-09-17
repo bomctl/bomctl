@@ -83,14 +83,10 @@ func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) err
 	}
 
 	// Clone the repository into memory.
-	if err := client.cloneRepo(parsedURL, auth, opts.Options); err != nil {
-		return fmt.Errorf("cloning Git repository %s: %w", parsedURL, err)
-	}
-
-	return nil
+	return client.cloneRepo(parsedURL, auth, opts.Options)
 }
 
-func (client *Client) Push(_id, pushURL string, opts *options.PushOptions) error {
+func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	parsedURL := client.Parse(pushURL)
 	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
 
