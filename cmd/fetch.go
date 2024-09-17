@@ -61,7 +61,7 @@ func fetchCmd() *cobra.Command {
 			}
 
 			for _, url := range args {
-				if err := fetch.Fetch(url, opts); err != nil {
+				if _, err := fetch.Fetch(url, opts); err != nil {
 					opts.Logger.Fatal(err)
 				}
 			}

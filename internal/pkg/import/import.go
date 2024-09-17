@@ -46,8 +46,20 @@ func parseDocument(sbomReader *reader.Reader, inputFile *os.File) (*sbom.Documen
 	return sbomDocument, nil
 }
 
-func saveDocument(backend *db.Backend, document *sbom.Document, alias string, opts *options.ImportOptions) error {
-	if err := backend.AddDocument(document); err != nil {
+func saveDocument(backend *db.Backend, documentFile *os.File, alias string, opts *options.ImportOptions) error {
+	data, err := io.ReadAll(documentFile)
+	if err != nil {
+		return fmt.Errorf("failed to read from %s: %w", documentFile.Name(), err)
+	}
+
+	sbomReader := reader.New()
+
+	document, err := parseDocument(sbomReader, documentFile)
+	if err != nil {
+		return fmt.Errorf("failed to parse SBOM document %w", err)
+	}
+
+	if _, err := backend.AddDocument(data); err != nil {
 		return fmt.Errorf("failed to store document: %w", err)
 	}
 
@@ -70,20 +82,13 @@ func Import(opts *options.ImportOptions) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	sbomReader := reader.New()
-
 	for idx := range opts.InputFiles {
-		document, err := parseDocument(sbomReader, opts.InputFiles[idx])
-		if err != nil {
-			return fmt.Errorf("failed to read SBOM document %w", err)
-		}
-
 		alias := ""
 		if idx < len(opts.Alias) {
 			alias = opts.Alias[idx]
 		}
 
-		if err := saveDocument(backend, document, alias, opts); err != nil {
+		if err := saveDocument(backend, opts.InputFiles[idx], alias, opts); err != nil {
 			return fmt.Errorf("failed to save document: %w", err)
 		}
 	}

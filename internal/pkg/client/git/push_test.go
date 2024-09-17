@@ -61,12 +61,12 @@ func (gs *gitSuite) TestAddFile() {
 		Fragment: "test/file.sbom",
 	}
 
-	err := git.AddFile(gs.repo, path.Join(gs.tempDir, "test", "file.sbom"), &pOptions, gs.doc, parsedURL)
-	if err != nil {
-		gs.T().Logf("Error testing addFile: %s", err.Error())
-	}
+	gs.Require().NoError(
+		git.AddFile(gs.repo, path.Join(gs.tmpDir, "test", "file.sbom"), &pOptions, gs.docs[0], parsedURL),
+		"Error testing addFile",
+	)
 
-	gs.Assert().FileExists(path.Join(gs.tempDir, "test", "file.sbom"))
+	gs.Require().FileExists(path.Join(gs.tmpDir, "test", "file.sbom"))
 }
 
 func (gs *gitSuite) TestGetDocument() {

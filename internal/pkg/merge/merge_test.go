@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
@@ -45,16 +44,27 @@ type mergeSuite struct {
 }
 
 func (ms *mergeSuite) SetupSuite() {
+	backend, err := db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
+	if err != nil {
+		ms.T().Fatalf("%v", err)
+	}
+
+	ms.backend = backend
+
 	sboms, err := os.ReadDir(TestDataDir)
 	if err != nil {
 		ms.T().Fatalf("%v", err)
 	}
 
-	rdr := reader.New()
 	for sbomIdx := range sboms {
-		doc, err := rdr.ParseFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
+		sbomData, err := os.ReadFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
 		if err != nil {
 			ms.T().Fatalf("%v", err)
+		}
+
+		doc, err := ms.backend.AddDocument(sbomData)
+		if err != nil {
+			ms.FailNow("failed storing document", "err", err)
 		}
 
 		ms.docs = append(ms.docs, doc)
@@ -68,13 +78,6 @@ func (ms *mergeSuite) SetupSuite() {
 	)
 	if err != nil {
 		ms.T().Fatalf("%v", err)
-	}
-
-	for _, document := range ms.docs {
-		err := ms.backend.AddDocument(document)
-		if err != nil {
-			ms.Fail("failed retrieving document", "id", document.GetMetadata().GetId())
-		}
 	}
 
 	ms.opts = ms.opts.WithContext(context.WithValue(context.Background(), db.BackendKey{}, ms.backend))
