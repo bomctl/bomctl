@@ -41,7 +41,7 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 
 	writer := protowriter.New(protowriter.WithFormat(opts.Format))
 
-	document, err := backend.GetDocumentByID(sbomID)
+	document, err := backend.GetDocumentByIDOrAlias(sbomID)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

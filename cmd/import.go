@@ -68,5 +68,11 @@ func importCmd() *cobra.Command {
 		},
 	}
 
+	importCmd.Flags().StringArrayVar(&opts.Alias, "alias", []string{},
+		"Readable identifier(s) to apply to imported document(s) (specify multiple times for multiple documents)")
+
+	importCmd.Flags().StringArrayVar(&opts.Tags, "tag", []string{},
+		"Tag(s) to apply to all imported documents (can be specified multiple times)")
+
 	return importCmd
 }

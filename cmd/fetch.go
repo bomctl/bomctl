@@ -28,13 +28,15 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
+const fetchMinArgs int = 1
+
 func fetchCmd() *cobra.Command {
 	opts := &options.FetchOptions{}
 	outputFileName := outputFileValue("")
 
 	fetchCmd := &cobra.Command{
 		Use:   "fetch [flags] SBOM_URL...",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.MinimumNArgs(fetchMinArgs),
 		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -68,6 +70,9 @@ func fetchCmd() *cobra.Command {
 
 	fetchCmd.Flags().VarP(&outputFileName, "output-file", "o", "Path to output file")
 	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
+	fetchCmd.Flags().StringVar(&opts.Alias, "alias", "", "Readable identifier to apply to document")
+	fetchCmd.Flags().StringArrayVar(&opts.Tags, "tag", []string{},
+		"Tag(s) to apply to document (can be specified multiple times)")
 
 	return fetchCmd
 }

@@ -27,16 +27,22 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
+
+	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 const (
 	columnIdxID = iota
+	columnIdxAlias
 	columnIdxVersion
 	columnIdxNumNodes
 
-	columnWidthID       = 50
-	columnWidthVersion  = 10
-	columnWidthNumNodes = 10
+	columnWidthID       = 47
+	columnWidthAlias    = 12
+	columnWidthVersion  = 9
+	columnWidthNumNodes = 9
+
+	cellSideCount = 2
 
 	paddingHorizontal = 1
 	paddingVertical   = 0
@@ -46,6 +52,8 @@ const (
 )
 
 func listCmd() *cobra.Command {
+	tags := []string{}
+
 	listCmd := &cobra.Command{
 		Use:     "list [flags] SBOM_ID...",
 		Aliases: []string{"ls"},
@@ -57,18 +65,25 @@ func listCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocumentsByID(args...)
+			documents, err := backend.GetDocumentsByIDOrAlias(args...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
+			if len(tags) > 0 {
+				documents, err = backend.FilterDocumentsByTag(documents, tags...)
+				if err != nil {
+					backend.Logger.Fatalf("failed to get documents: %v", err)
+				}
+			}
+
 			rows := [][]string{}
 			for _, document := range documents {
-				rows = append(rows, getRow(document))
+				rows = append(rows, getRow(document, backend))
 			}
 
 			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
-				Headers("ID", "Version", "# Nodes").
+				Headers("ID", "Alias", "Version", "# Nodes").
 				Rows(rows...).
 				BorderTop(false).
 				BorderBottom(false).
@@ -81,6 +96,9 @@ func listCmd() *cobra.Command {
 		},
 	}
 
+	listCmd.Flags().StringArrayVar(&tags, "tag", []string{},
+		"Tag(s) used to filter documents (can be specified multiple times)")
+
 	return listCmd
 }
 
@@ -91,6 +109,12 @@ func styleFunc(row, col int) lipgloss.Style {
 	switch col {
 	case columnIdxID:
 		width = columnWidthID
+
+		if row != rowHeaderIdx {
+			align = lipgloss.Left
+		}
+	case columnIdxAlias:
+		width = columnWidthAlias
 
 		if row != rowHeaderIdx {
 			align = lipgloss.Left
@@ -108,11 +132,22 @@ func styleFunc(row, col int) lipgloss.Style {
 		MaxHeight(rowMaxHeight)
 }
 
-func getRow(doc *sbom.Document) []string {
+func getRow(doc *sbom.Document, backend *db.Backend) []string {
 	id := doc.GetMetadata().GetName()
 	if id == "" {
 		id = doc.GetMetadata().GetId()
 	}
 
-	return []string{id, doc.GetMetadata().GetVersion(), fmt.Sprint(len(doc.GetNodeList().GetNodes()))}
+	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation)
+	if err != nil {
+		backend.Logger.Fatalf("failed to get alias: %v", err)
+	}
+
+	aliasMaxDisplayLength := columnWidthAlias - (paddingHorizontal * cellSideCount)
+
+	if len(alias) > aliasMaxDisplayLength {
+		alias = alias[:aliasMaxDisplayLength-1] + "…"
+	}
+
+	return []string{id, alias, doc.GetMetadata().GetVersion(), fmt.Sprint(len(doc.GetNodeList().GetNodes()))}
 }

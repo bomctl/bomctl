@@ -117,6 +117,8 @@ func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
 	}
 
 	for typedEdge, toIDs := range edgeMap {
+		slices.Sort(toIDs)
+
 		if len(toIDs) > 0 {
 			slices.Sort(toIDs)
 
