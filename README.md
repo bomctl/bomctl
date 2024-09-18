@@ -157,7 +157,7 @@ bomctl import [flags] { - | FILE...}
 
 Flags:
       --alias stringArray   Readable identifier(s) to apply to imported document(s) (specify multiple times for multiple documents)
-  -h, --help   help for import
+  -h, --help                help for import
       --tag stringArray     Tag(s) to apply to all imported documents (can be specified multiple times)
 ```
 
@@ -172,7 +172,7 @@ Aliases:
   list, ls
 
 Flags:
-  -h, --help   help for list
+  -h, --help              help for list
       --tag stringArray   Tag(s) used to filter documents (can be specified multiple times)
 ```
 
@@ -219,7 +219,7 @@ Subcommands:
   remove      Remove specified tags from a document
 
 Flags:
-  -h, --help   help for tag
+  -h, --help  help for tag
 ```
 
 ## Roadmap
