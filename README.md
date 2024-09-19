@@ -225,26 +225,29 @@ Flags:
 ## Roadmap
 
 The project is focused on building an architecture that enables reading in, operating on, and reading
-out collections of SBOM files independent of format. This project requires an architecture that prioritizes the relationships between components in a SBOM document and between SBOM documents.
+out collections of SBOM files independent of format. This project requires an architecture that
+prioritizes the relationships between components in a SBOM document and between SBOM documents.
+
+- [Complete Roadmap](ROADMAP.md)
 
 Once this architecture is established, more complex operations can be implemented. This operations include:
 
-- `Diff`
+- `diff`
   - Generating diffs between components and component dependencies
   - Generating diffs of component properties
   - Creating diffs in machine readable and human readable formats
-- `Enrich`
+- `enrich`
   - Use the [Transparency Exchange API](https://github.com/CycloneDX/transparency-exchange-api) to find enrich sbom components with additional data.
   - Interface with [GUAC](https://guac.sh/)
-- `Merge`
+- `merge`
   - Merge fields from similar components in two or more SBOM documents
   - Merge components and component dependencies from two or more SBOM documents
   - Flatten multiple SBOM document component dependencies into a single SBOM document
-- `Redact`
-  - Redact fields by regular expressions or field name while keeping tracibility to the original document
-- `Split`
+- `redact`
+  - Redact fields by regular expressions or field name while keeping traceability to the original document
+- `split`
   - Split an SBOM dependency tree into multiple files based on purl type or component identifier
-- `Trim`
+- `trim`
   - Trim an SBOM dependency tree based on purl type or component identifier
 - __Your suggestions too!__
 

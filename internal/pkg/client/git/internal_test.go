@@ -19,8 +19,14 @@
 
 package git
 
-var (
-	CloneRepo   = cloneRepo
-	AddFile     = addFile
-	GetDocument = getDocument
-)
+import "github.com/go-git/go-git/v5"
+
+var GetDocument = getDocument
+
+func (client *Client) Repo() *git.Repository {
+	return client.repo
+}
+
+func (client *Client) Worktree() *git.Worktree {
+	return client.worktree
+}
