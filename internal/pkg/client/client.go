@@ -34,9 +34,11 @@ var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid 
 
 type Client interface {
 	url.Parser
+	AddFile(pushURL, id string, opts *options.PushOptions) error
 	Name() string
-	Fetch(string, *options.FetchOptions) ([]byte, error)
-	Push(string, string, *options.PushOptions) error
+	Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error)
+	PreparePush(pushURL string, opts *options.PushOptions) error
+	Push(id, pushURL string, opts *options.PushOptions) error
 }
 
 func New(sbomURL string) (Client, error) {
