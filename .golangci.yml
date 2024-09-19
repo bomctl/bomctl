@@ -185,6 +185,10 @@ linters-settings:
       - unnamedResult
       - unnecessaryBlock
 
+  gosec:
+    excludes:
+      - G504 # Blocklisted import net/http/cgi: Go versions < 1.6.3 are vulnerable to Httpoxy attack: (CVE-2016-5386)
+
   nolintlint:
     allow-unused: false
     require-specific: true

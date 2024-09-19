@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/http/fetch_test.go
+// SPDX-FileName: internal/pkg/client/http/client_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -22,16 +22,18 @@ package http_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func TestFetcher_Parse(t *testing.T) {
-	t.Parallel()
+type httpClientSuite struct {
+	suite.Suite
+}
 
-	fetcher := &http.Client{}
+func (hcs *httpClientSuite) TestClient_Parse() {
+	client := &http.Client{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -59,12 +61,14 @@ func TestFetcher_Parse(t *testing.T) {
 			expected: nil,
 		},
 	} {
-		t.Run(data.name, func(t *testing.T) {
-			t.Parallel()
-
-			actual := fetcher.Parse(data.url)
-
-			assert.Equal(t, data.expected, actual, data.url)
+		hcs.Run(data.name, func() {
+			actual := client.Parse(data.url)
+			hcs.Require().Equal(data.expected, actual, data.url)
 		})
 	}
+}
+
+func TestHTTPClientSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(httpClientSuite))
 }

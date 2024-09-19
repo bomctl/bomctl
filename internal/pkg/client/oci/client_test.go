@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/oci/fetch_test.go
+// SPDX-FileName: internal/pkg/client/oci/client_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ package oci_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/url"
@@ -30,10 +30,12 @@ import (
 
 const testSHA string = "sha256:abcdef0123456789ABCDEF0123456789abcdef0123456789ABCDEF0123456789"
 
-func TestFetcher_Parse(t *testing.T) {
-	t.Parallel()
+type ociClientSuite struct {
+	suite.Suite
+}
 
-	fetcher := &oci.Client{}
+func (ocs *ociClientSuite) TestClient_Parse() {
+	client := &oci.Client{}
 
 	for _, data := range []struct {
 		expected *url.ParsedURL
@@ -151,12 +153,14 @@ func TestFetcher_Parse(t *testing.T) {
 			expected: nil,
 		},
 	} {
-		t.Run(data.name, func(t *testing.T) {
-			t.Parallel()
-
-			actual := fetcher.Parse(data.url)
-
-			assert.Equal(t, data.expected, actual, data.url)
+		ocs.Run(data.name, func() {
+			actual := client.Parse(data.url)
+			ocs.Require().Equal(data.expected, actual, data.url)
 		})
 	}
+}
+
+func TestOCIClientSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(ociClientSuite))
 }

@@ -60,43 +60,21 @@ func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 		}
 	}
 
-	doc, err := saveDocument(sbomURL, sbomData, backend, opts)
+	document, err := saveDocument(sbomData, backend, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save document: %w", err)
 	}
 
-	// Fetch externally referenced BOMs
-	return doc, fetchExternalReferences(doc, backend, opts)
-}
-
-func saveDocument(sbomURL string, sbomData []byte, backend *db.Backend, opts *options.FetchOptions) (
-	*sbom.Document, error,
-) {
-	// Insert fetched document data into database.
-	doc, err := backend.AddDocument(sbomData)
-	if err != nil {
-		return nil, fmt.Errorf("adding document: %w", err)
-	}
-
 	if err := backend.SetUniqueAnnotation(
-		doc.GetMetadata().GetId(), db.SourceURLAnnotation, sbomURL,
+		document.GetMetadata().GetId(), db.SourceURLAnnotation, sbomURL,
 	); err != nil {
-		return nil, fmt.Errorf(
-			"applying unique annotation %s to %s: %w", db.SourceURLAnnotation, doc.GetMetadata().GetId(), err,
+		return nil, fmt.Errorf("applying unique annotation %s to %s: %w",
+			db.SourceURLAnnotation, document.GetMetadata().GetId(), err,
 		)
 	}
 
-	if opts.Alias != "" {
-		if err := backend.SetAlias(doc.GetMetadata().GetId(), opts.Alias, false); err != nil {
-			opts.Logger.Warn("Alias could not be set.", "err", err)
-		}
-	}
-
-	if err := backend.AddAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
-		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
-	}
-
-	return doc, nil
+	// Fetch externally referenced BOMs
+	return document, fetchExternalReferences(document, backend, opts)
 }
 
 func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
@@ -156,4 +134,25 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 	}
 
 	return refOutput, nil
+}
+
+func saveDocument(data []byte, backend *db.Backend, opts *options.FetchOptions) (*sbom.Document, error) {
+	// Insert fetched document data into database.
+	document, err := backend.AddDocument(data)
+	if err != nil {
+		return nil, fmt.Errorf("adding document: %w", err)
+	}
+
+	if opts.Alias != "" {
+		if err := backend.SetAlias(document.GetMetadata().GetId(), opts.Alias, false); err != nil {
+			opts.Logger.Warn("Alias could not be set.", "err", err)
+		}
+	}
+
+	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
+	}
+
+	// Fetch externally referenced BOMs
+	return document, nil
 }

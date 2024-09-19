@@ -38,13 +38,12 @@ import (
 )
 
 const (
+	AliasAnnotation        string = "bomctl_annotation_alias"
 	SourceDataAnnotation   string = "bomctl_annotation_source_data"
-	SourceHashAnnotation   string = "bomctl_annotation_source_hash"
 	SourceFormatAnnotation string = "bomctl_annotation_source_format"
+	SourceHashAnnotation   string = "bomctl_annotation_source_hash"
 	SourceURLAnnotation    string = "bomctl_annotation_source_url"
-
-	AliasAnnotation string = "bomctl_annotation_alias"
-	TagAnnotation   string = "bomctl_annotation_tag"
+	TagAnnotation          string = "bomctl_annotation_tag"
 
 	DatabaseFile string = "bomctl.db"
 
