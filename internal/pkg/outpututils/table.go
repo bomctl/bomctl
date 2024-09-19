@@ -75,6 +75,10 @@ type (
 	}
 )
 
+func (t *Table) AddRow(doc *sbom.Document, backend *db.Backend) {
+	t.rows = append(t.rows, newRow(doc, backend))
+}
+
 func (t *Table) String() string {
 	tooWide := t.determineColumnWidths()
 
@@ -85,76 +89,8 @@ func (t *Table) String() string {
 	return t.formatTable()
 }
 
-func NewTable() *Table {
-	cols := []columnDefinition{}
-
-	for c := range totalColumnCount {
-		name := ""
-		width := 0
-
-		switch c {
-		case columnIdxID:
-			name = columnNameID
-			width = columnWidthID
-		case columnIdxAlias:
-			name = columnNameAlias
-			width = columnWidthAlias
-		case columnIdxVersion:
-			name = columnNameVersion
-			width = columnWidthVersion
-		case columnIdxNumNodes:
-			name = columnNameNumNodes
-			width = columnWidthNumNodes
-		}
-
-		cols = append(cols, columnDefinition{
-			name:  name,
-			width: width,
-		})
-	}
-
-	return &Table{
-		columns: cols,
-		rows:    []rowData{},
-	}
-}
-
-func (t *Table) AddRow(doc *sbom.Document, backend *db.Backend) {
-	t.rows = append(t.rows, getRow(doc, backend))
-}
-
-func (t *Table) getHeaders() []string {
-	headers := []string{}
-
-	for c := range totalColumnCount {
-		headers = append(headers, t.columns[c].name)
-	}
-
-	return headers
-}
-
-func (t *Table) getRows() [][]string {
-	rows := [][]string{}
-
-	for _, row := range t.rows {
-		rows = append(rows, []string{row.id, row.alias, row.version, row.numNodes})
-	}
-
-	return rows
-}
-
-func (t *Table) getTableWidth() int {
-	totalWidth := totalColumnCount * (paddingHorizontal * cellSideCount)
-
-	for c := range totalColumnCount {
-		totalWidth += t.columns[c].width
-	}
-
-	return totalWidth
-}
-
 func (t *Table) determineColumnWidths() bool {
-	terminalWidth := getTermInfo()
+	terminalWidth := termInfo()
 	padding := paddingHorizontal * cellSideCount
 
 	for _, row := range t.rows {
@@ -232,18 +168,71 @@ func (t *Table) formatTable() string {
 		Render()
 }
 
-func getTermInfo() int {
-	fd := int(os.Stdout.Fd())
+func (t *Table) getHeaders() []string {
+	headers := []string{}
 
-	width, _, err := term.GetSize(fd)
-	if err != nil {
-		return 0
+	for c := range totalColumnCount {
+		headers = append(headers, t.columns[c].name)
 	}
 
-	return width
+	return headers
 }
 
-func getRow(doc *sbom.Document, backend *db.Backend) rowData {
+func (t *Table) getRows() [][]string {
+	rows := [][]string{}
+
+	for _, row := range t.rows {
+		rows = append(rows, []string{row.id, row.alias, row.version, row.numNodes})
+	}
+
+	return rows
+}
+
+func (t *Table) getTableWidth() int {
+	totalWidth := totalColumnCount * (paddingHorizontal * cellSideCount)
+
+	for c := range totalColumnCount {
+		totalWidth += t.columns[c].width
+	}
+
+	return totalWidth
+}
+
+func NewTable() *Table {
+	cols := []columnDefinition{}
+
+	for c := range totalColumnCount {
+		name := ""
+		width := 0
+
+		switch c {
+		case columnIdxID:
+			name = columnNameID
+			width = columnWidthID
+		case columnIdxAlias:
+			name = columnNameAlias
+			width = columnWidthAlias
+		case columnIdxVersion:
+			name = columnNameVersion
+			width = columnWidthVersion
+		case columnIdxNumNodes:
+			name = columnNameNumNodes
+			width = columnWidthNumNodes
+		}
+
+		cols = append(cols, columnDefinition{
+			name:  name,
+			width: width,
+		})
+	}
+
+	return &Table{
+		columns: cols,
+		rows:    []rowData{},
+	}
+}
+
+func newRow(doc *sbom.Document, backend *db.Backend) rowData {
 	id := doc.GetMetadata().GetId()
 
 	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation)
@@ -257,4 +246,15 @@ func getRow(doc *sbom.Document, backend *db.Backend) rowData {
 		version:  doc.GetMetadata().GetVersion(),
 		numNodes: fmt.Sprint(len(doc.GetNodeList().GetNodes())),
 	}
+}
+
+func termInfo() int {
+	fd := int(os.Stdout.Fd())
+
+	width, _, err := term.GetSize(fd)
+	if err != nil {
+		return 0
+	}
+
+	return width
 }
