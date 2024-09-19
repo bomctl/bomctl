@@ -80,6 +80,10 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
 	parsedURL := client.Parse(pushURL)
+	if parsedURL == nil {
+		return fmt.Errorf("%w", url.ErrParsingURL)
+	}
+
 	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
 
 	if opts.UseNetRC {

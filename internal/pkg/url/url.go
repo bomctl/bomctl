@@ -20,6 +20,7 @@
 package url
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -46,6 +47,8 @@ type (
 		RegExp() *regexp.Regexp
 	}
 )
+
+var ErrParsingURL = errors.New("failed to parse URL")
 
 func (url *ParsedURL) String() string {
 	var urlString, pathSep string

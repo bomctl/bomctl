@@ -105,7 +105,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func (client *Client) createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (err error) {
+func (client *Client) createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (err error) { //nolint:revive
 	client.ctx = context.Background()
 	client.store = memory.New()
 
