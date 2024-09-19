@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/format/table.go
+// SPDX-FileName: internal/pkg/outpututils/table.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
