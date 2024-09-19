@@ -23,32 +23,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
-	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
 
-	"github.com/bomctl/bomctl/internal/pkg/db"
-)
-
-const (
-	columnIdxID = iota
-	columnIdxAlias
-	columnIdxVersion
-	columnIdxNumNodes
-
-	columnWidthID       = 47
-	columnWidthAlias    = 12
-	columnWidthVersion  = 9
-	columnWidthNumNodes = 9
-
-	cellSideCount = 2
-
-	paddingHorizontal = 1
-	paddingVertical   = 0
-
-	rowHeaderIdx = 0
-	rowMaxHeight = 1
+	"github.com/bomctl/bomctl/internal/pkg/outpututils"
 )
 
 func listCmd() *cobra.Command {
@@ -77,22 +54,12 @@ func listCmd() *cobra.Command {
 				}
 			}
 
-			rows := [][]string{}
+			listOutput := outpututils.NewTable()
 			for _, document := range documents {
-				rows = append(rows, getRow(document, backend))
+				listOutput.AddRow(document, backend)
 			}
 
-			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
-				Headers("ID", "Alias", "Version", "# Nodes").
-				Rows(rows...).
-				BorderTop(false).
-				BorderBottom(false).
-				BorderLeft(false).
-				BorderRight(false).
-				BorderHeader(true).
-				StyleFunc(styleFunc).
-				String(),
-			)
+			fmt.Fprintln(os.Stdout, listOutput.String())
 		},
 	}
 
@@ -100,54 +67,4 @@ func listCmd() *cobra.Command {
 		"Tag(s) used to filter documents (can be specified multiple times)")
 
 	return listCmd
-}
-
-func styleFunc(row, col int) lipgloss.Style {
-	width := 0
-	align := lipgloss.Center
-
-	switch col {
-	case columnIdxID:
-		width = columnWidthID
-
-		if row != rowHeaderIdx {
-			align = lipgloss.Left
-		}
-	case columnIdxAlias:
-		width = columnWidthAlias
-
-		if row != rowHeaderIdx {
-			align = lipgloss.Left
-		}
-	case columnIdxVersion:
-		width = columnWidthVersion
-	case columnIdxNumNodes:
-		width = columnWidthNumNodes
-	}
-
-	return lipgloss.NewStyle().
-		Padding(paddingVertical, paddingHorizontal).
-		Width(width).
-		AlignHorizontal(align).
-		MaxHeight(rowMaxHeight)
-}
-
-func getRow(doc *sbom.Document, backend *db.Backend) []string {
-	id := doc.GetMetadata().GetName()
-	if id == "" {
-		id = doc.GetMetadata().GetId()
-	}
-
-	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation)
-	if err != nil {
-		backend.Logger.Fatalf("failed to get alias: %v", err)
-	}
-
-	aliasMaxDisplayLength := columnWidthAlias - (paddingHorizontal * cellSideCount)
-
-	if len(alias) > aliasMaxDisplayLength {
-		alias = alias[:aliasMaxDisplayLength-1] + "…"
-	}
-
-	return []string{id, alias, doc.GetMetadata().GetVersion(), fmt.Sprint(len(doc.GetNodeList().GetNodes()))}
 }
