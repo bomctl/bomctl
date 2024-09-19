@@ -21,6 +21,7 @@ package outpututils
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -232,7 +233,9 @@ func (t *Table) formatTable() string {
 }
 
 func getTermInfo() int {
-	width, _, err := term.GetSize(0)
+	fd := int(os.Stdout.Fd())
+
+	width, _, err := term.GetSize(fd)
 	if err != nil {
 		return 0
 	}
