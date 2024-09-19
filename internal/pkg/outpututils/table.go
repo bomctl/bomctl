@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package format
+package outpututils
 
 import (
 	"fmt"
