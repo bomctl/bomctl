@@ -42,7 +42,7 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 		}
 	}
 
-	err := client.createRepository(parsedURL, auth)
+	err := client.createRepository(parsedURL, auth, opts.Options)
 	if err != nil {
 		return nil, err
 	}

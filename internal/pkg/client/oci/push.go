@@ -92,7 +92,7 @@ func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) err
 		}
 	}
 
-	return client.createRepository(parsedURL, auth)
+	return client.createRepository(parsedURL, auth, opts.Options)
 }
 
 func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
@@ -130,7 +130,7 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	opts.Logger.Debug("Packed manifest", "descriptor", descriptorJSON(&manifest))
 
 	if _, err := oras.Copy(client.ctx, client.store, tag, client.repo, tag, oras.DefaultCopyOptions); err != nil {
-		return fmt.Errorf("%w", err)
+		return fmt.Errorf("pushing to remote repository: %w", err)
 	}
 
 	opts.Logger.Debug("Copied manifest", "url", pushURL)

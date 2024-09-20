@@ -20,27 +20,18 @@
 package oci
 
 import (
-	"context"
-
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content/memory"
 	"oras.land/oras-go/v2/registry/remote"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 var GetDocument = getDocument
 
-func (client *Client) CreateRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) error {
-	return client.createRepository(parsedURL, auth)
-}
-
-func (client *Client) Ctx() context.Context {
-	return client.ctx
-}
-
-func (client *Client) SetCtx(ctx context.Context) {
-	client.ctx = ctx
+func (client *Client) CreateRepository(p *url.ParsedURL, a *url.BasicAuth, o *options.Options) error {
+	return client.createRepository(p, a, o)
 }
 
 func (client *Client) Descriptors() []ocispec.Descriptor {

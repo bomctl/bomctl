@@ -60,6 +60,8 @@ func (url *ParsedURL) String() string {
 	case "git", "ssh":
 		urlString += fmt.Sprintf("%s@", url.Scheme)
 		pathSep = ":"
+	default:
+		pathSep = "/"
 	}
 
 	if url.Username != "" && url.Password != "" {

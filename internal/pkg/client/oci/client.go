@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"path"
 	"regexp"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -33,6 +32,7 @@ import (
 	orasauth "oras.land/oras-go/v2/registry/remote/auth"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
@@ -105,11 +105,19 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func (client *Client) createRepository(parsedURL *url.ParsedURL, auth *url.BasicAuth) (err error) { //nolint:revive
-	client.ctx = context.Background()
+func (client *Client) createRepository( //nolint:revive
+	parsedURL *url.ParsedURL,
+	auth *url.BasicAuth,
+	opts *options.Options,
+) (err error) {
+	client.ctx = opts.Context()
 	client.store = memory.New()
 
-	repoPath := path.Join(parsedURL.Hostname, parsedURL.Path)
+	repoPath := (&url.ParsedURL{
+		Hostname: parsedURL.Hostname,
+		Port:     parsedURL.Port,
+		Path:     parsedURL.Path,
+	}).String()
 
 	if client.repo, err = remote.NewRepository(repoPath); err != nil {
 		return fmt.Errorf("creating OCI registry repository %s: %w", repoPath, err)
