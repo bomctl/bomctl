@@ -218,7 +218,7 @@ func (gps *gitPushSuite) TestClient_Push() {
 	}
 
 	gps.Require().NoError(gps.Client.AddFile(pushURL, gps.docs[0].GetMetadata().GetId(), opts))
-	gps.Require().NoError(gps.Client.Push("", pushURL, opts))
+	gps.Require().NoError(gps.Client.Push(pushURL, opts))
 }
 
 func (gps *gitPushSuite) TestGetDocument() {

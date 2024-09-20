@@ -85,7 +85,7 @@
   "go.coverOnSave": true,
   "go.coverOnSingleTest": true,
   "go.lintFlags": ["--fast"],
-  "go.lintOnSave": "file",
+  "go.lintOnSave": "workspace",
   "go.lintTool": "golangci-lint",
   "go.testFlags": ["-race", "-covermode=atomic"],
 

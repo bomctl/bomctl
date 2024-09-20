@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/http/push.go
+// SPDX-FileName: internal/pkg/client/oci/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,18 +17,31 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package http
+package oci
 
-import "github.com/bomctl/bomctl/internal/pkg/options"
+import (
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/v2/content/memory"
+	"oras.land/oras-go/v2/registry/remote"
 
-func (*Client) AddFile(_name, _id string, _opts *options.PushOptions) error {
-	return nil
+	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/url"
+)
+
+var GetDocument = getDocument
+
+func (client *Client) CreateRepository(p *url.ParsedURL, a *url.BasicAuth, o *options.Options) error {
+	return client.createRepository(p, a, o)
 }
 
-func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
-	return nil
+func (client *Client) Descriptors() []ocispec.Descriptor {
+	return client.descriptors
 }
 
-func (*Client) Push(_pushURL string, _opts *options.PushOptions) error {
-	return nil
+func (client *Client) Repo() *remote.Repository {
+	return client.repo
+}
+
+func (client *Client) Store() *memory.Store {
+	return client.store
 }

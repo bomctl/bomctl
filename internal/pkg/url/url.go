@@ -20,6 +20,7 @@
 package url
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -47,6 +48,8 @@ type (
 	}
 )
 
+var ErrParsingURL = errors.New("failed to parse URL")
+
 func (url *ParsedURL) String() string {
 	var urlString, pathSep string
 
@@ -57,6 +60,8 @@ func (url *ParsedURL) String() string {
 	case "git", "ssh":
 		urlString += fmt.Sprintf("%s@", url.Scheme)
 		pathSep = ":"
+	default:
+		pathSep = "/"
 	}
 
 	if url.Username != "" && url.Password != "" {
