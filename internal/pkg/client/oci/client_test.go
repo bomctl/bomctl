@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
 const testSHA string = "sha256:abcdef0123456789ABCDEF0123456789abcdef0123456789ABCDEF0123456789"
@@ -38,14 +38,14 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 	client := &oci.Client{}
 
 	for _, data := range []struct {
-		expected *url.ParsedURL
+		expected *netutil.URL
 		name     string
 		url      string
 	}{
 		{
 			name: "oci scheme",
 			url:  "oci://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -55,7 +55,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "oci-archive scheme",
 			url:  "oci-archive://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -65,7 +65,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "docker scheme",
 			url:  "docker://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -75,7 +75,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "docker-archive scheme",
 			url:  "docker-archive://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -85,7 +85,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "no scheme",
 			url:  "registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -95,7 +95,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "oci scheme with username, port, tag",
 			url:  "oci://username@registry.acme.com:12345/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Hostname: "registry.acme.com",
@@ -107,7 +107,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "oci scheme with username, password, port, tag",
 			url:  "oci://username:password@registry.acme.com:12345/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Password: "password",
@@ -120,7 +120,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "oci scheme with username, port, digest",
 			url:  "oci://username@registry.acme.com:12345/example/image@" + testSHA,
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Hostname: "registry.acme.com",
@@ -132,7 +132,7 @@ func (ocs *ociClientSuite) TestClient_Parse() {
 		{
 			name: "oci scheme with username, password, port, digest",
 			url:  "oci://username:password@registry.acme.com:12345/example/image@" + testSHA,
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Password: "password",

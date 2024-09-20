@@ -28,8 +28,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/storage/memory"
 
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 type Client struct {
@@ -54,7 +54,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *url.ParsedURL {
+func (client *Client) Parse(rawURL string) *netutil.URL {
 	results := map[string]string{}
 	pattern := client.RegExp()
 	match := pattern.FindStringSubmatch(rawURL)
@@ -74,7 +74,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		}
 	}
 
-	return &url.ParsedURL{
+	return &netutil.URL{
 		Scheme:   results["scheme"],
 		Username: results["username"],
 		Password: results["password"],
@@ -87,22 +87,22 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 	}
 }
 
-func (client *Client) cloneRepo(parsedURL *url.ParsedURL, auth *url.BasicAuth, opts *options.Options) (err error) {
-	client.basePath = parsedURL.Fragment
+func (client *Client) cloneRepo(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
+	client.basePath = url.Fragment
 
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
-	baseURL := &url.ParsedURL{
-		Scheme:   parsedURL.Scheme,
-		Hostname: parsedURL.Hostname,
-		Path:     parsedURL.Path,
-		Port:     parsedURL.Port,
+	baseURL := &netutil.URL{
+		Scheme:   url.Scheme,
+		Hostname: url.Hostname,
+		Path:     url.Path,
+		Port:     url.Port,
 	}
 
 	cloneOpts := &git.CloneOptions{
 		URL:           baseURL.String(),
 		Auth:          auth,
 		RemoteName:    git.DefaultRemoteName,
-		ReferenceName: plumbing.NewBranchReferenceName(parsedURL.GitRef),
+		ReferenceName: plumbing.NewBranchReferenceName(url.GitRef),
 		SingleBranch:  true,
 		Depth:         1,
 	}
