@@ -25,7 +25,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bomctl/bomctl/internal/pkg/outpututils"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
 func listCmd() *cobra.Command {
@@ -54,7 +54,7 @@ func listCmd() *cobra.Command {
 				}
 			}
 
-			listOutput := outpututils.NewTable()
+			listOutput := outpututil.NewTable()
 			for _, document := range documents {
 				listOutput.AddRow(document, backend)
 			}

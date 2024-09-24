@@ -28,28 +28,28 @@ import (
 	oras "oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
-	parsedURL := client.Parse(fetchURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	url := client.Parse(fetchURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return nil, fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
 
-	err := client.createRepository(parsedURL, auth, opts.Options)
+	err := client.createRepository(url, auth, opts.Options)
 	if err != nil {
 		return nil, err
 	}
 
-	ref := parsedURL.Tag
+	ref := url.Tag
 	if ref == "" {
-		ref = parsedURL.Digest
+		ref = url.Digest
 	}
 
 	copyOpts := oras.CopyOptions{CopyGraphOptions: oras.CopyGraphOptions{FindSuccessors: nil}}

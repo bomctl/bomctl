@@ -34,8 +34,8 @@ import (
 	oras "oras.land/oras-go/v2"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 type ociClientWriter struct {
@@ -64,8 +64,8 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 	}
 
 	// Add annotation to save file name.
-	if parsedURL := client.Parse(pushURL); parsedURL != nil {
-		sbomDescriptor.Annotations = map[string]string{"org.opencontainers.image.title": path.Base(parsedURL.Path)}
+	if url := client.Parse(pushURL); url != nil {
+		sbomDescriptor.Annotations = map[string]string{"org.opencontainers.image.title": path.Base(url.Path)}
 	}
 
 	// Push SBOM descriptor blob to memory store.
@@ -79,20 +79,20 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 }
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
-	parsedURL := client.Parse(pushURL)
-	if parsedURL == nil {
-		return fmt.Errorf("%w", url.ErrParsingURL)
+	url := client.Parse(pushURL)
+	if url == nil {
+		return fmt.Errorf("%w", netutil.ErrParsingURL)
 	}
 
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return fmt.Errorf("setting .netrc auth: %w", err)
 		}
 	}
 
-	return client.createRepository(parsedURL, auth, opts.Options)
+	return client.createRepository(url, auth, opts.Options)
 }
 
 func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
@@ -114,8 +114,8 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	}
 
 	tag := ""
-	if parsedURL := client.Parse(pushURL); parsedURL != nil {
-		tag = parsedURL.Tag
+	if url := client.Parse(pushURL); url != nil {
+		tag = url.Tag
 		if tag == "" {
 			tag = "latest"
 		}
