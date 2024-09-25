@@ -8,11 +8,13 @@ require (
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/google/uuid v1.6.0
+	github.com/hashicorp/go-version v1.7.0
 	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/protobom/protobom v0.4.3
 	github.com/protobom/storage v0.1.5
+	github.com/rogpeppe/go-internal v1.12.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0

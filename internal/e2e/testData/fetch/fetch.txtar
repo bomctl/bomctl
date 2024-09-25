@@ -1,0 +1,20 @@
+# fetch help
+exec bomctl fetch -h
+! stderr .
+
+# fetch no input
+! exec bomctl fetch --cache-dir $TMPDIR
+stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
+
+# fetch linked file
+[net] exec bomctl fetch --cache-dir $TMPDIR -o test.cdx.json https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+cmp stderr fetched_linked.txt
+! stdout .
+check_files $WORK test.cdx.json test-1.json
+
+-- fetch_no_input.txt --
+Error: requires at least 1 arg(s), only received 0
+
+-- fetched_linked.txt --
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json

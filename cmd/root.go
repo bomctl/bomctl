@@ -172,6 +172,16 @@ func rootCmd() *cobra.Command {
 	return rootCmd
 }
 
-func Execute() {
-	cobra.CheckErr(rootCmd().Execute())
+// func Execute() {
+// 	cobra.CheckErr(rootCmd().Execute())
+// }
+
+// control your exit status with Execute, by default in cmd/root.go:.
+func Execute() int {
+	if err := rootCmd().Execute(); err != nil {
+		// log it, then
+		return 1
+	}
+
+	return 0
 }
