@@ -1,0 +1,11 @@
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : 
+Version : 1
+# Nodes : 3
+
+ID      : https://spdx.org/spdxdocs/apko/#DOCUMENT
+Alias   : 
+Version : 0
+# Nodes : 69
+
