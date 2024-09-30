@@ -32,6 +32,7 @@ permissions:
 
 jobs:
   check-title:
+    if: ${{ !startsWith(github.event.pull_request.title, ':dependabot:') }}
     runs-on: ubuntu-latest
 
     steps:
