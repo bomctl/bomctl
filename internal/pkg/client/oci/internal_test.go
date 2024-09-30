@@ -24,14 +24,14 @@ import (
 	"oras.land/oras-go/v2/content/memory"
 	"oras.land/oras-go/v2/registry/remote"
 
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 var GetDocument = getDocument
 
-func (client *Client) CreateRepository(p *url.ParsedURL, a *url.BasicAuth, o *options.Options) error {
-	return client.createRepository(p, a, o)
+func (client *Client) CreateRepository(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) error {
+	return client.createRepository(url, auth, opts)
 }
 
 func (client *Client) Descriptors() []ocispec.Descriptor {

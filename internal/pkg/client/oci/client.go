@@ -32,8 +32,8 @@ import (
 	orasauth "oras.land/oras-go/v2/registry/remote/auth"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
@@ -61,7 +61,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *url.ParsedURL {
+func (client *Client) Parse(rawURL string) *netutil.URL {
 	results := map[string]string{}
 	pattern := client.RegExp()
 	match := pattern.FindStringSubmatch(rawURL)
@@ -93,7 +93,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		return nil
 	}
 
-	return &url.ParsedURL{
+	return &netutil.URL{
 		Scheme:   results["scheme"],
 		Username: results["username"],
 		Password: results["password"],
@@ -106,17 +106,17 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 }
 
 func (client *Client) createRepository( //nolint:revive
-	parsedURL *url.ParsedURL,
-	auth *url.BasicAuth,
+	url *netutil.URL,
+	auth *netutil.BasicAuth,
 	opts *options.Options,
 ) (err error) {
 	client.ctx = opts.Context()
 	client.store = memory.New()
 
-	repoPath := (&url.ParsedURL{
-		Hostname: parsedURL.Hostname,
-		Port:     parsedURL.Port,
-		Path:     parsedURL.Path,
+	repoPath := (&netutil.URL{
+		Hostname: url.Hostname,
+		Port:     url.Port,
+		Path:     url.Path,
 	}).String()
 
 	if client.repo, err = remote.NewRepository(repoPath); err != nil {
@@ -127,7 +127,7 @@ func (client *Client) createRepository( //nolint:revive
 		client.repo.Client = &orasauth.Client{
 			Client: retry.DefaultClient,
 			Cache:  orasauth.DefaultCache,
-			Credential: orasauth.StaticCredential(parsedURL.Hostname, orasauth.Credential{
+			Credential: orasauth.StaticCredential(url.Hostname, orasauth.Credential{
 				Username: auth.Username,
 				Password: auth.Password,
 			}),

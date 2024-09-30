@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/url/url.go
+// SPDX-FileName: internal/pkg/netutil/url.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package url
+package netutil
 
 import (
 	"errors"
@@ -28,7 +28,12 @@ import (
 )
 
 type (
-	ParsedURL struct {
+	Parser interface {
+		Parse(url string) *URL
+		RegExp() *regexp.Regexp
+	}
+
+	URL struct {
 		Scheme   string
 		Username string
 		Password string
@@ -41,16 +46,11 @@ type (
 		Tag      string
 		Digest   string
 	}
-
-	Parser interface {
-		Parse(fetchURL string) *ParsedURL
-		RegExp() *regexp.Regexp
-	}
 )
 
 var ErrParsingURL = errors.New("failed to parse URL")
 
-func (url *ParsedURL) String() string {
+func (url *URL) String() string {
 	var urlString, pathSep string
 
 	switch url.Scheme {
