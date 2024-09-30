@@ -30,8 +30,8 @@ import (
 	"github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
@@ -40,8 +40,8 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 		return err
 	}
 
-	parsedURL := client.Parse(pushURL)
-	name := parsedURL.Fragment
+	url := client.Parse(pushURL)
+	name := url.Fragment
 
 	// Create any parent directories specified in fragment.
 	if dir := filepath.Dir(name); dir != "." {
@@ -73,36 +73,32 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 }
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
-	parsedURL := client.Parse(pushURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	url := client.Parse(pushURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return fmt.Errorf("setting .netrc auth: %w", err)
 		}
 	}
 
 	// Clone the repository into memory.
-	if err := client.cloneRepo(parsedURL, auth, opts.Options); err != nil {
-		return fmt.Errorf("cloning Git repository %s: %w", parsedURL, err)
-	}
-
-	return nil
+	return client.cloneRepo(url, auth, opts.Options)
 }
 
-func (client *Client) Push(_id, pushURL string, opts *options.PushOptions) error {
-	parsedURL := client.Parse(pushURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
+	url := client.Parse(pushURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
 
 	// Commit written SBOM file to cloned repo.
 	if _, err := client.worktree.Commit(
-		fmt.Sprintf("bomctl push of %s", parsedURL.Fragment), &git.CommitOptions{All: true},
+		fmt.Sprintf("bomctl push of %s", url.Fragment), &git.CommitOptions{All: true},
 	); err != nil {
 		return fmt.Errorf("committing worktree: %w", err)
 	}
@@ -110,7 +106,7 @@ func (client *Client) Push(_id, pushURL string, opts *options.PushOptions) error
 	// Push changes to remote repository.
 	if err := client.repo.Push(&git.PushOptions{Auth: auth}); err != nil {
 		if !errors.Is(err, git.NoErrAlreadyUpToDate) {
-			return fmt.Errorf("pushing to remote %s: %w", parsedURL, err)
+			return fmt.Errorf("pushing to remote %s: %w", url, err)
 		}
 
 		opts.Logger.Warn("Already up-to-date; no changes pushed to remote")

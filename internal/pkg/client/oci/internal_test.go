@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/git/fetch.go
+// SPDX-FileName: internal/pkg/client/oci/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,42 +17,31 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package git
+package oci
 
 import (
-	"fmt"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/v2/content/memory"
+	"oras.land/oras-go/v2/registry/remote"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
-	url := client.Parse(fetchURL)
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+var GetDocument = getDocument
 
-	if opts.UseNetRC {
-		if err := auth.UseNetRC(url.Hostname); err != nil {
-			return nil, fmt.Errorf("failed to set auth: %w", err)
-		}
-	}
+func (client *Client) CreateRepository(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) error {
+	return client.createRepository(url, auth, opts)
+}
 
-	// Clone the repository into the temp directory
-	if err := client.cloneRepo(url, auth, opts.Options); err != nil {
-		return nil, fmt.Errorf("cloning Git repository: %w", err)
-	}
+func (client *Client) Descriptors() []ocispec.Descriptor {
+	return client.descriptors
+}
 
-	// Read the file specified in the URL fragment.
-	file, err := client.worktree.Filesystem.Open(url.Fragment)
-	if err != nil {
-		return nil, fmt.Errorf("opening file %s: %w", url.Fragment, err)
-	}
+func (client *Client) Repo() *remote.Repository {
+	return client.repo
+}
 
-	defer file.Close()
-
-	sbomData := []byte{}
-	if _, err := file.Read(sbomData); err != nil {
-		return nil, fmt.Errorf("reading file %s: %w", url.Fragment, err)
-	}
-
-	return sbomData, nil
+func (client *Client) Store() *memory.Store {
+	return client.store
 }

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/sliceutils/sliceutils_test.go
+// SPDX-FileName: internal/pkg/sliceutil/sliceutils_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package sliceutils_test
+package sliceutil_test
 
 import (
 	"strings"
@@ -25,7 +25,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/bomctl/bomctl/internal/pkg/sliceutils"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 type sliceutilsSuite struct {
@@ -67,7 +67,7 @@ func (ss *sliceutilsSuite) TestAll() {
 			expected: false,
 		},
 	} {
-		actual := sliceutils.All(data.items, data.cond)
+		actual := sliceutil.All(data.items, data.cond)
 
 		ss.Require().Equal(data.expected, actual)
 	}
@@ -108,7 +108,7 @@ func (ss *sliceutilsSuite) TestAny() {
 			expected: false,
 		},
 	} {
-		actual := sliceutils.Any(data.items, data.cond)
+		actual := sliceutil.Any(data.items, data.cond)
 
 		ss.Require().Equal(data.expected, actual)
 	}
@@ -130,7 +130,7 @@ func (ss *sliceutilsSuite) TestExtract() {
 			expected: []string{"", "one", "two", "three"},
 		},
 	} {
-		actual := sliceutils.Extract(data.items, data.cond)
+		actual := sliceutil.Extract(data.items, data.cond)
 
 		ss.Require().Equal(data.expected, actual)
 	}
@@ -164,7 +164,7 @@ func (ss *sliceutilsSuite) TestFilter() {
 			expected: []testStringValue{{"two"}, {"three"}},
 		},
 	} {
-		actual := sliceutils.Filter(data.items, data.cond)
+		actual := sliceutil.Filter(data.items, data.cond)
 
 		ss.Require().Equal(data.expected, actual)
 	}
@@ -179,7 +179,7 @@ func (ss *sliceutilsSuite) TestMap() {
 		items := []testIntValue{{0}, {1}, {2}, {3}, {4}, {5}}
 		expected := []testIntValue{{0}, {2}, {4}, {6}, {8}, {10}}
 
-		actual := sliceutils.Map(items, func(item testIntValue) testIntValue {
+		actual := sliceutil.Map(items, func(item testIntValue) testIntValue {
 			item.value *= 2
 
 			return item
@@ -196,7 +196,7 @@ func (ss *sliceutilsSuite) TestMap() {
 		items := []testStringValue{{"one"}, {"two"}, {"three"}, {"four"}}
 		expected := []testStringValue{{"one-mapped"}, {"two-mapped"}, {"three-mapped"}, {"four-mapped"}}
 
-		actual := sliceutils.Map(items, func(item testStringValue) testStringValue {
+		actual := sliceutil.Map(items, func(item testStringValue) testStringValue {
 			item.value += "-mapped"
 
 			return item
@@ -247,7 +247,7 @@ func (ss *sliceutilsSuite) TestNext() {
 			expected: testAnyValue{"two"},
 		},
 	} {
-		actual, err := sliceutils.Next(data.items, data.cond)
+		actual, err := sliceutil.Next(data.items, data.cond)
 
 		if data.shouldErr {
 			ss.Error(err)

@@ -19,16 +19,148 @@
 
 package oci
 
-import "github.com/bomctl/bomctl/internal/pkg/options"
+import (
+	"bytes"
+	"crypto/sha256"
+	"fmt"
+	"io"
+	"path"
 
-func (*Client) AddFile(_name, _id string, _opts *options.PushOptions) error {
+	"github.com/opencontainers/go-digest"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/protobom/protobom/pkg/formats"
+	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/protobom/protobom/pkg/writer"
+	oras "oras.land/oras-go/v2"
+
+	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
+	"github.com/bomctl/bomctl/internal/pkg/options"
+)
+
+type ociClientWriter struct {
+	*bytes.Buffer
+	*io.PipeReader
+}
+
+func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
+	document, err := getDocument(id, opts.Options)
+	if err != nil {
+		return err
+	}
+
+	buf := &ociClientWriter{bytes.NewBuffer([]byte{}), &io.PipeReader{}}
+
+	wr := writer.New(writer.WithFormat(opts.Format))
+	if err := wr.WriteStream(document, buf); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	checksum := sha256.Sum256(buf.Bytes())
+	sbomDescriptor := ocispec.Descriptor{
+		MediaType: getMediaType(opts),
+		Digest:    digest.NewDigestFromBytes(digest.SHA256, checksum[:]),
+		Size:      int64(buf.Len()),
+	}
+
+	// Add annotation to save file name.
+	if url := client.Parse(pushURL); url != nil {
+		sbomDescriptor.Annotations = map[string]string{"org.opencontainers.image.title": path.Base(url.Path)}
+	}
+
+	// Push SBOM descriptor blob to memory store.
+	if err := client.store.Push(client.ctx, sbomDescriptor, buf.Buffer); err != nil {
+		return fmt.Errorf("pushing to memory store: %w", err)
+	}
+
+	client.descriptors = append(client.descriptors, sbomDescriptor)
+
 	return nil
 }
 
-func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
+func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
+	url := client.Parse(pushURL)
+	if url == nil {
+		return fmt.Errorf("%w", netutil.ErrParsingURL)
+	}
+
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+
+	if opts.UseNetRC {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
+			return fmt.Errorf("setting .netrc auth: %w", err)
+		}
+	}
+
+	return client.createRepository(url, auth, opts.Options)
+}
+
+func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
+	defer func() {
+		clear(client.descriptors)
+		client.repo = nil
+		client.store = nil
+	}()
+
+	manifest, err := oras.PackManifest(
+		client.ctx,
+		client.store,
+		oras.PackManifestVersion1_1,
+		ocispec.MediaTypeImageManifest,
+		oras.PackManifestOptions{Layers: client.descriptors},
+	)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	tag := ""
+	if url := client.Parse(pushURL); url != nil {
+		tag = url.Tag
+		if tag == "" {
+			tag = "latest"
+		}
+	}
+
+	opts.Logger.Debug("Applying tag", "tag", tag, "digest", manifest.Digest)
+
+	if err := client.store.Tag(client.ctx, manifest, tag); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	opts.Logger.Debug("Packed manifest", "descriptor", descriptorJSON(&manifest))
+
+	if _, err := oras.Copy(client.ctx, client.store, tag, client.repo, tag, oras.DefaultCopyOptions); err != nil {
+		return fmt.Errorf("pushing to remote repository: %w", err)
+	}
+
+	opts.Logger.Debug("Copied manifest", "url", pushURL)
+
 	return nil
 }
 
-func (*Client) Push(_id, _pushUL string, _opts *options.PushOptions) error {
-	return nil
+func getDocument(id string, opts *options.Options) (*sbom.Document, error) {
+	backend, err := db.BackendFromContext(opts.Context())
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	// Retrieve document from database.
+	doc, err := backend.GetDocumentByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	return doc, nil
+}
+
+func getMediaType(opts *options.PushOptions) string {
+	opts.Logger.Debug("Getting mediaType for descriptor", "format", opts.Format)
+
+	// Only SPDX JSON encoding is currently supported by protobom, and the media type registered with the
+	// IANA has no version parameter (https://www.iana.org/assignments/media-types/application/spdx+json).
+	if opts.Format.Type() == formats.SPDXFORMAT {
+		return "application/spdx+json"
+	}
+
+	return string(opts.Format)
 }

@@ -25,30 +25,30 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
-	parsedURL := client.Parse(fetchURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	url := client.Parse(fetchURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return nil, fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET", parsedURL.String(), nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url.String(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating request to %s: %w", parsedURL.String(), err)
+		return nil, fmt.Errorf("failed creating request to %s: %w", url.String(), err)
 	}
 
 	auth.SetAuth(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed request to %s: %w", parsedURL.String(), err)
+		return nil, fmt.Errorf("failed request to %s: %w", url.String(), err)
 	}
 
 	defer resp.Body.Close()

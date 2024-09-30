@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
 type httpClientSuite struct {
@@ -36,24 +36,24 @@ func (hcs *httpClientSuite) TestClient_Parse() {
 	client := &http.Client{}
 
 	for _, data := range []struct {
-		expected *url.ParsedURL
+		expected *netutil.URL
 		name     string
 		url      string
 	}{
 		{
 			name:     "HTTP scheme and hostname only",
 			url:      "http://example.acme.com",
-			expected: &url.ParsedURL{Scheme: "http", Hostname: "example.acme.com"},
+			expected: &netutil.URL{Scheme: "http", Hostname: "example.acme.com"},
 		},
 		{
 			name:     "HTTPS scheme and hostname only",
 			url:      "https://example.acme.com",
-			expected: &url.ParsedURL{Scheme: "https", Hostname: "example.acme.com"},
+			expected: &netutil.URL{Scheme: "https", Hostname: "example.acme.com"},
 		},
 		{
 			name:     "HTTPS username@hostname",
 			url:      "https://user@example.acme.com",
-			expected: &url.ParsedURL{Scheme: "https", Username: "user", Hostname: "example.acme.com"},
+			expected: &netutil.URL{Scheme: "https", Username: "user", Hostname: "example.acme.com"},
 		},
 		{
 			name:     "HTTP hostname only",
