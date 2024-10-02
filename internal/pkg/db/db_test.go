@@ -246,13 +246,13 @@ func (dbs *dbSuite) TestSetAlias() {
 			err = dbs.backend.SetAlias(docs[0].GetMetadata().GetId(), data.alias, data.force)
 			if data.errorMsg == "" {
 				dbs.Require().NoError(err)
-				docAlias, err := dbs.backend.GetDocumentUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation)
+				docAlias, err := dbs.backend.GetDocumentUniqueAnnotation(
+					docs[0].GetMetadata().GetId(), db.AliasAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.alias, docAlias)
 			} else {
 				dbs.Require().EqualError(err, data.errorMsg)
 			}
-
 		})
 	}
 }
