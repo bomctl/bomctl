@@ -35,6 +35,7 @@ import (
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/logger"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 const (
@@ -226,20 +227,13 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
 	}
 
-	taggedDocumentIDs := make([]string, len(taggedDocuments))
-	for idx := range taggedDocuments {
-		taggedDocumentIDs[idx] = taggedDocuments[idx].GetMetadata().GetId()
-	}
+	taggedDocumentIDs := sliceutil.Extract(taggedDocuments, func(doc *sbom.Document) string {
+		return doc.GetMetadata().GetId()
+	})
 
-	filteredDocuments := []*sbom.Document{}
-
-	for _, doc := range documents {
-		if slices.Contains(taggedDocumentIDs, doc.GetMetadata().GetId()) {
-			filteredDocuments = append(filteredDocuments, doc)
-		}
-	}
-
-	documents = filteredDocuments
+	documents = sliceutil.Filter(documents, func(doc *sbom.Document) bool {
+		return slices.Contains(taggedDocumentIDs, doc.GetMetadata().GetId())
+	})
 
 	return documents, nil
 }
