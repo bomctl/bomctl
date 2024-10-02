@@ -195,52 +195,57 @@ func (dbs *dbSuite) TestSetAlias() {
 	dbs.Require().NoError(err)
 
 	for _, data := range []struct {
-		name                  string
-		alias                 string
-		errorMsg              string
-		force                 bool
-		removeAliasBeforeTest bool
+		name      string
+		alias     string
+		errorMsg  string
+		force     bool
+		doc0Alias string
 	}{
 		{
-			name:                  "Normal",
-			alias:                 "cdx",
-			errorMsg:              "",
-			force:                 false,
-			removeAliasBeforeTest: true,
+			name:      "Normal",
+			alias:     "cdx",
+			errorMsg:  "",
+			force:     false,
+			doc0Alias: "",
 		},
 		{
-			name:                  "Duplicate alias",
-			alias:                 "spdx",
-			errorMsg:              "failed to set alias: alias already exists",
-			force:                 false,
-			removeAliasBeforeTest: true,
+			name:      "Duplicate alias",
+			alias:     "spdx",
+			errorMsg:  "failed to set alias: alias already exists",
+			force:     false,
+			doc0Alias: "",
 		},
 		{
-			name:                  "Duplicate alias (force)",
-			alias:                 "spdx",
-			errorMsg:              "failed to set alias: alias already exists",
-			force:                 true,
-			removeAliasBeforeTest: true,
+			name:      "Duplicate alias (force)",
+			alias:     "spdx",
+			errorMsg:  "failed to set alias: alias already exists",
+			force:     true,
+			doc0Alias: "",
 		},
 		{
-			name:                  "Existing alias",
-			alias:                 "cdx2",
-			errorMsg:              "the document already has an alias",
-			force:                 false,
-			removeAliasBeforeTest: false,
+			name:      "Existing alias",
+			alias:     "cdx2",
+			errorMsg:  "the document already has an alias",
+			force:     false,
+			doc0Alias: "cdx",
 		},
 		{
-			name:                  "Existing alias (force)",
-			alias:                 "cdx2",
-			errorMsg:              "",
-			force:                 true,
-			removeAliasBeforeTest: false,
+			name:      "Existing alias (force)",
+			alias:     "cdx2",
+			errorMsg:  "",
+			force:     true,
+			doc0Alias: "cdx",
 		},
 	} {
 		dbs.Run(data.name, func() {
-			if data.removeAliasBeforeTest {
-				err := dbs.backend.RemoveAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
-				dbs.Require().NoError(err)
+			err := dbs.backend.RemoveAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
+			dbs.Require().NoError(err)
+
+			if data.doc0Alias != "" {
+				dbs.Require().NoError(
+					dbs.backend.SetUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation, data.doc0Alias),
+					"failed to set alias", "err", err,
+				)
 			}
 
 			err = dbs.backend.SetAlias(docs[0].GetMetadata().GetId(), data.alias, data.force)
