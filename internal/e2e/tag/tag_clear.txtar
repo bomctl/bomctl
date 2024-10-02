@@ -13,11 +13,6 @@ exec bomctl tag clear --help --cache-dir $WORK
 ! stderr . 
 stdout .
 
-# tag clear help
-# exec bomctl tag clear help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help tag clear
 exec bomctl help tag clear --cache-dir $WORK
 ! stderr .

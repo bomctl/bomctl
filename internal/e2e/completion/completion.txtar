@@ -42,11 +42,6 @@ exec bomctl completion --cache-dir $WORK bash --help
 ! stderr . 
 stdout '^(Generate the autocompletion script for the bash shell\.).*'
 
-# completion bash help
-# exec bomctl completion --cache-dir $WORK bash help
-# ! stderr . 
-# stdout .
-
 # completion bash no descriptions
 exec bomctl completion --cache-dir $WORK bash --no-descriptions
 ! stderr . 
@@ -66,11 +61,6 @@ stdout '^(Generate the autocompletion script for the fish shell\.).*'
 exec bomctl completion --cache-dir $WORK fish --help
 ! stderr . 
 stdout '^(Generate the autocompletion script for the fish shell\.).*'
-
-# completion fish help
-# exec bomctl completion --cache-dir $WORK fish help
-# ! stderr . 
-# stdout .
 
 # completion fish no descriptions
 exec bomctl completion --cache-dir $WORK fish --no-descriptions
@@ -92,11 +82,6 @@ exec bomctl completion --cache-dir $WORK powershell --help
 ! stderr . 
 stdout '^(Generate the autocompletion script for powershell\.).*'
 
-# completion powershell help
-# exec bomctl completion --cache-dir $WORK powershell help
-# ! stderr . 
-# stdout .
-
 # completion powershell no descriptions
 exec bomctl completion --cache-dir $WORK powershell --no-descriptions
 ! stderr . 
@@ -116,11 +101,6 @@ stdout '^(Generate the autocompletion script for the zsh shell\.).*'
 exec bomctl completion --cache-dir $WORK zsh --help
 ! stderr . 
 stdout '^(Generate the autocompletion script for the zsh shell\.).*'
-
-# completion zsh help
-# exec bomctl completion --cache-dir $WORK zsh help
-# ! stderr . 
-# stdout .
 
 # completion zsh no descriptions
 exec bomctl completion --cache-dir $WORK zsh --no-descriptions

@@ -13,11 +13,6 @@ exec bomctl list --help --cache-dir $WORK
 ! stderr .
 stdout .
 
-# list help
-# exec bomctl list help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help list
 exec bomctl help list --cache-dir $WORK
 ! stderr .

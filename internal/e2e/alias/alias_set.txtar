@@ -10,13 +10,8 @@ stdout .
 
 # alias set --help
 exec bomctl alias set --help --cache-dir $WORK
-! stderr . 
+! stderr .
 stdout .
-
-# alias set help
-# exec bomctl alias set help --cache-dir $WORK
-# ! stderr .
-# stdout .
 
 # help alias set
 exec bomctl help alias set --cache-dir $WORK
@@ -28,13 +23,18 @@ stdout .
 stderr -count=1 '^Error: accepts 2 arg\(s\), received 0$'
 ! stdout .
 
+# alias set one input (FAILURE EXPECTED)
+! exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+stderr -count=1 '^Error: accepts 2 arg\(s\), received 1$'
+! stdout .
+
 # alias set sbom_id
 exec bomctl import --cache-dir $WORK sbom.cdx.json
 ! stdout .
-! stderr . 
+! stderr .
 
 exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 root_beer
-! stderr . 
+! stderr .
 ! stdout .
 
 exec bomctl list --cache-dir $WORK
@@ -47,12 +47,12 @@ stderr 'FATAL db: The document already has an alias. To replace it, re-run the c
 
 # alias set sbom_id -f
 exec bomctl alias set --cache-dir $WORK -f urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 dr_pepper
-! stderr . 
+! stderr .
 ! stdout .
 
 exec bomctl list --cache-dir $WORK
 cmp stdout force_set_list.txt
-! stderr . 
+! stderr .
 
 -- force_set_list.txt --
 

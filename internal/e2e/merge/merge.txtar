@@ -13,11 +13,6 @@ exec bomctl merge --help --cache-dir $WORK
 ! stderr .
 stdout .
 
-# merge help
-# exec bomctl merge help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help merge
 exec bomctl help merge --cache-dir $WORK
 ! stderr .

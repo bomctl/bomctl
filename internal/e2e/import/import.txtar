@@ -12,11 +12,6 @@ exec bomctl import --help --cache-dir $WORK
 ! stderr .
 stdout .
 
-# import help
-# exec bomctl import help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help import
 exec bomctl help import --cache-dir $WORK
 ! stderr .

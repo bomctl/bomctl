@@ -13,11 +13,6 @@ exec bomctl alias list --help --cache-dir $WORK
 ! stderr . 
 stdout .
 
-# alias list help
-# exec bomctl alias list help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help alias list
 exec bomctl help alias list --cache-dir $WORK
 ! stderr .

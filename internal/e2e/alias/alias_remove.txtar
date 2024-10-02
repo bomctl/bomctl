@@ -13,11 +13,6 @@ exec bomctl alias remove --help --cache-dir $WORK
 ! stderr . 
 stdout .
 
-# alias remove help
-# exec bomctl alias remove help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help alias remove
 exec bomctl help alias remove --cache-dir $WORK
 ! stderr .

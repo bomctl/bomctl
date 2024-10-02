@@ -13,11 +13,6 @@ exec bomctl tag list --help --cache-dir $WORK
 ! stderr . 
 stdout .
 
-# tag list help
-# exec bomctl tag list help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help tag list
 exec bomctl help tag list --cache-dir $WORK
 ! stderr .
@@ -37,11 +32,6 @@ stdout .
 exec bomctl tag ls --help --cache-dir $WORK
 ! stderr . 
 stdout .
-
-# tag ls help
-# exec bomctl tag ls help --cache-dir $WORK
-# ! stderr .
-# stdout .
 
 # help tag ls
 exec bomctl help tag ls --cache-dir $WORK

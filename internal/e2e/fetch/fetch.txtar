@@ -12,11 +12,6 @@ exec bomctl fetch --help --cache-dir $WORK
 ! stderr .
 stdout .
 
-# fetch help
-# exec bomctl fetch help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help fetch
 exec bomctl help fetch --cache-dir $WORK
 ! stderr .
@@ -58,9 +53,6 @@ cmp stderr fetch_tag.txt
 exec bomctl list --cache-dir $WORK --tag fourth
 cmp stdout fetch_tag_list.txt
 ! stderr .
-
--- fetch_no_input.txt --
-Error: requires at least 1 arg(s), only received 0
 
 -- fetch_linked.txt --
 INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json

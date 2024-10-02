@@ -10,10 +10,6 @@ exec bomctl version -h --cache-dir $WORK
 exec bomctl version --help --cache-dir $WORK
 ! stderr .
 
-# version help
-# exec bomctl version help --cache-dir $WORK
-# ! stderr .
-
 # version
 exec bomctl version --cache-dir $WORK
 ! stdout .

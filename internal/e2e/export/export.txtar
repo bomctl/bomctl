@@ -14,11 +14,6 @@ exec bomctl export --help --cache-dir $WORK
 ! stderr .
 stdout .
 
-# export help
-# exec bomctl export help --cache-dir $WORK
-# ! stderr .
-# stdout .
-
 # help export
 exec bomctl help export --cache-dir $WORK
 ! stderr .
