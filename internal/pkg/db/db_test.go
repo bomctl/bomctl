@@ -198,43 +198,43 @@ func (dbs *dbSuite) TestSetAlias() {
 		name      string
 		alias     string
 		errorMsg  string
-		force     bool
 		doc0Alias string
+		force     bool
 	}{
 		{
 			name:      "Normal",
 			alias:     "cdx",
 			errorMsg:  "",
-			force:     false,
 			doc0Alias: "",
+			force:     false,
 		},
 		{
 			name:      "Duplicate alias",
 			alias:     "spdx",
 			errorMsg:  "failed to set alias: alias already exists",
-			force:     false,
 			doc0Alias: "",
+			force:     false,
 		},
 		{
 			name:      "Duplicate alias (force)",
 			alias:     "spdx",
 			errorMsg:  "failed to set alias: alias already exists",
-			force:     true,
 			doc0Alias: "",
+			force:     true,
 		},
 		{
 			name:      "Existing alias",
 			alias:     "cdx2",
 			errorMsg:  "the document already has an alias",
-			force:     false,
 			doc0Alias: "cdx",
+			force:     false,
 		},
 		{
 			name:      "Existing alias (force)",
 			alias:     "cdx2",
 			errorMsg:  "",
-			force:     true,
 			doc0Alias: "cdx",
+			force:     true,
 		},
 	} {
 		dbs.Run(data.name, func() {
