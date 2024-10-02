@@ -20,7 +20,6 @@
 package e2eutil
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,7 +45,7 @@ const (
 // ex: setup_cache <WORK>
 //
 //	^ This will create a DB file, and populate it will all files in testdata dir
-func setupCache(script *testscript.TestScript, _ bool, args []string) { //nolint:revive
+func setupCache(script *testscript.TestScript, _ bool, args []string) {
 	if len(args) < setupCacheMinArgNum || len(args) > setupCacheMaxArgNum {
 		script.Fatalf("syntax: setup_cache work_dir file_match")
 	}
@@ -75,15 +74,7 @@ func setupCache(script *testscript.TestScript, _ bool, args []string) { //nolint
 		sbomData, err := os.ReadFile(filepath.Join(testDataDir, name))
 		script.Check(err)
 
-		doc, err := backend.AddDocument(sbomData)
+		_, err = backend.AddDocument(sbomData)
 		script.Check(err)
-
-		// POTENTIAL BUG: Unable to access this bom via ID without an alias, Works when run manually in cli
-		if strings.Contains(name, "spdx") {
-			id := doc.GetMetadata().GetId()
-			if err := backend.AddAnnotations(id, db.AliasAnnotation, fmt.Sprintf("spdx-%d", sbomIdx)); err != nil {
-				backend.Logger.Fatalf("failed to add tags: %v", err)
-			}
-		}
 	}
 }

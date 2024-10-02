@@ -51,13 +51,13 @@ compare_docs $WORK squirtle.json test-linked.cdx.json
 
 # export spdx sbom
 # exec bomctl export --cache-dir $WORK -f spdx-2.3 spdx <-- this fails with: FATAL export: encoding not supported for selected format format=spdx-2.3 encoding=json
-exec bomctl export --cache-dir $WORK -f spdx spdx-4
+exec bomctl export --cache-dir $WORK -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
-stdout '.*("documentNamespace": "https://spdx.org/spdxdocs/").*'
+stdout '.*("documentNamespace": "https://spdx.org/spdxdocs/",).*'
 
 # export -o spdx sbom
 ! exists pikachu.json
-exec bomctl export --cache-dir $WORK -o pikachu.json -f spdx spdx-4
+exec bomctl export --cache-dir $WORK -o pikachu.json -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists pikachu.json
@@ -68,7 +68,7 @@ exists pikachu.json
 
 # export --output-file spdx sbom
 ! exists mewtwo.json
-exec bomctl export --cache-dir $WORK --output-file mewtwo.json -f spdx spdx-4
+exec bomctl export --cache-dir $WORK --output-file mewtwo.json -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists mewtwo.json
