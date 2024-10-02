@@ -1,0 +1,83 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+setup_cache $WORK
+
+# list -help
+exec bomctl list -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# list --help
+exec bomctl list --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# list help
+# exec bomctl list help --cache-dir $WORK
+# ! stderr .
+# stdout .
+
+# help list
+exec bomctl help list --cache-dir $WORK
+! stderr .
+stdout .
+
+# list no input
+exec bomctl list --cache-dir $WORK
+cmp stdout list_no_input.txt
+! stderr .
+
+# ls no input
+exec bomctl ls --cache-dir $WORK
+cmp stdout list_no_input.txt
+! stderr .
+
+# list tag
+exec bomctl tag add --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 yeppers
+! stderr . 
+! stdout .
+
+exec bomctl list --cache-dir $WORK --tag yeppers
+cmp stdout list_tag.txt
+! stderr .
+
+# ls tag
+exec bomctl ls --cache-dir $WORK --tag yeppers
+cmp stdout list_tag.txt
+! stderr .
+
+-- list_no_input.txt --
+
+ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+Alias   : 
+Version : 1
+# Nodes : 5
+
+ID      : urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+Alias   : 
+Version : 1
+# Nodes : 5
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : 
+Version : 1
+# Nodes : 3
+
+ID      : urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+Alias   : 
+Version : 1
+# Nodes : 6
+
+ID      : https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT
+Alias   : 
+Version : 0
+# Nodes : 81
+
+-- list_tag.txt --
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : 
+Version : 1
+# Nodes : 3
+

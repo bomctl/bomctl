@@ -1,0 +1,65 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+add_files $WORK sbom.cdx.json
+
+# tag add -h
+exec bomctl tag add -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag add --help
+exec bomctl tag add --help --cache-dir $WORK
+! stderr . 
+stdout .
+
+# tag add help
+# exec bomctl tag add help --cache-dir $WORK
+# ! stderr .
+# stdout .
+
+# help tag add
+exec bomctl help tag add --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag add no input (FAILURE EXPECTED)
+! exec bomctl tag add --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 0)$'
+! stdout .
+
+# tag add no tags (FAILURE EXPECTED)
+exec bomctl import --cache-dir $WORK sbom.cdx.json
+! stdout .
+! stderr . 
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout empty_add_list.txt
+
+! exec bomctl tag add --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 1)$'
+! stdout .
+
+# tag add
+exec bomctl tag add --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 link zelda
+! stderr .
+! stdout .
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout populated_add_list.txt
+
+-- populated_add_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+link
+zelda
+
+-- empty_add_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+
+

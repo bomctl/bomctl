@@ -1,0 +1,95 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# fetch help
+exec bomctl fetch -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# fetch help
+exec bomctl fetch --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# fetch help
+# exec bomctl fetch help --cache-dir $WORK
+# ! stderr .
+# stdout .
+
+# help fetch
+exec bomctl help fetch --cache-dir $WORK
+! stderr .
+stdout .
+
+# fetch no input (FAILURE EXPECTED)
+! exec bomctl fetch --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
+! stdout .
+
+# fetch --output-file
+[net] exec bomctl fetch --cache-dir $WORK -o first.cdx.json https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+cmp stderr fetch_linked.txt
+! stdout .
+exists first.cdx.json
+exists first-1.json
+
+# fetch -o
+[net] exec bomctl fetch --cache-dir $WORK --output-file second.cdx.json https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+cmp stderr fetch_linked.txt
+! stdout .
+exists second.cdx.json
+exists second-1.json
+
+# fetch --alias
+[net] exec bomctl fetch --cache-dir $WORK --alias third https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json
+cmp stderr fetch_alias.txt
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+cmp stdout fetch_alias_list.txt
+! stderr .
+
+# fetch --tag
+[net] exec bomctl fetch --cache-dir $WORK --tag fourth https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_arm64.tar.gz.spdx.json
+cmp stderr fetch_tag.txt
+! stdout .
+
+exec bomctl list --cache-dir $WORK --tag fourth
+cmp stdout fetch_tag_list.txt
+! stderr .
+
+-- fetch_no_input.txt --
+Error: requires at least 1 arg(s), only received 0
+
+-- fetch_linked.txt --
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json
+-- fetch_alias.txt --
+INFO  fetch: Fetching from HTTP URL url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json
+-- fetch_alias_list.txt --
+
+ID      : urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+Alias   : 
+Version : 1
+# Nodes : 6
+
+ID      : https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT
+Alias   : 
+Version : 0
+# Nodes : 81
+
+ID      : https://anchore.com/syft/file/bomctl_0.4.1_darwin_amd64.tar.gz-c7628350-c94b-4684-a68e-60da899682bc#DOCUMENT
+Alias   : third
+Version : 0
+# Nodes : 81
+
+-- fetch_tag.txt --
+INFO  fetch: Fetching from HTTP URL url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_arm64.tar.gz.spdx.json
+-- fetch_tag_list.txt --
+
+ID      : https://anchore.com/syft/file/bomctl_0.4.1_darwin_arm64.tar.gz-35920d56-4519-40d4-82af-d695799d1df6#DOCUMENT
+Alias   : 
+Version : 0
+# Nodes : 81
+

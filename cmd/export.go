@@ -42,7 +42,7 @@ var (
 	errFormatNotSupported   = errors.New("format not supported")
 )
 
-func exportCmd() *cobra.Command {
+func exportCmd() *cobra.Command { //nolint:funlen
 	opts := &options.ExportOptions{}
 	outputFile := outputFileValue("")
 
@@ -88,7 +88,11 @@ func exportCmd() *cobra.Command {
 			// Get the documents to obtain their IDs, in case the provided IDs were aliases.
 			documents, err := backend.GetDocumentsByIDOrAlias(args...)
 			if err != nil {
-				opts.Logger.Fatal(err, "documentIDs", args)
+				opts.Logger.Fatal(err, "documentID(s)", args)
+			}
+
+			if len(documents) == 0 {
+				opts.Logger.Errorf("documentID(s) not found: %s", args)
 			}
 
 			for _, document := range documents {

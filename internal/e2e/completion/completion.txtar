@@ -1,0 +1,128 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# completion -h
+exec bomctl completion -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# completion --help
+exec bomctl completion --help --cache-dir $WORK
+! stderr . 
+stdout .
+
+# completion help
+exec bomctl completion help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help completion
+exec bomctl help completion --cache-dir $WORK
+! stderr .
+stdout .
+
+# completion no input
+exec bomctl completion --cache-dir $WORK
+! stderr .
+stdout .
+
+# completion bash
+exec bomctl completion --cache-dir $WORK bash
+! stderr . 
+stdout '^(# bash completion V2 for bomctl                               -\*- shell-script -\*-).*'
+
+# completion bash -h 
+exec bomctl completion --cache-dir $WORK bash -h
+! stderr . 
+stdout '^(Generate the autocompletion script for the bash shell\.).*'
+
+# completion bash --help 
+exec bomctl completion --cache-dir $WORK bash --help
+! stderr . 
+stdout '^(Generate the autocompletion script for the bash shell\.).*'
+
+# completion bash help
+# exec bomctl completion --cache-dir $WORK bash help
+# ! stderr . 
+# stdout .
+
+# completion bash no descriptions
+exec bomctl completion --cache-dir $WORK bash --no-descriptions
+! stderr . 
+stdout '^(# bash completion V2 for bomctl                               -\*- shell-script -\*-).*'
+
+# completion fish
+exec bomctl completion --cache-dir $WORK fish
+! stderr . 
+stdout '^(# fish completion for bomctl                               -\*- shell-script -\*-).*'
+
+# completion fish -h 
+exec bomctl completion --cache-dir $WORK fish -h
+! stderr . 
+stdout '^(Generate the autocompletion script for the fish shell\.).*'
+
+# completion fish --help 
+exec bomctl completion --cache-dir $WORK fish --help
+! stderr . 
+stdout '^(Generate the autocompletion script for the fish shell\.).*'
+
+# completion fish help
+# exec bomctl completion --cache-dir $WORK fish help
+# ! stderr . 
+# stdout .
+
+# completion fish no descriptions
+exec bomctl completion --cache-dir $WORK fish --no-descriptions
+! stderr . 
+stdout '(# fish completion for bomctl                               -\*- shell-script -\*-).*'
+
+# completion powershell
+exec bomctl completion --cache-dir $WORK powershell
+! stderr . 
+stdout '^(# powershell completion for bomctl                               -\*- shell-script -\*-).*'
+
+# completion powershell -h 
+exec bomctl completion --cache-dir $WORK powershell -h
+! stderr . 
+stdout '^(Generate the autocompletion script for powershell\.).*'
+
+# completion powershell --help 
+exec bomctl completion --cache-dir $WORK powershell --help
+! stderr . 
+stdout '^(Generate the autocompletion script for powershell\.).*'
+
+# completion powershell help
+# exec bomctl completion --cache-dir $WORK powershell help
+# ! stderr . 
+# stdout .
+
+# completion powershell no descriptions
+exec bomctl completion --cache-dir $WORK powershell --no-descriptions
+! stderr . 
+stdout '^(# powershell completion for bomctl                               -\*- shell-script -\*-).*'
+
+# completion zsh
+exec bomctl completion --cache-dir $WORK zsh
+! stderr . 
+stdout '^(#compdef bomctl).*'
+
+# completion zsh -h 
+exec bomctl completion --cache-dir $WORK zsh -h
+! stderr . 
+stdout '^(Generate the autocompletion script for the zsh shell\.).*'
+
+# completion zsh --help 
+exec bomctl completion --cache-dir $WORK zsh --help
+! stderr . 
+stdout '^(Generate the autocompletion script for the zsh shell\.).*'
+
+# completion zsh help
+# exec bomctl completion --cache-dir $WORK zsh help
+# ! stderr . 
+# stdout .
+
+# completion zsh no descriptions
+exec bomctl completion --cache-dir $WORK zsh --no-descriptions
+! stderr . 
+stdout '^(#compdef bomctl).*'

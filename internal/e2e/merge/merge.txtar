@@ -1,0 +1,91 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+setup_cache $WORK merge
+
+# merge -h
+exec bomctl merge -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# merge --help
+exec bomctl merge --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# merge help
+# exec bomctl merge help --cache-dir $WORK
+# ! stderr .
+# stdout .
+
+# help merge
+exec bomctl help merge --cache-dir $WORK
+! stderr .
+stdout .
+
+# merge no input (FAILURE EXPECTED)
+! exec bomctl merge --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 0).*'
+! stdout .
+
+# merge one input (FAILURE EXPECTED)
+! exec bomctl merge --cache-dir $WORK urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 1).*'
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+! stderr .
+cmp stdout pre_merge_list.txt
+
+# merge
+exec bomctl --cache-dir $WORK merge urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+stderr -count=1 '^(INFO  merge: Merging documents documentIDs="\[urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5\]")\n'
+stderr -count=1 '(INFO  merge: Adding merged document sbomID=.*)\n$'
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+! stderr .
+stdout -count=3 '^(ID      : .*)\n'
+stdout -count=3 '(Alias   : )\n'
+stdout -count=3 '(Version : 1)\n'
+stdout -count=3 '(# Nodes : .*)\n$'
+
+# merge --tag
+exec bomctl merge --cache-dir $WORK --tag peter urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+stderr -count=1 '^(INFO  merge: Merging documents documentIDs="\[urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5\]")\n'
+stderr -count=1 '(INFO  merge: Adding merged document sbomID=.*)$'
+! stdout .
+
+
+exec bomctl list --cache-dir $WORK --tag peter
+! stderr .
+stdout -count=1 '^(ID      : .*)\n'
+stdout -count=1 '(Alias   : )\n'
+stdout -count=1 '(Version : 1)\n'
+stdout -count=1 '(# Nodes : 9)\n$'
+
+# merge --alias
+exec bomctl merge --cache-dir $WORK --alias lois urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+stderr -count=1 '^(INFO  merge: Merging documents documentIDs="\[urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5\]")\n'
+stderr -count=1 '(INFO  merge: Adding merged document sbomID=.*)$'
+! stdout .
+
+exec bomctl list --cache-dir $WORK lois
+! stderr .
+stdout -count=1 '^(ID      : .*)\n'
+stdout -count=1 '(Alias   : lois)\n'
+stdout -count=1 '(Version : 1)\n'
+stdout -count=1 '(# Nodes : 9)\n$'
+
+-- pre_merge_list.txt --
+
+ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+Alias   : 
+Version : 1
+# Nodes : 5
+
+ID      : urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+Alias   : 
+Version : 1
+# Nodes : 5
+

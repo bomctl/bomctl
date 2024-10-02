@@ -1,0 +1,100 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+add_files $WORK sbom.cdx.json
+
+# tag remove -h
+exec bomctl tag remove -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag remove --help
+exec bomctl tag remove --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag remove help
+# exec bomctl tag remove help --cache-dir $WORK
+# ! stderr .
+
+# help tag remove
+exec bomctl help tag remove --cache-dir $WORK
+! stderr .
+
+# tag remove no input (FAILURE EXPECTED)
+! exec bomctl tag remove --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 0)$'
+! stdout .
+
+# tag rm -h
+exec bomctl tag rm -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag rm --help
+exec bomctl tag rm --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag rm help
+# exec bomctl tag rm help --cache-dir $WORK
+# ! stderr .
+# stdout .
+
+# help tag rm
+exec bomctl help tag rm --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag rm no input (FAILURE EXPECTED)
+! exec bomctl tag rm --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 0)$'
+! stdout .
+
+# tag remove sbom_id
+exec bomctl import --cache-dir $WORK --tag strawberry --tag peach --tag pineapple sbom.cdx.json
+! stdout .
+! stderr .
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout initial_remove_list.txt
+
+exec bomctl tag remove --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 strawberry
+! stderr .
+! stdout .
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout second_remove_list.txt
+
+# tag rm sbom_id
+exec bomctl tag rm --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 pineapple
+! stderr . 
+! stdout .
+
+exec bomctl tag ls --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr . 
+cmp stdout third_remove_list.txt
+
+-- third_remove_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+peach
+
+-- second_remove_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+peach
+pineapple
+
+-- initial_remove_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+peach
+pineapple
+strawberry
+

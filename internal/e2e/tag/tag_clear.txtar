@@ -1,0 +1,73 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+add_files $WORK sbom.cdx.json
+
+# tag clear -h
+exec bomctl tag clear -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag clear --help
+exec bomctl tag clear --help --cache-dir $WORK
+! stderr . 
+stdout .
+
+# tag clear help
+# exec bomctl tag clear help --cache-dir $WORK
+# ! stderr .
+# stdout .
+
+# help tag clear
+exec bomctl help tag clear --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag clear no input (FAILURE EXPECTED)
+! exec bomctl tag clear --cache-dir $WORK
+stderr -count=1 '^(Error: accepts 1 arg\(s\), received 0)$'
+! stdout .
+
+# tag clear no tags
+exec bomctl import --cache-dir $WORK sbom.cdx.json
+! stdout .
+! stderr . 
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout empty_clear_list.txt
+
+exec bomctl tag clear --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+! stdout .
+
+# tag clear
+exec bomctl tag add --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 link zelda
+! stderr .
+! stdout .
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout populated_clear_list.txt
+
+exec bomctl tag clear --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+! stdout .
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout empty_clear_list.txt
+
+-- populated_clear_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+link
+zelda
+
+-- empty_clear_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+
+

@@ -208,7 +208,12 @@ lint-fix: lint-go-fix lint-markdown-fix lint-shell lint-yaml # Lint Golang code,
 #@ Test
 .PHONY: test-unit
 test-unit: # Run unit tests
-	go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
+	go test -failfast -v -coverprofile=coverage.out -covermode=atomic -short ./...
+
+.PHONY: test-e2e
+test-e2e: # Run unit tests
+	go test -failfast -v ./internal/e2e/...
 
 .PHONY: test
-test: test-unit # Run all tests
+test: # Run all tests
+	go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
