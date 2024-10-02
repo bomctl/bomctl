@@ -52,17 +52,7 @@ exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a6
 cmp stdout import_tag_list.txt
 rm bomctl.db
 
-# import from file multiple tags (Fails with: FATAL import: Piped input and file path args cannot be specified simultaneously.)
-# exec bomctl import --cache-dir $WORK --tag strawberry rocky_road import_test.cdx.json
-# ! stdout .
-# ! stderr . 
-
-# exec bomctl list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
-# ! stderr .
-# cmp stdout import_list.txt
-# rm bomctl.db
-
-# import from file multiple tags (Fails with: FATAL import: Piped input and file path args cannot be specified simultaneously.)
+# import from file multiple tags
 exec bomctl import --cache-dir $WORK --tag strawberry --tag rocky_road import_test.cdx.json
 ! stdout .
 ! stderr . 
@@ -104,17 +94,6 @@ exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a6
 ! stderr .
 cmp stdout import_tag_list.txt
 rm bomctl.db
-
-# import from stdin multiple tags (Fails with: FATAL import: Piped input and file path args cannot be specified simultaneously.)
-# stdin import_test.cdx.json
-# exec bomctl import --cache-dir $WORK --tag strawberry rocky_road  -
-# ! stdout .
-# ! stderr . 
-
-# exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
-# ! stderr .
-# cmp stdout import_multi_tag_list.txt
-# rm bomctl.db
 
 # import from file multiple tags (Fails with: FATAL import: Piped input and file path args cannot be specified simultaneously.)
 stdin import_test.cdx.json
