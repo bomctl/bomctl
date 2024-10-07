@@ -1,0 +1,80 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+add_files $WORK sbom.cdx.json
+
+# alias remove -h
+exec bomctl alias remove -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias remove --help
+exec bomctl alias remove --help --cache-dir $WORK
+! stderr . 
+stdout .
+
+# help alias remove
+exec bomctl help alias remove --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias remove no input (FAILURE EXPECTED)
+! exec bomctl alias remove --cache-dir $WORK
+stderr -count=1 '^Error: accepts between 1 and 2 arg\(s\), received 0$'
+! stdout .
+
+# alias remove sbom_id
+exec bomctl import --cache-dir $WORK --alias apple sbom.cdx.json
+! stdout .
+! stderr . 
+
+exec bomctl list --cache-dir $WORK
+! stderr . 
+cmp stdout apple_remove_list.txt
+
+exec bomctl alias remove --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr . 
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+! stderr . 
+cmp stdout empty_remove_list.txt
+
+# alias rm sbom_id
+exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 orange
+! stderr . 
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+! stderr . 
+cmp stdout orange_remove_list.txt
+
+exec bomctl alias rm --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr . 
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+! stderr . 
+cmp stdout empty_remove_list.txt
+
+-- empty_remove_list.txt --
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : 
+Version : 1
+# Nodes : 3
+
+-- orange_remove_list.txt --
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : orange
+Version : 1
+# Nodes : 3
+
+-- apple_remove_list.txt --
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : apple
+Version : 1
+# Nodes : 3
+

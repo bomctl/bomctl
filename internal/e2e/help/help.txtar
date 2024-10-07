@@ -1,0 +1,15 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# help help
+exec bomctl help help --cache-dir $WORK
+! stderr .
+
+# help -h
+exec bomctl help -h
+! stderr .
+
+# help --help
+exec bomctl help --help
+! stderr .

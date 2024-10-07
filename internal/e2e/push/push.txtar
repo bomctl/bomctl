@@ -1,0 +1,49 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+setup_cache $WORK
+
+# push help
+exec bomctl push -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# push help
+exec bomctl push --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help push
+exec bomctl help push --cache-dir $WORK
+! stderr .
+stdout .
+
+# push no input (FAILURE EXPECTED)
+! exec bomctl push --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 0)'
+! stdout .
+
+# push one input (FAILURE EXPECTED)
+! exec bomctl push --cache-dir $WORK urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 1)'
+! stdout .
+
+# push
+exec bomctl push --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 $PUSH_URL
+stderr -count=1 '^(INFO  push: Pushing document id=urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79)\n'
+stderr -count=1 '(INFO  push: Pushing to Git URL url=http://127.0.0.1:[0-9]{5}/test/repo.git@main#path/to/sbom.cdx.json)\n'
+stderr -count=1 '(INFO  push: Writing document name=path/to/sbom.cdx.json)'
+! stdout .
+
+# push --tree
+[net] exec bomctl push --cache-dir $WORK -f spdx --tree urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db $PUSH_URL
+stderr -count=1 '^(INFO  push: Pushing document id=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)\n'
+stderr -count=1 '(INFO  push: Pushing to Git URL url=http://127\.0\.0\.1:[0-9]{5}/test/repo.git@main#path/to/sbom\.cdx\.json)\n'
+stderr -count=1 '(INFO  push: Writing document name=path/to/sbom\.cdx\.json)\n'
+stderr -count=1 '(INFO  push: Fetching external reference SBOMs id=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)\n'
+stderr -count=1 '(INFO  push: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0\.3\.0_linux_amd64\.tar\.gz\.spdx\.json)\n'
+stderr -count=1 '(INFO  push: Fetching external reference SBOMs id=https://anchore.com/syft/file/bomctl_0\.3\.0_linux_amd64\.tar\.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)\n'
+stderr -count=1 '(INFO  push: External reference SBOM name=bomctl_0_3_0_linux_amd64_tar_gz\.json)\n'
+[unix] stderr -count=1 '(INFO  push: Writing document name=path/to/bomctl_0_3_0_linux_amd64_tar_gz\.json)\n'
+[windows] stderr -count=1 '(INFO  push: Writing document name=path\\to\\bomctl_0_3_0_linux_amd64_tar_gz\.json)\n'
+! stdout .

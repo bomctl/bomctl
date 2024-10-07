@@ -210,6 +210,9 @@ linters-settings:
         exclude: [TEST, ~cmd/.*\.go]
         arguments: [10]
 
+      - name: confusing-naming
+        exclude: [TEST]
+
       - name: cyclomatic
         disabled: true
 

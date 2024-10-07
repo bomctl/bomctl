@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/protobom/protobom/pkg/sbom"
@@ -38,8 +39,10 @@ type dbSuite struct {
 	documents []*sbom.Document
 }
 
+var documentTags = [][]string{{"tag1", "tag2"}, {"tag2", "tag3"}}
+
 func (dbs *dbSuite) SetupSuite() {
-	backend, err := db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
+	backend, err := db.NewBackend(db.WithDatabaseFile(":memory:"))
 	if err != nil {
 		dbs.T().Fatalf("%v", err)
 	}
@@ -51,8 +54,8 @@ func (dbs *dbSuite) SetupSuite() {
 		dbs.T().Fatalf("%v", err)
 	}
 
-	for sbomIdx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join("testdata", sboms[sbomIdx].Name()))
+	for idx := range sboms {
+		sbomData, err := os.ReadFile(filepath.Join("testdata", sboms[idx].Name()))
 		if err != nil {
 			dbs.T().Fatalf("%v", err)
 		}
@@ -62,6 +65,17 @@ func (dbs *dbSuite) SetupSuite() {
 			dbs.FailNow("failed storing document", "err", err)
 		}
 
+		name := strings.Split(sboms[idx].Name(), ".")[1]
+		dbs.Require().NoError(
+			backend.SetUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation, name),
+			"failed to set alias", "err", err,
+		)
+
+		dbs.Require().NoError(
+			backend.AddAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, documentTags[idx]...),
+			"failed to add tags", "err", err,
+		)
+
 		dbs.documents = append(dbs.documents, doc)
 	}
 }
@@ -69,9 +83,9 @@ func (dbs *dbSuite) SetupSuite() {
 func (dbs *dbSuite) TearDownSuite() {
 	dbs.backend.CloseClient()
 
-	if _, err := os.Stat(db.DatabaseFile); err == nil {
-		if err := os.Remove(db.DatabaseFile); err != nil {
-			dbs.T().Logf("Error removing database file %s", db.DatabaseFile)
+	if _, err := os.Stat(":memory:"); err == nil {
+		if err := os.Remove(":memory:"); err != nil {
+			dbs.T().Logf("Error removing database file %s", ":memory:")
 		}
 	}
 }
@@ -93,7 +107,162 @@ func (dbs *dbSuite) TestGetDocumentByID() {
 	}
 }
 
-func TestStoreSuite(t *testing.T) {
+func (dbs *dbSuite) TestGetDocumentByIDOrAlias() {
+	cdxDoc, err := dbs.backend.GetDocumentByIDOrAlias("cdx")
+	if err != nil {
+		dbs.Fail("failed retrieving document", "alias", "cdx")
+	}
+
+	spdxDoc, err := dbs.backend.GetDocumentByIDOrAlias("spdx")
+	if err != nil {
+		dbs.Fail("failed retrieving document", "alias", "spdx")
+	}
+
+	dbs.Require().Equal(cdxDoc.GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().Equal(spdxDoc.GetMetadata().GetId(), dbs.documents[1].GetMetadata().GetId())
+}
+
+func (dbs *dbSuite) TestGetDocumentsByIDOrAlias() {
+	docs, err := dbs.backend.GetDocumentsByIDOrAlias("cdx", "spdx")
+	if err != nil {
+		dbs.Fail("failed retrieving document", "aliases", "cdx, spdx")
+	}
+
+	dbs.Require().Equal(docs[0].GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().Equal(docs[1].GetMetadata().GetId(), dbs.documents[1].GetMetadata().GetId())
+}
+
+func (dbs *dbSuite) TestGetDocumentTags() {
+	tags, err := dbs.backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().NoError(err)
+	dbs.Require().EqualValues([]string{"tag1", "tag2"}, tags)
+}
+
+func (dbs *dbSuite) TestFilterDocumentsByTag() {
+	docs, err := dbs.backend.GetDocumentsByID()
+	dbs.Require().NoError(err)
+
+	for _, data := range []struct {
+		name     string
+		tags     []string
+		expected []*sbom.Document
+	}{
+		{
+			name:     "Normal (1 tag, 1 doc)",
+			tags:     []string{"tag1"},
+			expected: []*sbom.Document{dbs.documents[0]},
+		},
+		{
+			name:     "Normal (1 tag, 2 docs)",
+			tags:     []string{"tag2"},
+			expected: dbs.documents[0:2],
+		},
+		{
+			name:     "Normal (another tag, 1 doc)",
+			tags:     []string{"tag3"},
+			expected: []*sbom.Document{dbs.documents[1]},
+		},
+		{
+			name:     "Normal (multiple tags)",
+			tags:     []string{"tag1", "tag2", "tag3"},
+			expected: dbs.documents[0:2],
+		},
+		{
+			name:     "Unknown tag",
+			tags:     []string{"unknown_tag"},
+			expected: []*sbom.Document{},
+		},
+		{
+			name:     "No tags",
+			tags:     []string{},
+			expected: dbs.documents[0:2],
+		},
+	} {
+		dbs.Run(data.name, func() {
+			filteredDocs, err := dbs.backend.FilterDocumentsByTag(docs, data.tags...)
+			dbs.Require().NoError(err)
+			dbs.Require().Len(filteredDocs, len(data.expected))
+
+			for idx := range data.expected {
+				dbs.Equal(filteredDocs[idx].GetMetadata().GetId(), data.expected[idx].GetMetadata().GetId())
+			}
+		})
+	}
+}
+
+func (dbs *dbSuite) TestSetAlias() {
+	docs, err := dbs.backend.GetDocumentsByID()
+	dbs.Require().NoError(err)
+
+	for _, data := range []struct {
+		name      string
+		alias     string
+		errorMsg  string
+		doc0Alias string
+		force     bool
+	}{
+		{
+			name:      "Normal",
+			alias:     "cdx",
+			errorMsg:  "",
+			doc0Alias: "",
+			force:     false,
+		},
+		{
+			name:      "Duplicate alias",
+			alias:     "spdx",
+			errorMsg:  "failed to set alias: alias already exists",
+			doc0Alias: "",
+			force:     false,
+		},
+		{
+			name:      "Duplicate alias (force)",
+			alias:     "spdx",
+			errorMsg:  "failed to set alias: alias already exists",
+			doc0Alias: "",
+			force:     true,
+		},
+		{
+			name:      "Existing alias",
+			alias:     "cdx2",
+			errorMsg:  "the document already has an alias",
+			doc0Alias: "cdx",
+			force:     false,
+		},
+		{
+			name:      "Existing alias (force)",
+			alias:     "cdx2",
+			errorMsg:  "",
+			doc0Alias: "cdx",
+			force:     true,
+		},
+	} {
+		dbs.Run(data.name, func() {
+			err := dbs.backend.RemoveAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
+			dbs.Require().NoError(err)
+
+			if data.doc0Alias != "" {
+				dbs.Require().NoError(
+					dbs.backend.SetUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation, data.doc0Alias),
+					"failed to set alias", "err", err,
+				)
+			}
+
+			err = dbs.backend.SetAlias(docs[0].GetMetadata().GetId(), data.alias, data.force)
+			if data.errorMsg == "" {
+				dbs.Require().NoError(err)
+				docAlias, err := dbs.backend.GetDocumentUniqueAnnotation(
+					docs[0].GetMetadata().GetId(), db.AliasAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal(data.alias, docAlias)
+			} else {
+				dbs.Require().EqualError(err, data.errorMsg)
+			}
+		})
+	}
+}
+
+func TestDBSuite(t *testing.T) {
 	t.Parallel()
 	suite.Run(t, new(dbSuite))
 }

@@ -24,8 +24,10 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/writer"
 
@@ -96,9 +98,15 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 		}
 	}
 
+	author := &object.Signature{
+		Name:  "bomctl",
+		Email: "bomctl@users.noreply.github.com",
+		When:  time.Now(),
+	}
+
 	// Commit written SBOM file to cloned repo.
 	if _, err := client.worktree.Commit(
-		fmt.Sprintf("bomctl push of %s", url.Fragment), &git.CommitOptions{All: true},
+		fmt.Sprintf("bomctl push of %s", url.Fragment), &git.CommitOptions{All: true, Author: author},
 	); err != nil {
 		return fmt.Errorf("committing worktree: %w", err)
 	}
