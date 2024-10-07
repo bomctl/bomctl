@@ -1,0 +1,19 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# version -help
+exec bomctl version -h --cache-dir $WORK
+! stderr .
+
+# version --help
+exec bomctl version --help --cache-dir $WORK
+! stderr .
+
+# version
+exec bomctl version --cache-dir $WORK
+! stdout .
+cmpenv stderr version.txt
+
+-- version.txt --
+bomctl: version=$VERSION buildDate="$BUILD_DATE"

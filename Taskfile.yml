@@ -104,9 +104,12 @@ tasks:
 
   test:
     desc: Run all tests
-    cmds:
-      - task: test:unit
+    cmd: go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
 
   test:unit:
     desc: Run unit tests
-    cmd: go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
+    cmd: go test -failfast -v -coverprofile=coverage.out -covermode=atomic -short ./...
+
+  test:e2e:
+    desc: Run unit tests
+    cmd: go test -failfast -v ./internal/e2e/...

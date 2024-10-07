@@ -172,6 +172,19 @@ func rootCmd() *cobra.Command {
 	return rootCmd
 }
 
-func Execute() {
-	cobra.CheckErr(rootCmd().Execute())
+func Execute() (rc int) {
+	rc = 0
+
+	defer func() {
+		if r := recover(); r != nil {
+			// handle the panic
+			rc = 1
+		}
+	}()
+
+	if err := rootCmd().Execute(); err != nil {
+		rc = 1
+	}
+
+	return rc
 }

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: main.go
+// SPDX-FileName: internal/e2e/merge/merge_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,14 +17,34 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package main
+package e2e_merge_test
 
 import (
 	"os"
+	"testing"
+
+	"github.com/rogpeppe/go-internal/testscript"
 
 	"github.com/bomctl/bomctl/cmd"
+	"github.com/bomctl/bomctl/internal/e2e/e2eutil"
 )
 
-func main() {
-	os.Exit(cmd.Execute())
+func TestBomctlMerge(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	t.Parallel()
+	testscript.Run(t, testscript.Params{
+		Dir:                 ".",
+		RequireExplicitExec: true,
+		Cmds:                e2eutil.CustomCommands(),
+	})
+}
+
+func TestMain(m *testing.M) {
+	exitCode := testscript.RunMain(m, map[string]func() int{
+		"bomctl": cmd.Execute,
+	})
+	os.Exit(exitCode)
 }
