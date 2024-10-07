@@ -36,6 +36,30 @@ binaries.
 Another feature to discuss is the ability to express relationships between the components in the
 SBOM.
 
+### Implications
+
+- A user creates two SBOMs __locally__, and then uses `bomctl` to link one of the SBOMs to a component
+in the other document.
+  - What should the `externalRef` from the child SBOM to the parent SBOM look like?
+  - When these documents are pushed to another service (OCI registry, github release, etc), should these
+    `externalRef` be resolved and updated to be their "pushed" location?
+  - When a new link is created is a new parent document created? What about the parent's parent document?
+- A user creates an SBOM, and then uses `bomctl` to link to an external document.
+  - What should the `externalRef` from the child SBOM to the parent SBOM look like?
+  - When these documents are pushed to another service (OCI registry, github release, etc), should these
+    `externalRef` be resolved and updated to be their "pushed" location?
+  - When a new link is created is a new parent document created? What about the parent's parent document?
+- A user creates an SBOM, and then uses `bomctl` to link to a document that was previously loaded from
+  an external document?
+  - What should the `externalRef` from the child SBOM to the parent SBOM look like?
+  - When these documents are pushed to another service (OCI registry, github release, etc), should these
+    `externalRef` be resolved and updated to be their "pushed" location?
+  - When a new link is created is a new parent document created? What about the parent's parent document?
+
+### Other Considerations
+
+- We have plans to sign SBOMs, when should this happen?
+
 ## Decision
 <!--
 This section describes our response to these forces. It is stated in full sentences, with active voice. "We will …"
@@ -43,7 +67,7 @@ This section describes our response to these forces. It is stated in full senten
 
 <!-- What is the change that we're proposing and/or doing? -->
 
-**TBD.**
+__TBD.__
 
 ## Consequences
 <!--
@@ -54,16 +78,16 @@ affect the team and project in the future.
 
 <!-- What becomes easier or more difficult to do because of this change? -->
 
-:heavy_check_mark: **Cross-referencing and tracking components will become easier**. By allowing
+:heavy_check_mark: __Cross-referencing and tracking components will become easier__. By allowing
 external references and expressing relationships between components, tracking and understanding the
 connections between various parts of a system will become more manageable. This will enable more
 efficient analysis, such as impact assessment when making changes or upgrades.
 
-:heavy_check_mark: **Vulnerability scanning will be more thorough**. With external references, it
+:heavy_check_mark: __Vulnerability scanning will be more thorough__. With external references, it
 will be easier to correlate SBOM components with known vulnerabilities in external repositories,
 improving the overall security of the system.
 
-:x: **Data validation and consistency will become harder**. With external references, ensuring data
+:x: __Data validation and consistency will become harder__. With external references, ensuring data
 consistency and validating the accuracy of information from external sources could become more
 challenging. Implementing robust validation and error-handling mechanisms will be crucial to
 maintain data integrity.
