@@ -105,7 +105,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 }
 
-func (client *Client) createRepository( //nolint:revive
+func (client *Client) createRepository(
 	url *netutil.URL,
 	auth *netutil.BasicAuth,
 	opts *options.Options,

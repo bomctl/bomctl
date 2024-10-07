@@ -28,6 +28,7 @@
 !/docs/**/*.md
 !/docs/images/*.png
 !/docs/images/*.svg
+!/internal/e2e/**/*.txtar
 !/Taskfile.yml
 
 # Whitelist patterns found anywhere in project

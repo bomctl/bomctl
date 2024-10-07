@@ -1,0 +1,70 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+add_files $WORK sbom.cdx.json
+
+# alias set -h
+exec bomctl alias set -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias set --help
+exec bomctl alias set --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help alias set
+exec bomctl help alias set --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias set no input (FAILURE EXPECTED)
+! exec bomctl alias set --cache-dir $WORK
+stderr -count=1 '^Error: accepts 2 arg\(s\), received 0$'
+! stdout .
+
+# alias set one input (FAILURE EXPECTED)
+! exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+stderr -count=1 '^Error: accepts 2 arg\(s\), received 1$'
+! stdout .
+
+# alias set sbom_id
+exec bomctl import --cache-dir $WORK sbom.cdx.json
+! stdout .
+! stderr .
+
+exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 root_beer
+! stderr .
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+cmp stdout alias_set_list.txt
+
+# alias set same sbom with different alias (FAILURE EXPECTED)
+! exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 cherry_coke
+stderr 'FATAL db: The document already has an alias. To replace it, re-run the command with the --force flag'
+! stdout .
+
+# alias set sbom_id -f
+exec bomctl alias set --cache-dir $WORK -f urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 dr_pepper
+! stderr .
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+cmp stdout force_set_list.txt
+! stderr .
+
+-- force_set_list.txt --
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : dr_pepper
+Version : 1
+# Nodes : 3
+
+-- alias_set_list.txt --
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : root_beer
+Version : 1
+# Nodes : 3
+
