@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
-// SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+// -----------------------------------------------------------------------------
+// SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: internal/pkg/options/options.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package options //nolint:revive
 
 import (
@@ -39,6 +40,11 @@ type (
 
 	Option func(*Options)
 
+	AliasOptions struct {
+		*Options
+		Force bool
+	}
+
 	ExportOptions struct {
 		*Options
 		OutputFile *os.File
@@ -46,19 +52,25 @@ type (
 	}
 
 	FetchOptions struct {
-		OutputFile *os.File
 		*Options
-		UseNetRC bool
+		OutputFile *os.File
+		Alias      string
+		Tags       []string
+		UseNetRC   bool
 	}
 
 	ImportOptions struct {
 		*Options
 		InputFiles []*os.File
+		Alias      []string
+		Tags       []string
 	}
 
 	MergeOptions struct {
 		*Options
 		DocumentName string
+		Alias        string
+		Tags         []string
 	}
 
 	PushOptions struct {

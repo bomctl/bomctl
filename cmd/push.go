@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/push.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package cmd
 
 import (
@@ -55,7 +56,13 @@ func pushCmd() *cobra.Command {
 
 			opts.Format = format
 
-			if err := push.Push(args[0], args[1], opts); err != nil {
+			// Get the document to obtain its ID, in case the provided ID was an alias.
+			document, err := backend.GetDocumentByIDOrAlias(args[0])
+			if err != nil {
+				opts.Logger.Fatal(err, "documentID", args[0])
+			}
+
+			if err := push.Push(document.GetMetadata().GetId(), args[1], opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 		},

@@ -28,12 +28,13 @@
 !/docs/**/*.md
 !/docs/images/*.png
 !/docs/images/*.svg
+!/internal/e2e/**/*.txtar
 !/Taskfile.yml
 
 # Whitelist patterns found anywhere in project
 !.gitignore
 !*.go
-!**/testdata/*
+!**/testdata/**
 !CODE_OF_CONDUCT.md
 !CODEOWNERS
 !CONTRIBUTING.md
@@ -43,9 +44,10 @@
 !go.mod
 !go.sum
 !LICENSE
-!Makefile
 !MAINTAINERS.md
+!Makefile
 !README.md
+!ROADMAP.md
 !SECURITY.md
 
 !*/

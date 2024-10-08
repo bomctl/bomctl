@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: internal/pkg/merge/merge.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,10 +15,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package merge
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 
@@ -30,6 +32,8 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
+var errMissingDocument = errors.New("one or more documents not found")
+
 func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 	backend, err := db.BackendFromContext(opts.Context())
 	if err != nil {
@@ -38,16 +42,15 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 
 	backend.Logger.Info("Merging documents", "documentIDs", documentIDs)
 
-	documents, err := backend.GetDocumentsByID(documentIDs...)
+	// Make document list a map so it can sort by the ids provided
+	documentMap, tags, err := getSourceData(backend, documentIDs)
 	if err != nil {
-		return "", fmt.Errorf("%w", err)
+		return "", fmt.Errorf("failed to get source data: %w", err)
 	}
 
-	// Make document list a map so it can sort by the ids provided
-	documentMap := make(map[string]*sbom.Document)
-	for _, doc := range documents {
-		documentMap[doc.GetMetadata().GetId()] = doc
-	}
+	tags = append(tags, opts.Tags...)
+	slices.Sort(tags)
+	tags = slices.Compact(tags)
 
 	merged, err := performTopLevelMerge(documentIDs, documentMap, opts)
 	if err != nil {
@@ -60,11 +63,52 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 
 	backend.Logger.Info("Adding merged document", "sbomID", merged.GetMetadata().GetId())
 
-	if err := backend.AddDocument(merged); err != nil {
-		merged.Metadata.Id = ""
+	if err := backend.Store(merged, nil); err != nil {
+		return "", fmt.Errorf("%w", err)
+	}
+
+	if opts.Alias != "" {
+		if err := backend.SetAlias(merged.GetMetadata().GetId(), opts.Alias, false); err != nil {
+			opts.Logger.Warn("Alias could not be set.", "err", err)
+		}
+	}
+
+	if err := backend.AddAnnotations(merged.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
 	return merged.GetMetadata().GetId(), err
+}
+
+func getSourceData(backend *db.Backend, documentIDs []string) (documentMap map[string]*sbom.Document, tags []string,
+	err error,
+) {
+	documents, err := backend.GetDocumentsByIDOrAlias(documentIDs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w", err)
+	}
+
+	if len(documents) == 0 {
+		return nil, nil, errMissingDocument
+	}
+
+	documentMap = make(map[string]*sbom.Document)
+	tags = []string{}
+
+	for idx := range documents {
+		documentID := documents[idx].GetMetadata().GetId()
+		documentIDs[idx] = documentID
+		documentMap[documentID] = documents[idx]
+
+		documentTags, err := backend.GetDocumentTags(documentID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get source document tags: %w", err)
+		}
+
+		tags = append(tags, documentTags...)
+	}
+
+	return documentMap, tags, nil
 }
 
 func performTopLevelMerge(sbomIDs []string, documentMap map[string]*sbom.Document,

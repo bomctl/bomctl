@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/http/fetch.go
+// SPDX-FileName: internal/pkg/client/http/client.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,14 +15,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package http
 
 import (
 	"fmt"
 	"regexp"
 
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
 type Client struct{}
@@ -42,7 +43,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *url.ParsedURL {
+func (client *Client) Parse(rawURL string) *netutil.URL {
 	results := map[string]string{}
 	pattern := client.RegExp()
 	match := pattern.FindStringSubmatch(rawURL)
@@ -58,7 +59,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		}
 	}
 
-	return &url.ParsedURL{
+	return &netutil.URL{
 		Scheme:   results["scheme"],
 		Username: results["username"],
 		Password: results["password"],

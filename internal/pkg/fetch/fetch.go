@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: internal/pkg/fetch/fetch.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package fetch
 
 import (
@@ -27,7 +28,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
@@ -35,27 +35,12 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func Fetch(sbomURL string, opts *options.FetchOptions) error {
+func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 	backend, err := db.BackendFromContext(opts.Context())
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 
-	doc, err := GetRemoteDocument(sbomURL, opts)
-	if err != nil {
-		return err
-	}
-
-	// Insert fetched document data into database.
-	if err := backend.AddDocument(doc); err != nil {
-		return fmt.Errorf("error adding document: %w", err)
-	}
-
-	// Fetch externally referenced BOMs
-	return fetchExternalReferences(doc, backend, opts)
-}
-
-func GetRemoteDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
@@ -75,14 +60,21 @@ func GetRemoteDocument(sbomURL string, opts *options.FetchOptions) (*sbom.Docume
 		}
 	}
 
-	sbomReader := reader.New()
-
-	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
+	document, err := saveDocument(sbomData, backend, opts)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing SBOM file content: %w", err)
+		return nil, fmt.Errorf("failed to save document: %w", err)
 	}
 
-	return document, nil
+	if err := backend.SetUniqueAnnotation(
+		document.GetMetadata().GetId(), db.SourceURLAnnotation, sbomURL,
+	); err != nil {
+		return nil, fmt.Errorf("applying unique annotation %s to %s: %w",
+			db.SourceURLAnnotation, document.GetMetadata().GetId(), err,
+		)
+	}
+
+	// Fetch externally referenced BOMs
+	return document, fetchExternalReferences(document, backend, opts)
 }
 
 func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {
@@ -92,18 +84,18 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 	}
 
 	for _, ref := range extRefs {
-		extRefsOpt := *opts
-		if extRefsOpt.OutputFile != nil {
+		extRefOpts := *opts
+		if extRefOpts.OutputFile != nil {
 			out, err := getRefFile(opts.OutputFile)
 			if err != nil {
 				return err
 			}
 
-			extRefsOpt.OutputFile = out
-			defer extRefsOpt.OutputFile.Close() //nolint:revive
+			extRefOpts.OutputFile = out
+			defer extRefOpts.OutputFile.Close() //nolint:revive
 		}
 
-		if err := Fetch(ref.GetUrl(), &extRefsOpt); err != nil {
+		if _, err := Fetch(ref.GetUrl(), &extRefOpts); err != nil {
 			return err
 		}
 	}
@@ -142,4 +134,25 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 	}
 
 	return refOutput, nil
+}
+
+func saveDocument(data []byte, backend *db.Backend, opts *options.FetchOptions) (*sbom.Document, error) {
+	// Insert fetched document data into database.
+	document, err := backend.AddDocument(data)
+	if err != nil {
+		return nil, fmt.Errorf("adding document: %w", err)
+	}
+
+	if opts.Alias != "" {
+		if err := backend.SetAlias(document.GetMetadata().GetId(), opts.Alias, false); err != nil {
+			opts.Logger.Warn("Alias could not be set.", "err", err)
+		}
+	}
+
+	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
+	}
+
+	// Fetch externally referenced BOMs
+	return document, nil
 }

@@ -82,9 +82,32 @@ cd bomctl
   - [fetch](#fetch)
   - [import](#import)
 - Operations are performed on the cached SBOMs
+  - [alias](#alias)
   - [list](#list)
+  - [merge](#merge)
+  - [tag](#tag)
 - SBOMs are outputted out of the cache
   - [export](#export)
+  - [push](#push)
+
+### Alias
+
+Edit the alias for an SBOM document.
+
+> [!NOTE]
+> An SBOM document can only have a single alias and each alias must be globally unique.
+
+```shell
+bomctl alias [command]
+
+Subcommands:
+  list        List all alias definitions
+  remove      Remove the alias for a specific document
+  set         Set the alias for a specific document
+
+Flags:
+  -h, --help   help for alias
+```
 
 ### Export
 
@@ -108,9 +131,11 @@ Ability to retrieve SBOM files over several protocols, including HTTPS, OCI, and
 bomctl fetch [flags] SBOM_URL...
 
 Flags:
+      --alias string       Readable identifier to apply to document
   -h, --help               help for fetch
       --netrc              Use .netrc file for authentication to remote hosts
   -o, --output-file FILE   Path to output file
+      --tag stringArray    Tag(s) to apply to document (can be specified multiple times)
 ```
 
 This includes recursive loading of external references in an SBOM to other SBOMs and placing them into the persistent cache. If SBOMs are access controlled, a user's [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) file can be used to authenticate.
@@ -131,7 +156,9 @@ Import SBOM files from either standard input or the local file system.
 bomctl import [flags] { - | FILE...}
 
 Flags:
-  -h, --help   help for import
+      --alias stringArray   Readable identifier(s) to apply to imported document(s) (specify multiple times for multiple documents)
+  -h, --help                help for import
+      --tag stringArray     Tag(s) to apply to all imported documents (can be specified multiple times)
 ```
 
 ### List
@@ -145,7 +172,8 @@ Aliases:
   list, ls
 
 Flags:
-  -h, --help   help for list
+  -h, --help              help for list
+      --tag stringArray   Tag(s) used to filter documents (can be specified multiple times)
 ```
 
 ### Merge
@@ -156,33 +184,70 @@ Merge specified cached SBOM documents.
   bomctl merge [flags] DOCUMENT_ID...
 
 Flags:
-  -h, --help          help for merge
-  -n, --name string   Name of merged document
+      --alias string      Readable identifier to apply to merged document
+  -h, --help              help for merge
+  -n, --name string       Name of merged document
+      --tag stringArray   Tag(s) to apply to merged document (can be specified multiple times)
+```
+
+### Push
+
+Push stored SBOM file to remote URL or filesystem.
+
+```shell
+  bomctl push [flags] SBOM_ID DEST_PATH
+
+Flags:
+  -e, --encoding string   output encoding [spdx: [json], cyclonedx: [json, xml]] (default "json")
+  -f, --format string     SBOM output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
+  -h, --help              help for push
+      --netrc             Use .netrc file for authentication to remote hosts
+      --tree              Recursively push all SBOMs in external reference tree
+```
+
+### Tag
+
+Edit the tags of an SBOM document.
+
+```shell
+bomctl tag [command]
+
+Subcommands:
+  add         Add tags to a document
+  clear       Clear all tags from a document
+  list        List the tags of a document
+  remove      Remove specified tags from a document
+
+Flags:
+  -h, --help  help for tag
 ```
 
 ## Roadmap
 
 The project is focused on building an architecture that enables reading in, operating on, and reading
-out collections of SBOM files independent of format. This project requires an architecture that prioritizes the relationships between components in a SBOM document and between SBOM documents.
+out collections of SBOM files independent of format. This project requires an architecture that
+prioritizes the relationships between components in a SBOM document and between SBOM documents.
+
+- [Complete Roadmap](ROADMAP.md)
 
 Once this architecture is established, more complex operations can be implemented. This operations include:
 
-- `Diff`
+- `diff`
   - Generating diffs between components and component dependencies
   - Generating diffs of component properties
   - Creating diffs in machine readable and human readable formats
-- `Enrich`
+- `enrich`
   - Use the [Transparency Exchange API](https://github.com/CycloneDX/transparency-exchange-api) to find enrich sbom components with additional data.
   - Interface with [GUAC](https://guac.sh/)
-- `Merge`
+- `merge`
   - Merge fields from similar components in two or more SBOM documents
   - Merge components and component dependencies from two or more SBOM documents
   - Flatten multiple SBOM document component dependencies into a single SBOM document
-- `Redact`
-  - Redact fields by regular expressions or field name while keeping tracibility to the original document
-- `Split`
+- `redact`
+  - Redact fields by regular expressions or field name while keeping traceability to the original document
+- `split`
   - Split an SBOM dependency tree into multiple files based on purl type or component identifier
-- `Trim`
+- `trim`
   - Trim an SBOM dependency tree based on purl type or component identifier
 - __Your suggestions too!__
 

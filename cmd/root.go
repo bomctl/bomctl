@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/root.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package cmd
 
 import (
@@ -34,6 +35,7 @@ import (
 )
 
 const (
+	cliTableWidth = 80
 	modeUserRead  = 0o400
 	modeUserWrite = 0o200
 	modeUserExec  = 0o100
@@ -120,8 +122,7 @@ func rootCmd() *cobra.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			cacheDir, err := cmd.Flags().GetString("cache-dir")
-			cobra.CheckErr(err)
+			cacheDir := viper.GetString("cache_dir")
 
 			// Get first top-level subcommand.
 			subcmd := cmd
@@ -158,17 +159,32 @@ func rootCmd() *cobra.Command {
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
 
+	rootCmd.AddCommand(aliasCmd())
 	rootCmd.AddCommand(exportCmd())
 	rootCmd.AddCommand(fetchCmd())
 	rootCmd.AddCommand(importCmd())
 	rootCmd.AddCommand(listCmd())
 	rootCmd.AddCommand(mergeCmd())
 	rootCmd.AddCommand(pushCmd())
+	rootCmd.AddCommand(tagCmd())
 	rootCmd.AddCommand(versionCmd())
 
 	return rootCmd
 }
 
-func Execute() {
-	cobra.CheckErr(rootCmd().Execute())
+func Execute() (rc int) {
+	rc = 0
+
+	defer func() {
+		if r := recover(); r != nil {
+			// handle the panic
+			rc = 1
+		}
+	}()
+
+	if err := rootCmd().Execute(); err != nil {
+		rc = 1
+	}
+
+	return rc
 }

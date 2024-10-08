@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/list.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,36 +15,22 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package cmd
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
-	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
-)
 
-const (
-	columnIdxID = iota
-	columnIdxVersion
-	columnIdxNumNodes
-
-	columnWidthID       = 50
-	columnWidthVersion  = 10
-	columnWidthNumNodes = 10
-
-	paddingHorizontal = 1
-	paddingVertical   = 0
-
-	rowHeaderIdx = 0
-	rowMaxHeight = 1
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
 func listCmd() *cobra.Command {
+	tags := []string{}
+
 	listCmd := &cobra.Command{
 		Use:     "list [flags] SBOM_ID...",
 		Aliases: []string{"ls"},
@@ -56,62 +42,29 @@ func listCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			documents, err := backend.GetDocumentsByID(args...)
+			documents, err := backend.GetDocumentsByIDOrAlias(args...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to get documents: %v", err)
 			}
 
-			rows := [][]string{}
-			for _, document := range documents {
-				rows = append(rows, getRow(document))
+			if len(tags) > 0 {
+				documents, err = backend.FilterDocumentsByTag(documents, tags...)
+				if err != nil {
+					backend.Logger.Fatalf("failed to get documents: %v", err)
+				}
 			}
 
-			fmt.Fprintf(os.Stdout, "\n%s\n\n", table.New().
-				Headers("ID", "Version", "# Nodes").
-				Rows(rows...).
-				BorderTop(false).
-				BorderBottom(false).
-				BorderLeft(false).
-				BorderRight(false).
-				BorderHeader(true).
-				StyleFunc(styleFunc).
-				String(),
-			)
+			listOutput := outpututil.NewTable()
+			for _, document := range documents {
+				listOutput.AddRow(document, backend)
+			}
+
+			fmt.Fprintln(os.Stdout, listOutput.String())
 		},
 	}
 
+	listCmd.Flags().StringArrayVar(&tags, "tag", []string{},
+		"Tag(s) used to filter documents (can be specified multiple times)")
+
 	return listCmd
-}
-
-func styleFunc(row, col int) lipgloss.Style {
-	width := 0
-	align := lipgloss.Center
-
-	switch col {
-	case columnIdxID:
-		width = columnWidthID
-
-		if row != rowHeaderIdx {
-			align = lipgloss.Left
-		}
-	case columnIdxVersion:
-		width = columnWidthVersion
-	case columnIdxNumNodes:
-		width = columnWidthNumNodes
-	}
-
-	return lipgloss.NewStyle().
-		Padding(paddingVertical, paddingHorizontal).
-		Width(width).
-		AlignHorizontal(align).
-		MaxHeight(rowMaxHeight)
-}
-
-func getRow(doc *sbom.Document) []string {
-	id := doc.GetMetadata().GetName()
-	if id == "" {
-		id = doc.GetMetadata().GetId()
-	}
-
-	return []string{id, doc.GetMetadata().GetVersion(), fmt.Sprint(len(doc.GetNodeList().GetNodes()))}
 }

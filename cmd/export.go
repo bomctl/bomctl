@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/export.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package cmd
 
 import (
@@ -41,7 +42,7 @@ var (
 	errFormatNotSupported   = errors.New("format not supported")
 )
 
-func exportCmd() *cobra.Command {
+func exportCmd() *cobra.Command { //nolint:funlen
 	opts := &options.ExportOptions{}
 	outputFile := outputFileValue("")
 
@@ -84,8 +85,18 @@ func exportCmd() *cobra.Command {
 				defer opts.OutputFile.Close()
 			}
 
-			for _, id := range args {
-				if err := export.Export(id, opts); err != nil {
+			// Get the documents to obtain their IDs, in case the provided IDs were aliases.
+			documents, err := backend.GetDocumentsByIDOrAlias(args...)
+			if err != nil {
+				opts.Logger.Fatal(err, "documentID(s)", args)
+			}
+
+			if len(documents) == 0 {
+				opts.Logger.Errorf("documentID(s) not found: %s", args)
+			}
+
+			for _, document := range documents {
+				if err := export.Export(document.GetMetadata().GetId(), opts); err != nil {
 					opts.Logger.Fatal(err)
 				}
 			}
