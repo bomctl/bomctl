@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: main.go
+// SPDX-FileName: internal/e2e/completion/completion_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,14 +17,32 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package main
+package e2e_completion_test
 
 import (
 	"os"
+	"testing"
+
+	"github.com/rogpeppe/go-internal/testscript"
 
 	"github.com/bomctl/bomctl/cmd"
 )
 
-func main() {
-	os.Exit(cmd.Execute())
+func TestBomctlCompletion(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	t.Parallel()
+	testscript.Run(t, testscript.Params{
+		Dir:                 ".",
+		RequireExplicitExec: true,
+	})
+}
+
+func TestMain(m *testing.M) {
+	exitCode := testscript.RunMain(m, map[string]func() int{
+		"bomctl": cmd.Execute,
+	})
+	os.Exit(exitCode)
 }
