@@ -20,7 +20,6 @@
 package cmd
 
 var (
-	TestCmd         = rootCmd()
 	EncodingOptions = encodingOptions
 	FormatOptions   = formatOptions
 	ParseFormat     = parseFormat
