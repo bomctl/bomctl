@@ -39,11 +39,6 @@ type (
 	urlSliceValue       []string
 )
 
-var (
-	errDirNotFound  = errors.New("not a directory or does not exist")
-	errFileNotFound = errors.New("not a file or does not exist")
-)
-
 func checkDirectory(value string) {
 	directory, err := os.Stat(value)
 

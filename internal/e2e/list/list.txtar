@@ -28,9 +28,19 @@ exec bomctl ls --cache-dir $WORK
 cmp stdout list_no_input.txt
 ! stderr .
 
+# ls no document match for tag found
+exec bomctl ls --cache-dir $WORK --tag yeppers
+! stdout .
+! stderr .
+
+# ls no document match found
+exec bomctl ls --cache-dir $WORK --tag urn:uuid:8675309
+! stdout .
+! stderr .
+
 # list tag
 exec bomctl tag add --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 yeppers
-! stderr . 
+! stderr .
 ! stdout .
 
 exec bomctl list --cache-dir $WORK --tag yeppers

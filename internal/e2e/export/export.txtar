@@ -22,10 +22,26 @@ stdout .
 # export no input (FAILURE EXPECTED)
 ! exec bomctl export --cache-dir $WORK
 stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
+! stdout .
 
 # export non-existent sbom
 exec bomctl export --cache-dir $WORK "super-cool-blaster-extreme"
 stderr '^(ERROR export: documentID\(s\) not found: \[\"super-cool-blaster-extreme\"\])$'
+! stdout .
+
+# export -o with two sboms (FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK --output-file onyx.json testsbom1.json testsbom2.json
+stderr -count=1 '^(FATAL export: The --output-file option cannot be used when more than one SBOM is provided\.)$'
+! stdout .
+
+# export --output-file with two sboms (FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK --output-file geodude.json testsbom1.json testsbom2.json
+stderr -count=1 '^(FATAL export: The --output-file option cannot be used when more than one SBOM is provided\.)$'
+! stdout .
+
+# export --output-file with non-workable filename(FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK --output-file . testsbom.json
+stderr -count=1 '^(FATAL export: error creating output file outputFile=\.)$'
 ! stdout .
 
 # export cdx sbom
@@ -50,8 +66,7 @@ exists squirtle.json
 compare_docs $WORK squirtle.json test-linked.cdx.json
 
 # export spdx sbom
-# exec bomctl export --cache-dir $WORK -f spdx-2.3 spdx <-- this fails with: FATAL export: encoding not supported for selected format format=spdx-2.3 encoding=json
-exec bomctl export --cache-dir $WORK -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+exec bomctl export --cache-dir $WORK -f spdx-2.3 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 stdout '.*("documentNamespace": "https://spdx.org/spdxdocs/",).*'
 

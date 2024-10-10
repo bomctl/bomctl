@@ -22,6 +22,16 @@ stdout .
 stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
 ! stdout .
 
+# import non-existent file (FAILURE EXPECTED)
+! exec bomctl import --cache-dir $WORK test-1.sbom.json
+stderr -count=1 '^(FATAL import: failed to open input file err="open test-1\.sbom\.json: no such file or directory" file=<nil>)$'
+! stdout .
+
+# import stdin and file (FAILURE EXPECTED)
+! exec bomctl import --cache-dir $WORK - test-1.sbom.json
+stderr -count=1 '^(FATAL import: Piped input and file path args cannot be specified simultaneously\.)$'
+! stdout .
+
 # import from file
 exec bomctl import --cache-dir $WORK import_test.cdx.json
 ! stderr .
@@ -55,7 +65,7 @@ rm bomctl.db
 # import from file multiple tags
 exec bomctl import --cache-dir $WORK --tag strawberry --tag rocky_road import_test.cdx.json
 ! stdout .
-! stderr . 
+! stderr .
 
 exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 ! stderr .
@@ -99,7 +109,7 @@ rm bomctl.db
 stdin import_test.cdx.json
 exec bomctl import --cache-dir $WORK --tag strawberry --tag rocky_road  -
 ! stdout .
-! stderr . 
+! stderr .
 
 exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 ! stderr .

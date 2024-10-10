@@ -20,12 +20,17 @@ stdout .
 
 # alias set no input (FAILURE EXPECTED)
 ! exec bomctl alias set --cache-dir $WORK
-stderr -count=1 '^Error: accepts 2 arg\(s\), received 0$'
+stderr -count=1 '^(Error: accepts 2 arg\(s\), received 0)$'
 ! stdout .
 
 # alias set one input (FAILURE EXPECTED)
 ! exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
-stderr -count=1 '^Error: accepts 2 arg\(s\), received 1$'
+stderr -count=1 '^(Error: accepts 2 arg\(s\), received 1)$'
+! stdout .
+
+# alias set non-existent sbom (FAILURE EXPECTED)
+! exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 cheer_wine
+stderr -count=1 '^(FATAL db: no documents found with the specified ID)$'
 ! stdout .
 
 # alias set sbom_id
@@ -42,7 +47,7 @@ cmp stdout alias_set_list.txt
 
 # alias set same sbom with different alias (FAILURE EXPECTED)
 ! exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 cherry_coke
-stderr 'FATAL db: The document already has an alias. To replace it, re-run the command with the --force flag'
+stderr '^(FATAL db: The document already has an alias. To replace it, re-run the command with the --force flag)$'
 ! stdout .
 
 # alias set sbom_id -f
