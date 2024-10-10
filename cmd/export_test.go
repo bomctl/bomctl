@@ -24,40 +24,39 @@ import (
 	"testing"
 
 	"github.com/protobom/protobom/pkg/formats"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/cmd"
 )
 
-func Test_ParseFormat(t *testing.T) {
-	t.Parallel()
+type fetchCmdSuite struct {
+	suite.Suite
+}
 
+func (fcs *fetchCmdSuite) TestParseFormat() {
 	availableEncodings := cmd.EncodingOptions()
 	availableFormats := cmd.FormatOptions()
 
 	for _, format := range availableFormats {
-		formatBase := getFormatBase(format)
-		for _, encoding := range availableEncodings[formatBase] {
+		var baseFormat string
+
+		if strings.Contains(format, formats.CDXFORMAT) {
+			baseFormat = formats.CDXFORMAT
+		} else {
+			baseFormat = formats.SPDXFORMAT
+		}
+
+		for _, encoding := range availableEncodings[baseFormat] {
 			_, err := cmd.ParseFormat(format, encoding)
 			if err != nil {
-				t.Logf("unexpected error while parsing format: %s with encoding: %s. Err: %v", format, encoding, err)
-				t.FailNow()
+				fcs.FailNow("unexpected error while parsing format: %s with encoding: %s. Err: %v",
+					format, encoding, err)
 			}
 		}
 	}
 }
 
-func getFormatBase(fmt string) string {
-	if strings.Contains(fmt, formats.CDXFORMAT) {
-		return formats.CDXFORMAT
-	}
-
-	return formats.SPDXFORMAT
-}
-
-func Test_ParseSpecificFormat(t *testing.T) {
-	t.Parallel()
-
+func (fcs *fetchCmdSuite) TestParseFormat_Specific() {
 	for _, data := range []struct {
 		name      string
 		format    string
@@ -208,9 +207,14 @@ func Test_ParseSpecificFormat(t *testing.T) {
 	} {
 		got, err := cmd.ParseFormat(data.format, data.encoding)
 		if !data.shouldErr {
-			require.NoError(t, err)
+			fcs.Require().NoError(err)
 		}
 
-		require.Equal(t, data.expected, got)
+		fcs.Require().Equal(data.expected, got)
 	}
+}
+
+func TestFetchCmdSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(fetchCmdSuite))
 }
