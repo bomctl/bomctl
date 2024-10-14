@@ -136,6 +136,7 @@ func formatOptions() []string {
 		formats.CDXFORMAT + "-1.3",
 		formats.CDXFORMAT + "-1.4",
 		formats.CDXFORMAT + "-1.5",
+		formats.CDXFORMAT + "-1.6",
 	}
 
 	return append(spdxFormats, cdxFormats...)
@@ -166,7 +167,7 @@ func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	switch baseFormat {
 	case formats.CDXFORMAT:
 		if version == "" {
-			version = "1.5"
+			version = "1.6"
 		}
 
 		baseFormat = "application/vnd.cyclonedx"
