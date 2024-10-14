@@ -96,7 +96,7 @@ func (fcs *fetchCmdSuite) TestParseFormat_Specific() {
 			name:      "Default CDX",
 			format:    formats.CDXFORMAT,
 			encoding:  formats.JSON,
-			expected:  formats.CDX15JSON,
+			expected:  formats.CDX16JSON,
 			shouldErr: false,
 		},
 		{
