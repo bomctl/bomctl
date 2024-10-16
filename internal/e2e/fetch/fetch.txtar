@@ -22,6 +22,11 @@ stdout .
 stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
 ! stdout .
 
+# fetch not valid --output-file (FAILURE EXPECTED)
+! exec bomctl fetch --cache-dir $WORK  -o . https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+stderr -count=1 '^(FATAL fetch: error creating output file outputFileName=\.)$'
+! stdout .
+
 # fetch --output-file
 [net] exec bomctl fetch --cache-dir $WORK -o first.cdx.json https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
 cmp stderr fetch_linked.txt

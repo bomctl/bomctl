@@ -20,7 +20,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -35,11 +34,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-)
-
-var (
-	errEncodingNotSupported = errors.New("encoding not supported for selected format")
-	errFormatNotSupported   = errors.New("format not supported")
 )
 
 func exportCmd() *cobra.Command { //nolint:funlen
@@ -160,11 +154,11 @@ func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	baseFormat := results["name"]
 	version := results["version"]
 
-	if err := validateFormat(baseFormat); err != nil {
+	if err := validateFormat(formatStr); err != nil {
 		return formats.EmptyFormat, err
 	}
 
-	if err := validateEncoding(formatStr, encoding); err != nil {
+	if err := validateEncoding(baseFormat, encoding); err != nil {
 		return formats.EmptyFormat, err
 	}
 
