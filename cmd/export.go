@@ -20,7 +20,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -35,11 +34,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-)
-
-var (
-	errEncodingNotSupported = errors.New("encoding not supported for selected format")
-	errFormatNotSupported   = errors.New("format not supported")
 )
 
 func exportCmd() *cobra.Command { //nolint:funlen
@@ -142,6 +136,7 @@ func formatOptions() []string {
 		formats.CDXFORMAT + "-1.3",
 		formats.CDXFORMAT + "-1.4",
 		formats.CDXFORMAT + "-1.5",
+		formats.CDXFORMAT + "-1.6",
 	}
 
 	return append(spdxFormats, cdxFormats...)
@@ -159,11 +154,11 @@ func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	baseFormat := results["name"]
 	version := results["version"]
 
-	if err := validateFormat(baseFormat); err != nil {
+	if err := validateFormat(formatStr); err != nil {
 		return formats.EmptyFormat, err
 	}
 
-	if err := validateEncoding(formatStr, encoding); err != nil {
+	if err := validateEncoding(baseFormat, encoding); err != nil {
 		return formats.EmptyFormat, err
 	}
 
@@ -172,7 +167,7 @@ func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	switch baseFormat {
 	case formats.CDXFORMAT:
 		if version == "" {
-			version = "1.5"
+			version = "1.6"
 		}
 
 		baseFormat = "application/vnd.cyclonedx"

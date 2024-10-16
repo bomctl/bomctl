@@ -10,7 +10,7 @@ stdout .
 
 # alias remove --help
 exec bomctl alias remove --help --cache-dir $WORK
-! stderr . 
+! stderr .
 stdout .
 
 # help alias remove
@@ -23,38 +23,43 @@ stdout .
 stderr -count=1 '^Error: accepts between 1 and 2 arg\(s\), received 0$'
 ! stdout .
 
+# alias remove non-existent sbom (FAILURE EXPECTED)
+! exec bomctl alias remove --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+stderr -count=1 '^(FATAL db: no documents found with the specified ID)$'
+! stdout .
+
 # alias remove sbom_id
 exec bomctl import --cache-dir $WORK --alias apple sbom.cdx.json
 ! stdout .
-! stderr . 
+! stderr .
 
 exec bomctl list --cache-dir $WORK
-! stderr . 
+! stderr .
 cmp stdout apple_remove_list.txt
 
 exec bomctl alias remove --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
-! stderr . 
+! stderr .
 ! stdout .
 
 exec bomctl list --cache-dir $WORK
-! stderr . 
+! stderr .
 cmp stdout empty_remove_list.txt
 
 # alias rm sbom_id
 exec bomctl alias set --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 orange
-! stderr . 
+! stderr .
 ! stdout .
 
 exec bomctl list --cache-dir $WORK
-! stderr . 
+! stderr .
 cmp stdout orange_remove_list.txt
 
 exec bomctl alias rm --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
-! stderr . 
+! stderr .
 ! stdout .
 
 exec bomctl list --cache-dir $WORK
-! stderr . 
+! stderr .
 cmp stdout empty_remove_list.txt
 
 -- empty_remove_list.txt --

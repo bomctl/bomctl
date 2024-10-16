@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: cmd/errors.go
+// SPDX-FileName: cmd/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -19,12 +19,8 @@
 
 package cmd
 
-import "errors"
-
 var (
-	errDocumentNotFound     = errors.New("no documents found with the specified ID")
-	errEncodingNotSupported = errors.New("encoding not supported for selected format")
-	errFormatNotSupported   = errors.New("format not supported")
-	errDirNotFound          = errors.New("not a directory or does not exist")
-	errFileNotFound         = errors.New("not a file or does not exist")
+	EncodingOptions = encodingOptions
+	FormatOptions   = formatOptions
+	ParseFormat     = parseFormat
 )
