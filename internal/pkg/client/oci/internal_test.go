@@ -20,6 +20,8 @@
 package oci
 
 import (
+	"io"
+
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content/memory"
 	"oras.land/oras-go/v2/registry/remote"
@@ -36,6 +38,14 @@ func (client *Client) CreateRepository(url *netutil.URL, auth *netutil.BasicAuth
 
 func (client *Client) Descriptors() []ocispec.Descriptor {
 	return client.descriptors
+}
+
+func (client *Client) PackManifest(tag string, annotations Annotations) (ocispec.Descriptor, []byte, error) {
+	return client.packManifest(tag, annotations)
+}
+
+func (client *Client) PushBlob(mediaType string, data io.Reader, annotations Annotations) (ocispec.Descriptor, error) {
+	return client.pushBlob(mediaType, data, annotations)
 }
 
 func (client *Client) Repo() *remote.Repository {

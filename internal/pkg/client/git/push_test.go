@@ -21,7 +21,6 @@ package git_test
 
 import (
 	"context"
-	"fmt"
 	"net/http/cgi"
 	"net/http/httptest"
 	"os"
@@ -111,7 +110,7 @@ func (gps *gitPushSuite) setupGitServer() {
 			"-c", "http.uploadpack",
 			"http-backend",
 		},
-		Env: []string{fmt.Sprintf("GIT_PROJECT_ROOT=%s", serverRoot), "GIT_HTTP_EXPORT_ALL=true"},
+		Env: []string{"GIT_PROJECT_ROOT=" + serverRoot, "GIT_HTTP_EXPORT_ALL=true"},
 	}
 
 	// Start the test server.
@@ -124,7 +123,7 @@ func (gps *gitPushSuite) SetupSuite() {
 	gps.tmpDir, err = os.MkdirTemp("", "git-push-test")
 	gps.Require().NoErrorf(err, "Failed to create temporary directory: %v", err)
 
-	gps.Backend, err = db.NewBackend(db.WithDatabaseFile(filepath.Join(gps.tmpDir, db.DatabaseFile)))
+	gps.Backend, err = db.NewBackend(db.WithDatabaseFile(":memory"))
 	gps.Require().NoError(err)
 
 	gps.Client = &git.Client{}
@@ -163,7 +162,7 @@ func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
 	pushOpts := &options.PushOptions{Options: gps.Options}
 	gps.Require().NoError(
 		gps.Client.PreparePush(
-			fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx", gps.Server.URL),
+			gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx",
 			pushOpts,
 		),
 	)
@@ -193,7 +192,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 	}
 
 	if err := gps.Client.AddFile(
-		fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx.json", gps.Server.URL),
+		gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx.json",
 		gps.docs[0].GetMetadata().GetId(),
 		opts,
 	); err != nil {
@@ -209,7 +208,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 }
 
 func (gps *gitPushSuite) TestClient_Push() {
-	pushURL := fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx.json", gps.Server.URL)
+	pushURL := gps.Server.URL + "/test/repo.git@main#path/to/sbom.cdx.json"
 
 	opts := &options.PushOptions{
 		Options: gps.Options,

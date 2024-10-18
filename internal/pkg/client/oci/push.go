@@ -21,27 +21,38 @@ package oci
 
 import (
 	"bytes"
-	"crypto/sha256"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"path"
+	"time"
 
 	"github.com/opencontainers/go-digest"
+	"github.com/opencontainers/image-spec/specs-go"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/writer"
 	oras "oras.land/oras-go/v2"
+	"oras.land/oras-go/v2/content"
+	"oras.land/oras-go/v2/errdef"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-type ociClientWriter struct {
-	*bytes.Buffer
-	*io.PipeReader
-}
+const schemaVersion = 2
+
+type (
+	Annotations map[string]string
+
+	ociClientWriter struct {
+		*bytes.Buffer
+		*io.PipeReader
+	}
+)
 
 func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
 	document, err := getDocument(id, opts.Options)
@@ -56,22 +67,18 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 		return fmt.Errorf("%w", err)
 	}
 
-	checksum := sha256.Sum256(buf.Bytes())
-	sbomDescriptor := ocispec.Descriptor{
-		MediaType: getMediaType(opts),
-		Digest:    digest.NewDigestFromBytes(digest.SHA256, checksum[:]),
-		Size:      int64(buf.Len()),
-	}
-
 	// Add annotation to save file name.
+	annotations := map[string]string{}
 	if url := client.Parse(pushURL); url != nil {
-		sbomDescriptor.Annotations = map[string]string{"org.opencontainers.image.title": path.Base(url.Path)}
+		annotations[ocispec.AnnotationTitle] = path.Base(url.Path)
 	}
 
-	// Push SBOM descriptor blob to memory store.
-	if err := client.store.Push(client.ctx, sbomDescriptor, buf.Buffer); err != nil {
+	sbomDescriptor, err := client.pushBlob(getMediaType(opts), buf.Buffer, annotations)
+	if err != nil {
 		return fmt.Errorf("pushing to memory store: %w", err)
 	}
+
+	opts.Logger.Debug("Pushed artifact", "digest", sbomDescriptor.Digest)
 
 	client.descriptors = append(client.descriptors, sbomDescriptor)
 
@@ -102,17 +109,6 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 		client.store = nil
 	}()
 
-	manifest, err := oras.PackManifest(
-		client.ctx,
-		client.store,
-		oras.PackManifestVersion1_1,
-		ocispec.MediaTypeImageManifest,
-		oras.PackManifestOptions{Layers: client.descriptors},
-	)
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
 	tag := ""
 	if url := client.Parse(pushURL); url != nil {
 		tag = url.Tag
@@ -121,21 +117,97 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 		}
 	}
 
-	opts.Logger.Debug("Applying tag", "tag", tag, "digest", manifest.Digest)
-
-	if err := client.store.Tag(client.ctx, manifest, tag); err != nil {
-		return fmt.Errorf("%w", err)
+	manifestDesc, manifestBytes, err := client.packManifest(tag, nil)
+	if err != nil {
+		return err
 	}
 
-	opts.Logger.Debug("Packed manifest", "descriptor", descriptorJSON(&manifest))
+	opts.Logger.Debug("Packed manifest", "descriptor", descriptorJSON(&manifestDesc), "data", string(manifestBytes))
 
 	if _, err := oras.Copy(client.ctx, client.store, tag, client.repo, tag, oras.DefaultCopyOptions); err != nil {
-		return fmt.Errorf("pushing to remote repository: %w", err)
+		return fmt.Errorf("pushing %s with digest %s to remote repository: %w", tag, string(manifestDesc.Digest), err)
 	}
 
 	opts.Logger.Debug("Copied manifest", "url", pushURL)
 
 	return nil
+}
+
+func (client *Client) packManifest(tag string, annotations Annotations) (ocispec.Descriptor, []byte, error) {
+	configDesc := ocispec.Descriptor{
+		MediaType: ocispec.MediaTypeImageConfig,
+		Digest:    ocispec.DescriptorEmptyJSON.Digest,
+		Size:      ocispec.DescriptorEmptyJSON.Size,
+	}
+
+	client.descriptors = append([]ocispec.Descriptor{ocispec.DescriptorEmptyJSON}, client.descriptors...)
+
+	if err := client.store.Push(
+		client.ctx,
+		configDesc,
+		bytes.NewReader(ocispec.DescriptorEmptyJSON.Data),
+	); err != nil && !errors.Is(err, errdef.ErrAlreadyExists) {
+		return ocispec.Descriptor{}, []byte{}, fmt.Errorf("pushing config blob: %w", err)
+	}
+
+	if annotations == nil {
+		annotations = make(Annotations)
+	}
+
+	// Add the "org.opencontainers.image.created" annotation to the blob descriptor if not provided.
+	if _, ok := annotations[ocispec.AnnotationCreated]; !ok {
+		annotations[ocispec.AnnotationCreated] = time.Now().UTC().Format(time.RFC3339)
+	}
+
+	manifest := ocispec.Manifest{
+		Versioned:   specs.Versioned{SchemaVersion: schemaVersion},
+		Config:      configDesc,
+		Layers:      client.descriptors,
+		Annotations: annotations,
+	}
+
+	manifestBytes, err := json.Marshal(manifest)
+	if err != nil {
+		return ocispec.Descriptor{}, manifestBytes, fmt.Errorf("marshaling manifest: %w", err)
+	}
+
+	manifestDesc := content.NewDescriptorFromBytes(ocispec.MediaTypeImageManifest, manifestBytes)
+
+	if err := client.store.Push(client.ctx, manifestDesc, bytes.NewReader(manifestBytes)); err != nil {
+		return manifestDesc, manifestBytes, fmt.Errorf("pushing manifest to memory store: %w", err)
+	}
+
+	if err := client.store.Tag(client.ctx, manifestDesc, tag); err != nil {
+		return manifestDesc, manifestBytes, fmt.Errorf("tagging manifest: %w", err)
+	}
+
+	return manifestDesc, manifestBytes, nil
+}
+
+func (client *Client) pushBlob(mediaType string, data io.Reader, annotations Annotations) (ocispec.Descriptor, error) {
+	blob := bytes.NewBuffer([]byte{})
+	if _, err := io.Copy(blob, data); err != nil {
+		return ocispec.Descriptor{}, fmt.Errorf("reading blob content: %w", err)
+	}
+
+	// Add the "org.opencontainers.image.created" annotation to the blob descriptor if not provided.
+	if _, ok := annotations[ocispec.AnnotationCreated]; !ok {
+		annotations[ocispec.AnnotationCreated] = time.Now().UTC().Format(time.RFC3339)
+	}
+
+	desc := ocispec.Descriptor{
+		MediaType:   mediaType,
+		Digest:      digest.FromBytes(blob.Bytes()),
+		Size:        int64(blob.Len()),
+		Annotations: annotations,
+	}
+
+	// Push SBOM descriptor blob to target.
+	if err := client.store.Push(client.ctx, desc, blob); err != nil && !errors.Is(err, errdef.ErrAlreadyExists) {
+		return ocispec.Descriptor{}, fmt.Errorf("pushing blob: %w", err)
+	}
+
+	return desc, nil
 }
 
 func getDocument(id string, opts *options.Options) (*sbom.Document, error) {

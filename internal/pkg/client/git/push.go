@@ -97,9 +97,7 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	}
 
 	// Commit written SBOM file to cloned repo.
-	if _, err := client.worktree.Commit(
-		fmt.Sprintf("bomctl push of %s", url.Fragment), &git.CommitOptions{All: true},
-	); err != nil {
+	if _, err := client.worktree.Commit("bomctl push of "+url.Fragment, &git.CommitOptions{All: true}); err != nil {
 		return fmt.Errorf("committing worktree: %w", err)
 	}
 

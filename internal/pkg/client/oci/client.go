@@ -36,7 +36,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
+var ErrMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
 
 type Client struct {
 	ctx         context.Context
@@ -105,11 +105,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 }
 
-func (client *Client) createRepository( //nolint:revive
-	url *netutil.URL,
-	auth *netutil.BasicAuth,
-	opts *options.Options,
-) (err error) {
+func (client *Client) createRepository(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
 	client.ctx = opts.Context()
 	client.store = memory.New()
 
@@ -118,6 +114,10 @@ func (client *Client) createRepository( //nolint:revive
 		Port:     url.Port,
 		Path:     url.Path,
 	}).String()
+
+	if client.repo != nil && client.repo.Reference.String() == repoPath {
+		return nil
+	}
 
 	if client.repo, err = remote.NewRepository(repoPath); err != nil {
 		return fmt.Errorf("creating OCI registry repository %s: %w", repoPath, err)

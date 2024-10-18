@@ -94,6 +94,7 @@ linters:
     - noctx
     - nolintlint
     - paralleltest
+    - perfsprint
     - prealloc
     - predeclared
     - promlinter
@@ -127,16 +128,6 @@ linters-settings:
 
   funlen:
     ignore-comments: true
-
-  govet:
-    enable:
-      - fieldalignment
-
-  godox:
-    keywords:
-      - BUG
-      - FIXME
-      - HACK
 
   gci:
     sections:
@@ -185,9 +176,19 @@ linters-settings:
       - unnamedResult
       - unnecessaryBlock
 
+  godox:
+    keywords:
+      - BUG
+      - FIXME
+      - HACK
+
   gosec:
     excludes:
       - G504 # Blocklisted import net/http/cgi: Go versions < 1.6.3 are vulnerable to Httpoxy attack: (CVE-2016-5386)
+
+  govet:
+    enable:
+      - fieldalignment
 
   nolintlint:
     allow-unused: false
@@ -206,10 +207,14 @@ linters-settings:
             allowFloats: 0.0,0.,1.0,1.,2.0,2.
             ignoreFuncs: os\.*,fmt\.*,make,viper\.*
 
+      # Handled by `gocognit` linter
       - name: cognitive-complexity
-        exclude: [TEST, ~cmd/.*\.go]
-        arguments: [10]
+        disabled: true
 
+      - name: confusing-naming
+        exclude: [TEST]
+
+      # Handled by `cyclop` linter
       - name: cyclomatic
         disabled: true
 
@@ -222,8 +227,9 @@ linters-settings:
       - name: line-length-limit
         arguments: [120]
 
+      # Handled by `errcheck` linter
       - name: unhandled-error
-        arguments: [fmt\..*]
+        disabled: true
 
       - name: unused-parameter
         arguments:
