@@ -1,0 +1,93 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+setup_cache $WORK test-linked
+add_files $WORK test-linked
+
+# export -h
+exec bomctl export -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# export --help
+exec bomctl export --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help export
+exec bomctl help export --cache-dir $WORK
+! stderr .
+stdout .
+
+# export no input (FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
+! stdout .
+
+# export non-existent sbom
+exec bomctl export --cache-dir $WORK "super-cool-blaster-extreme"
+stderr '^(ERROR export: documentID\(s\) not found: \[\"super-cool-blaster-extreme\"\])$'
+! stdout .
+
+# export -o with two sboms (FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK --output-file onyx.json testsbom1.json testsbom2.json
+stderr -count=1 '^(FATAL export: The --output-file option cannot be used when more than one SBOM is provided\.)$'
+! stdout .
+
+# export --output-file with two sboms (FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK --output-file geodude.json testsbom1.json testsbom2.json
+stderr -count=1 '^(FATAL export: The --output-file option cannot be used when more than one SBOM is provided\.)$'
+! stdout .
+
+# export --output-file with non-workable filename(FAILURE EXPECTED)
+! exec bomctl export --cache-dir $WORK --output-file . testsbom.json
+stderr -count=1 '^(FATAL export: error creating output file outputFile=\.)$'
+! stdout .
+
+# export cdx sbom
+exec bomctl export --cache-dir $WORK urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
+stdout '.*("serialNumber": "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db",).*'
+
+# export -o cdx sbom
+! exists bulbasaur.json
+exec bomctl export --cache-dir $WORK -o bulbasaur.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+! stdout .
+stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
+exists bulbasaur.json
+compare_docs $WORK bulbasaur.json test-linked.cdx.json
+
+# export --output-file cdx sbom
+! exists squirtle.json
+exec bomctl export --cache-dir $WORK --output-file squirtle.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+! stdout .
+stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
+exists squirtle.json
+compare_docs $WORK squirtle.json test-linked.cdx.json
+
+# export spdx sbom
+exec bomctl export --cache-dir $WORK -f spdx-2.3 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
+stdout '.*("documentNamespace": "https://spdx.org/spdxdocs/",).*'
+
+# export -o spdx sbom
+! exists pikachu.json
+exec bomctl export --cache-dir $WORK -o pikachu.json -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+! stdout .
+stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
+exists pikachu.json
+# compare_docs $WORK pikachu.json test-linked.spdx.json
+# Fails with MetaData values differing:
+# id:"https://spdx.org/spdxdocs/#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1727723761} tools:{name:"protobom-devel"} tools:{name:"syft-1.9.0"}
+# id:"https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1723065476} tools:{name:"syft-1.9.0"} authors:{name:"Anchore, Inc" is_org:true}
+
+# export --output-file spdx sbom
+! exists mewtwo.json
+exec bomctl export --cache-dir $WORK --output-file mewtwo.json -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+! stdout .
+stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
+exists mewtwo.json
+# compare_docs $WORK mewtwo.json test-linked.spdx.json
+# Fails with MetaData values differing:
+# id:"https://spdx.org/spdxdocs/#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1727723887} tools:{name:"protobom-devel"} tools:{name:"syft-1.9.0"}
+# id:"https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1723065476} tools:{name:"syft-1.9.0"} authors:{name:"Anchore, Inc" is_org:true}

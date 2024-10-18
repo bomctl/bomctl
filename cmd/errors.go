@@ -21,4 +21,10 @@ package cmd
 
 import "errors"
 
-var errDocumentNotFound = errors.New("no documents found with the specified ID")
+var (
+	errDocumentNotFound     = errors.New("no documents found with the specified ID")
+	errEncodingNotSupported = errors.New("encoding not supported for selected format")
+	errFormatNotSupported   = errors.New("format not supported")
+	errDirNotFound          = errors.New("not a directory or does not exist")
+	errFileNotFound         = errors.New("not a file or does not exist")
+)

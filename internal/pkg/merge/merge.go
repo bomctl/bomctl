@@ -20,6 +20,7 @@
 package merge
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 
@@ -30,6 +31,8 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
+
+var errMissingDocument = errors.New("one or more documents not found")
 
 func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 	backend, err := db.BackendFromContext(opts.Context())
@@ -42,7 +45,7 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 	// Make document list a map so it can sort by the ids provided
 	documentMap, tags, err := getSourceData(backend, documentIDs)
 	if err != nil {
-		return "", fmt.Errorf("failed to get sorce data: %w", err)
+		return "", fmt.Errorf("failed to get source data: %w", err)
 	}
 
 	tags = append(tags, opts.Tags...)
@@ -85,6 +88,10 @@ func getSourceData(backend *db.Backend, documentIDs []string) (documentMap map[s
 		return nil, nil, fmt.Errorf("%w", err)
 	}
 
+	if len(documents) == 0 {
+		return nil, nil, errMissingDocument
+	}
+
 	documentMap = make(map[string]*sbom.Document)
 	tags = []string{}
 
@@ -95,7 +102,7 @@ func getSourceData(backend *db.Backend, documentIDs []string) (documentMap map[s
 
 		documentTags, err := backend.GetDocumentTags(documentID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to get sorce document tags: %w", err)
+			return nil, nil, fmt.Errorf("failed to get source document tags: %w", err)
 		}
 
 		tags = append(tags, documentTags...)

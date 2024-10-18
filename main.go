@@ -19,8 +19,12 @@
 
 package main
 
-import "github.com/bomctl/bomctl/cmd"
+import (
+	"os"
+
+	"github.com/bomctl/bomctl/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	os.Exit(cmd.Execute())
 }
