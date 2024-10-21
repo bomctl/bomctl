@@ -52,8 +52,20 @@ Context: A user imported multiple documents and then exports/pushes them with va
 - Mixed State: (Some modified, some unmodified)
   - All original (unmodified) documents will be exported as their original content if the export format value matches the
     original format of the document, else will be exported as the format specified by the command.
+  - All modified documents will be will be exported/pushed in their modified state in whichever format designated by the command.
   - **Exception:** if the command contains the `--original` flag, all documents will be exported as their original content
     in their original format.
+
+| Modified | Format Matches | `--original` | Output           |
+|----------|----------------|--------------|------------------|
+| False    | True           | True         | Origin Content   |
+| False    | True           | False        | Origin Content   |
+| False    | False          | True         | Origin Content   |
+| False    | False          | False        | Origin Content   |
+| True     | True           | True         | Origin Content   |
+| True     | True           | False        | Modified Content |
+| True     | False          | True         | Origin Content   |
+| True     | False          | False        | Modified Content |
 
 Questions:
 
