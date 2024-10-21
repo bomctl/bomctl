@@ -61,7 +61,7 @@ Context: A user imported multiple documents and then exports/pushes them with va
 | False    | True           | True         | Origin Content   |
 | False    | True           | False        | Origin Content   |
 | False    | False          | True         | Origin Content   |
-| False    | False          | False        | Origin Content   |
+| False    | False          | False        | Updated Format   |
 | True     | True           | True         | Origin Content   |
 | True     | True           | False        | Modified Content |
 | True     | False          | True         | Origin Content   |
