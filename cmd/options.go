@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
-// SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+// -----------------------------------------------------------------------------
+// SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/options.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package cmd
 
 import (
@@ -25,24 +26,17 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 type (
-	DirectoryValue      string
-	ExistingFileValue   string
-	OutputFileValue     string
-	FormatStringValue   string
-	FormatEncodingValue string
-	URLValue            string
-	DirectorySliceValue []string
-	FileSliceValue      []string
-	URLSliceValue       []string
-	SBOMIDSliceValue    []string
-)
-
-var (
-	errDirNotFound  = errors.New("not a directory or does not exist")
-	errFileNotFound = errors.New("not a file or does not exist")
+	directoryValue      string
+	existingFileValue   string
+	outputFileValue     string
+	urlValue            string
+	directorySliceValue []string
+	fileSliceValue      []string
+	urlSliceValue       []string
 )
 
 func checkDirectory(value string) {
@@ -61,70 +55,56 @@ func checkFile(value string) {
 	}
 }
 
-func (dv *DirectoryValue) String() string       { return fmt.Sprintf("%v", *dv) }
-func (dsv *DirectorySliceValue) String() string { return fmt.Sprintf("%v", *dsv) }
-func (efv *ExistingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
-func (fsv *FileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
-func (ofv *OutputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
-func (fstv *FormatStringValue) String() string  { return fmt.Sprintf("%v", *fstv) }
-func (fev *FormatEncodingValue) String() string { return fmt.Sprintf("%v", *fev) }
+func (dv *directoryValue) String() string       { return fmt.Sprintf("%v", *dv) }
+func (dsv *directorySliceValue) String() string { return fmt.Sprintf("%v", *dsv) }
+func (efv *existingFileValue) String() string   { return fmt.Sprintf("%v", *efv) }
+func (fsv *fileSliceValue) String() string      { return fmt.Sprintf("%v", *fsv) }
+func (ofv *outputFileValue) String() string     { return fmt.Sprintf("%v", *ofv) }
 
-func (uv *URLValue) String() string       { return fmt.Sprintf("%v", *uv) }
-func (usv *URLSliceValue) String() string { return fmt.Sprintf("%v", *usv) }
+func (uv *urlValue) String() string       { return fmt.Sprintf("%v", *uv) }
+func (usv *urlSliceValue) String() string { return fmt.Sprintf("%v", *usv) }
 
-func (dv *DirectoryValue) Set(value string) error {
+func (dv *directoryValue) Set(value string) error {
 	checkDirectory(value)
-	*dv = DirectoryValue(value)
+	*dv = directoryValue(value)
 
 	return nil
 }
 
-func (dsv *DirectorySliceValue) Set(value string) error {
+func (dsv *directorySliceValue) Set(value string) error {
 	checkDirectory(value)
 	*dsv = append(*dsv, value)
 
 	return nil
 }
 
-func (efv *ExistingFileValue) Set(value string) error {
+func (efv *existingFileValue) Set(value string) error {
 	checkFile(value)
-	*efv = ExistingFileValue(value)
+	*efv = existingFileValue(value)
 
 	return nil
 }
 
-func (fsv *FileSliceValue) Set(value string) error {
+func (fsv *fileSliceValue) Set(value string) error {
 	checkFile(value)
 	*fsv = append(*fsv, value)
 
 	return nil
 }
 
-func (ofv *OutputFileValue) Set(value string) error {
-	*ofv = OutputFileValue(value)
+func (ofv *outputFileValue) Set(value string) error {
+	*ofv = outputFileValue(value)
 
 	return nil
 }
 
-func (fstv *FormatStringValue) Set(value string) error {
-	*fstv = FormatStringValue(value)
+func (uv *urlValue) Set(value string) error {
+	*uv = urlValue(value)
 
 	return nil
 }
 
-func (fev *FormatEncodingValue) Set(value string) error {
-	*fev = FormatEncodingValue(value)
-
-	return nil
-}
-
-func (uv *URLValue) Set(value string) error {
-	*uv = URLValue(value)
-
-	return nil
-}
-
-func (usv *URLSliceValue) Set(value string) error {
+func (usv *urlSliceValue) Set(value string) error {
 	*usv = append(*usv, value)
 
 	return nil
@@ -137,12 +117,20 @@ const (
 	valueTypeString string = "STRING"
 )
 
-func (dv *DirectoryValue) Type() string       { return valueTypeDir }
-func (dsv *DirectorySliceValue) Type() string { return valueTypeDir }
-func (efv *ExistingFileValue) Type() string   { return valueTypeFile }
-func (fsv *FileSliceValue) Type() string      { return valueTypeFile }
-func (ofv *OutputFileValue) Type() string     { return valueTypeFile }
-func (fstv *FormatStringValue) Type() string  { return valueTypeString }
-func (fev *FormatEncodingValue) Type() string { return valueTypeString }
-func (uv *URLValue) Type() string             { return valueTypeURL }
-func (usv *URLSliceValue) Type() string       { return valueTypeURL }
+func (*directoryValue) Type() string      { return valueTypeDir }
+func (*directorySliceValue) Type() string { return valueTypeDir }
+func (*existingFileValue) Type() string   { return valueTypeFile }
+func (*fileSliceValue) Type() string      { return valueTypeFile }
+func (*outputFileValue) Type() string     { return valueTypeFile }
+func (*urlValue) Type() string            { return valueTypeURL }
+func (*urlSliceValue) Type() string       { return valueTypeURL }
+
+var (
+	_ pflag.Value = (*directoryValue)(nil)
+	_ pflag.Value = (*directorySliceValue)(nil)
+	_ pflag.Value = (*existingFileValue)(nil)
+	_ pflag.Value = (*fileSliceValue)(nil)
+	_ pflag.Value = (*outputFileValue)(nil)
+	_ pflag.Value = (*urlValue)(nil)
+	_ pflag.Value = (*urlSliceValue)(nil)
+)

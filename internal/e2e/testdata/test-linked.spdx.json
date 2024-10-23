@@ -1,0 +1,3897 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "bomctl_0.3.0_linux_amd64.tar.gz",
+  "documentNamespace": "https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa",
+  "creationInfo": {
+    "licenseListVersion": "3.24",
+    "creators": [
+      "Organization: Anchore, Inc",
+      "Tool: syft-1.9.0"
+    ],
+    "created": "2024-08-07T21:17:56Z"
+  },
+  "packages": [
+    {
+      "name": "ariga.io/atlas",
+      "SPDXID": "SPDXRef-Package-go-module-ariga.io-atlas-805f355627acc8bd",
+      "versionInfo": "v0.19.1-0.20240203083654-5948b60a8e43",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1b07496d7c9d1c260f79d79e2ede31fe5ae5208490e094c7d66456b84e59675e"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/ariga.io/atlas@v0.19.1-0.20240203083654-5948b60a8e43"
+        }
+      ]
+    },
+    {
+      "name": "dario.cat/mergo",
+      "SPDXID": "SPDXRef-Package-go-module-dario.cat-mergo-9460a5461d83dec9",
+      "versionInfo": "v1.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "00608dabd12fb23df598e80d3dc2f25dcfb83cd001b7dd39626baa3d86290569"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/dario.cat/mergo@v1.0.0"
+        }
+      ]
+    },
+    {
+      "name": "entgo.io/ent",
+      "SPDXID": "SPDXRef-Package-go-module-entgo.io-ent-94a9e2cb546f40bb",
+      "versionInfo": "v0.13.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b83f10c0dd61e9236985d082ce690c3777de494ccd9d5bd5fd62241ca31bcce1"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/entgo.io/ent@v0.13.1"
+        }
+      ]
+    },
+    {
+      "name": "github.com/CycloneDX/cyclonedx-go",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-CycloneDX-cyclonedx-go-f43656c14ce4eb1c",
+      "versionInfo": "v0.9.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8a76a27fba83f1b8afcb1a7b5cb831518b4e5d6b437b3efe8fbdaa2933104dbf"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:CycloneDX:cyclonedx-go:v0.9.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:CycloneDX:cyclonedx_go:v0.9.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.9.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/ProtonMail/go-crypto",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-ProtonMail-go-crypto-b0917520eaf2da82",
+      "versionInfo": "v1.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2d1baf2138d0597f9621fafddf46071b61cd7e3475b8e7f27f9bc4d240b653bf"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:ProtonMail:go-crypto:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:ProtonMail:go_crypto:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/ProtonMail/go-crypto@v1.0.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/agext/levenshtein",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-agext-levenshtein-ab5419bdc6b961d3",
+      "versionInfo": "v1.2.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "426bcc0238f6684202cad1a25b39b1a04d31d8a66f1347ef9aa30e7f2dad8d3f"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:agext:levenshtein:v1.2.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/agext/levenshtein@v1.2.1"
+        }
+      ]
+    },
+    {
+      "name": "github.com/anchore/go-struct-converter",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-anchore-go-struct-converter-0c5d79af902b2afa",
+      "versionInfo": "v0.0.0-20230627203149-c72ef8859ca9",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e823a95d6a476e158cd7081c40df794ddb26acb4db6bc2907cf8089815f39230"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:anchore:go-struct-converter:v0.0.0-20230627203149-c72ef8859ca9:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:anchore:go_struct_converter:v0.0.0-20230627203149-c72ef8859ca9:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/anchore/go-struct-converter@v0.0.0-20230627203149-c72ef8859ca9"
+        }
+      ]
+    },
+    {
+      "name": "github.com/apparentlymart/go-textseg/v13",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-apparentlymart-go-textseg-v13-07089366cc51a2a6",
+      "versionInfo": "v13.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "63e2af3c4d4d633d3197ad353d52267907c5c84cba893f7402f3d42f534d7cdc"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:apparentlymart:go-textseg\\/v13:v13.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:apparentlymart:go_textseg\\/v13:v13.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/apparentlymart/go-textseg@v13.0.0#v13"
+        }
+      ]
+    },
+    {
+      "name": "github.com/aymanbagabas/go-osc52/v2",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-aymanbagabas-go-osc52-v2-d129468519892e7b",
+      "versionInfo": "v2.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1f0a511db14c7192c456be360f8a7b5c1aa3caec501f948c884ac34f85a42769"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:aymanbagabas:go-osc52\\/v2:v2.0.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:aymanbagabas:go_osc52\\/v2:v2.0.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/aymanbagabas/go-osc52@v2.0.1#v2"
+        }
+      ]
+    },
+    {
+      "name": "github.com/blang/semver/v4",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-blang-semver-v4-a99a4ae3b8a9520b",
+      "versionInfo": "v4.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d4f147144eb20824eff02d537b234d6ab0f39ed2e2ef0308e62fe9cea608b003"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:blang:semver\\/v4:v4.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/blang/semver@v4.0.0#v4"
+        }
+      ]
+    },
+    {
+      "name": "github.com/bomctl/bomctl",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "versionInfo": "v0.3.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "68984fb121ff3bb3e45c2891c9652859e5730a46e450cede6ed8da4c9ddb09ee"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:bomctl:bomctl:v0.3.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/bomctl/bomctl@v0.3.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/charmbracelet/lipgloss",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-charmbracelet-lipgloss-6583a6a47fa3a7c6",
+      "versionInfo": "v0.12.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fe09b3b3397ea5e750a6308e1fec05919aff37dd129f3e3427f351ec0d3341cb"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:charmbracelet:lipgloss:v0.12.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/charmbracelet/lipgloss@v0.12.1"
+        }
+      ]
+    },
+    {
+      "name": "github.com/charmbracelet/log",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-charmbracelet-log-66d3a41dc185538c",
+      "versionInfo": "v0.4.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1bd6d001cc7cad60364f7a56bf1ed8b4f4cfc20aa993b0faf015f6d48456f193"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:charmbracelet:log:v0.4.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/charmbracelet/log@v0.4.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/charmbracelet/x/ansi",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-charmbracelet-x-ansi-439aaa5cdff71190",
+      "versionInfo": "v0.1.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2045370faf9d5b03d2819e87047fafea852e67f9d56b03225a3e7cdf529f88b3"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:charmbracelet:x\\/ansi:v0.1.4:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/charmbracelet/x@v0.1.4#ansi"
+        }
+      ]
+    },
+    {
+      "name": "github.com/cloudflare/circl",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-cloudflare-circl-a2099f6b44b77c4e",
+      "versionInfo": "v1.3.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "aa50839533f3da7f5fbb9f0cd0d87527f273705a5f8241471d7dcedf9af9bdc5"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:cloudflare:circl:v1.3.7:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/cloudflare/circl@v1.3.7"
+        }
+      ]
+    },
+    {
+      "name": "github.com/common-nighthawk/go-figure",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-common-nighthawk-go-figure-744c54c97c8d51d1",
+      "versionInfo": "v0.0.0-20210622060536-734e95fb86be",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "27904bda4b2402557d724804b0d417b1c8c868b88e62267be5de1ef7813a75c4"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:common-nighthawk:go-figure:v0.0.0-20210622060536-734e95fb86be:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:common-nighthawk:go_figure:v0.0.0-20210622060536-734e95fb86be:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:common_nighthawk:go-figure:v0.0.0-20210622060536-734e95fb86be:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:common_nighthawk:go_figure:v0.0.0-20210622060536-734e95fb86be:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:common:go-figure:v0.0.0-20210622060536-734e95fb86be:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:common:go_figure:v0.0.0-20210622060536-734e95fb86be:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/common-nighthawk/go-figure@v0.0.0-20210622060536-734e95fb86be"
+        }
+      ]
+    },
+    {
+      "name": "github.com/cyphar/filepath-securejoin",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-cyphar-filepath-securejoin-e8b5c02f99894464",
+      "versionInfo": "v0.2.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "520766edc83b8ba64aeb1df10c5d6812ed677e4c9f1f9dc4b4a7906130b79328"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:cyphar:filepath-securejoin:v0.2.4:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:cyphar:filepath_securejoin:v0.2.4:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/cyphar/filepath-securejoin@v0.2.4"
+        }
+      ]
+    },
+    {
+      "name": "github.com/dustin/go-humanize",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-dustin-go-humanize-16cca4570a58f6bd",
+      "versionInfo": "v1.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1b392163b4f954d8449301f43d52608f3f9f5f5ae106b47ba514f79839297826"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dustin:go-humanize:v1.0.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dustin:go_humanize:v1.0.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/dustin/go-humanize@v1.0.1"
+        }
+      ]
+    },
+    {
+      "name": "github.com/emirpasic/gods",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-emirpasic-gods-9a7a40bd3fe2a5ff",
+      "versionInfo": "v1.18.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "157b621d828318a096d8acf064ac74882d0f426765a2b6207451bd8cf5c9d417"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:emirpasic:gods:v1.18.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/emirpasic/gods@v1.18.1"
+        }
+      ]
+    },
+    {
+      "name": "github.com/fsnotify/fsnotify",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-fsnotify-fsnotify-ad06595d96f13252",
+      "versionInfo": "v1.7.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f091213c56b95b6594ed87de6733cdab330fe8bc2decbdbbd791a0a349e8b2f0"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:fsnotify:fsnotify:v1.7.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/fsnotify/fsnotify@v1.7.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/glebarez/go-sqlite",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-glebarez-go-sqlite-6e886231ce513230",
+      "versionInfo": "v1.22.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b8070c261680eabdcb1cc4c580fd1289fce05e0e3ac89920c6acaec9e73eaee4"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:glebarez:go-sqlite:v1.22.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:glebarez:go_sqlite:v1.22.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/glebarez/go-sqlite@v1.22.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/go-git/gcfg",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-go-git-gcfg-f7558f6d2035b46b",
+      "versionInfo": "v1.5.1-0.20230307220236-3a3c6141e376",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fb3b3fb4f9a40e41f1dd4eba0c06f4950149ae94baef7d4e69ad768a473e0e22"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-git:gcfg:v1.5.1-0.20230307220236-3a3c6141e376:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_git:gcfg:v1.5.1-0.20230307220236-3a3c6141e376:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:gcfg:v1.5.1-0.20230307220236-3a3c6141e376:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/go-git/gcfg@v1.5.1-0.20230307220236-3a3c6141e376"
+        }
+      ]
+    },
+    {
+      "name": "github.com/go-git/go-billy/v5",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-go-git-go-billy-v5-3c7814daccef7e9e",
+      "versionInfo": "v5.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c84638ca1cc20ee3064aff37a06c62068b51ce1c2136bf15672a61862bbe9935"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-git:go-billy\\/v5:v5.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-git:go_billy\\/v5:v5.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_git:go-billy\\/v5:v5.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_git:go_billy\\/v5:v5.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:go-billy\\/v5:v5.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:go_billy\\/v5:v5.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/go-git/go-billy@v5.5.0#v5"
+        }
+      ]
+    },
+    {
+      "name": "github.com/go-git/go-git/v5",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-go-git-go-git-v5-d04292a3262070b9",
+      "versionInfo": "v5.12.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ecc77e9ddb23af36716dd7510d98c5d78a8af8d379eaccbac24a9a56b8d9b72b"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-git:go-git\\/v5:v5.12.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-git:go_git\\/v5:v5.12.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_git:go-git\\/v5:v5.12.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_git:go_git\\/v5:v5.12.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:go-git\\/v5:v5.12.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:go_git\\/v5:v5.12.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/go-git/go-git@v5.12.0#v5"
+        }
+      ]
+    },
+    {
+      "name": "github.com/go-logfmt/logfmt",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-go-logfmt-logfmt-5d79a681a67c519e",
+      "versionInfo": "v0.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c06618bb7ba271876a5d582861bbe792b3d55e4b8b335a7589fba00cc11d462e"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-logfmt:logfmt:v0.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_logfmt:logfmt:v0.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:logfmt:v0.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/go-logfmt/logfmt@v0.6.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/go-openapi/inflect",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-go-openapi-inflect-1d99db2dfb18d236",
+      "versionInfo": "v0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f63087f6c70a21b1de57d9b5d9298f8a549ccfa92b0f12916ac34d48d3d7bbfe"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go-openapi:inflect:v0.19.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go_openapi:inflect:v0.19.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:go:inflect:v0.19.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/go-openapi/inflect@v0.19.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/golang/groupcache",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-golang-groupcache-23ae699f1860c667",
+      "versionInfo": "v0.0.0-20210331224755-41bb18bfe9da",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a08e710aab02a39eb897c88d53e0f00797a9c66b1aa81fab8462f49b98ed62a1"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:groupcache:v0.0.0-20210331224755-41bb18bfe9da:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/golang/groupcache@v0.0.0-20210331224755-41bb18bfe9da"
+        }
+      ]
+    },
+    {
+      "name": "github.com/google/go-cmp",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-google-go-cmp-ce5974bb53c7f503",
+      "versionInfo": "v0.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a1fca1c6f5dc66132c539ba56c588b2a5fd7045a84d464aaedab6ef2d0264d12"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:google:go-cmp:v0.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:google:go_cmp:v0.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/google/go-cmp@v0.6.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/google/uuid",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-google-uuid-e1554a794f192087",
+      "versionInfo": "v1.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "348bda24330eb231c0f27d630212d2833ac0cf2d4782bfa136b6f9edefbde05d"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:google:uuid:v1.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/google/uuid@v1.6.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/hashicorp/hcl",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-0fe0bf84407c7e5c",
+      "versionInfo": "v1.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d009e5ce3a62e2f11ab1378d167da62c98134b0b74fbab1fb224c6f2a7161b1e"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:hashicorp:hcl:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/hashicorp/hcl@v1.0.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/hashicorp/hcl/v2",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-v2-bf4cffe4bd71f3d8",
+      "versionInfo": "v2.13.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d00a5a76ed70e8cd75772185c569e686170c8e46c088a0afec6d6bff642008d7"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:hashicorp:hcl\\/v2:v2.13.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/hashicorp/hcl@v2.13.0#v2"
+        }
+      ]
+    },
+    {
+      "name": "github.com/jbenet/go-context",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-jbenet-go-context-0640ce3c7a2452e9",
+      "versionInfo": "v0.0.0-20150711004518-d14ea06fba99",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "05048578f03545624e968707e85c72f0c9b00edfb25506142ca7cdd11a1337c0"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:jbenet:go-context:v0.0.0-20150711004518-d14ea06fba99:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:jbenet:go_context:v0.0.0-20150711004518-d14ea06fba99:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/jbenet/go-context@v0.0.0-20150711004518-d14ea06fba99"
+        }
+      ]
+    },
+    {
+      "name": "github.com/jdx/go-netrc",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-jdx-go-netrc-3b4d332e7d67a3c5",
+      "versionInfo": "v1.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "41b2cc2f20991a3d0d03c825021c54a5fd730e0e9cc675a03016e3ab8d16d204"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:jdx:go-netrc:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:jdx:go_netrc:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/jdx/go-netrc@v1.0.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/kevinburke/ssh_config",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-kevinburke-ssh-config-6f691afcfcb3091b",
+      "versionInfo": "v1.2.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c79f381634c6c07cccc2f1f1d7c3d7c5b055cdf9f1a201da011794e207f5ddae"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:kevinburke:ssh-config:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:kevinburke:ssh_config:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/kevinburke/ssh_config@v1.2.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/lucasb-eyer/go-colorful",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-lucasb-eyer-go-colorful-94982af3eb81c9c0",
+      "versionInfo": "v1.2.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d679e918eae1c9966e3727eed508ca89420243be3edc534237af408fa2bb9e46"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:lucasb-eyer:go-colorful:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:lucasb-eyer:go_colorful:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:lucasb_eyer:go-colorful:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:lucasb_eyer:go_colorful:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:lucasb:go-colorful:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:lucasb:go_colorful:v1.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/lucasb-eyer/go-colorful@v1.2.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/magiconair/properties",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-magiconair-properties-e72c95c2d953e0b1",
+      "versionInfo": "v1.8.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "21e4176408907292fd9a07007b536ee9c5fd2cbc3a1311072a337455076f3c36"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:magiconair:properties:v1.8.7:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/magiconair/properties@v1.8.7"
+        }
+      ]
+    },
+    {
+      "name": "github.com/mattn/go-isatty",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-mattn-go-isatty-821df2c2f649df6d",
+      "versionInfo": "v0.0.20",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c5f0f4883b842a70e4974deae258a607ebc7f86c4b12d2ff8dbe315494965846"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mattn:go-isatty:v0.0.20:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mattn:go_isatty:v0.0.20:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/mattn/go-isatty@v0.0.20"
+        }
+      ]
+    },
+    {
+      "name": "github.com/mattn/go-runewidth",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-mattn-go-runewidth-1a11006c3ca92c8d",
+      "versionInfo": "v0.0.15",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "50d023c1b53d979e130372b3bea2c6c705a31e63200545610624e37a56608375"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mattn:go-runewidth:v0.0.15:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mattn:go_runewidth:v0.0.15:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/mattn/go-runewidth@v0.0.15"
+        }
+      ]
+    },
+    {
+      "name": "github.com/mitchellh/go-wordwrap",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-mitchellh-go-wordwrap-eb194b2e42fdf1b7",
+      "versionInfo": "v0.0.0-20150314170334-ad45545899c7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0e9389d876330aff0b64fd7921d986f987700f696e54f1c84d5f7a4e48ab3413"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mitchellh:go-wordwrap:v0.0.0-20150314170334-ad45545899c7:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mitchellh:go_wordwrap:v0.0.0-20150314170334-ad45545899c7:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/mitchellh/go-wordwrap@v0.0.0-20150314170334-ad45545899c7"
+        }
+      ]
+    },
+    {
+      "name": "github.com/mitchellh/mapstructure",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-mitchellh-mapstructure-256f63bcf3b13513",
+      "versionInfo": "v1.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8de32c648604ff4f6c58b6b3e373cbec6cba46e3230f6789572b9a73967685d6"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mitchellh:mapstructure:v1.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/mitchellh/mapstructure@v1.5.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/muesli/termenv",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-muesli-termenv-361e677fb141af3a",
+      "versionInfo": "v0.15.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1a885cbb2488d10988df037c3a4f4fb4a1a482414893bcba5696f93efad8f96a"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:muesli:termenv:v0.15.2:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/muesli/termenv@v0.15.2"
+        }
+      ]
+    },
+    {
+      "name": "github.com/opencontainers/go-digest",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-opencontainers-go-digest-2f168d90877d150c",
+      "versionInfo": "v1.0.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "6a93945ace755b93e586ec86cb3f4509e78120e50303fea75bc3a2ff23a18795"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:opencontainers:go-digest:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:opencontainers:go_digest:v1.0.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/opencontainers/go-digest@v1.0.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/opencontainers/image-spec",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-opencontainers-image-spec-b97e22480d336b18",
+      "versionInfo": "v1.1.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f121bbfefc002e7e7895507fd3267f30cc2116b3d8b6910741bd88a56b02cee8"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:opencontainers:image-spec:v1.1.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:opencontainers:image_spec:v1.1.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/opencontainers/image-spec@v1.1.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/pelletier/go-toml/v2",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-pelletier-go-toml-v2-cf0444fca6c9e25a",
+      "versionInfo": "v2.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "698522753ee4ef73dc97d9dbda049cbbb352aca0921c80c4f3d6f7fba5aaf8b3"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:pelletier:go-toml\\/v2:v2.2.2:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:pelletier:go_toml\\/v2:v2.2.2:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/pelletier/go-toml@v2.2.2#v2"
+        }
+      ]
+    },
+    {
+      "name": "github.com/pjbgf/sha1cd",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-pjbgf-sha1cd-5c2fcf3ca5548074",
+      "versionInfo": "v0.3.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e03e575e651405497fc50e888c290401ba97b2492aff83bb2e61a7d00a8c0ece"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:pjbgf:sha1cd:v0.3.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/pjbgf/sha1cd@v0.3.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/protobom/protobom",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-protobom-protobom-6de7c67bc559db1d",
+      "versionInfo": "v0.4.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "675a2283fcd550d83514afdc0ea5bd30519d4f4b61775d85bdc5fab7c8d4507f"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:protobom:protobom:v0.4.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/protobom/protobom@v0.4.3"
+        }
+      ]
+    },
+    {
+      "name": "github.com/protobom/storage",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-protobom-storage-9495c53e3b97c30c",
+      "versionInfo": "v0.1.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e45a15e74742f49fd4b4ec726a77bb30165727cbff9427473c661d0f1f25a014"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:protobom:storage:v0.1.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/protobom/storage@v0.1.3"
+        }
+      ]
+    },
+    {
+      "name": "github.com/remyoudompheng/bigfft",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-remyoudompheng-bigfft-9b35e6c9b0e4afda",
+      "versionInfo": "v0.0.0-20230129092748-24d4a6f8daec",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5b4f4854973de2272ae0d8d8ddc95becb93c3b5a89f01741105f33d226d4d2b1"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:remyoudompheng:bigfft:v0.0.0-20230129092748-24d4a6f8daec:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/remyoudompheng/bigfft@v0.0.0-20230129092748-24d4a6f8daec"
+        }
+      ]
+    },
+    {
+      "name": "github.com/rivo/uniseg",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-rivo-uniseg-ccdf8ddb7b86ac1a",
+      "versionInfo": "v0.4.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "59476f916f2e121ad87cb0b8673769236cedc4fd48e7cdbee3d39ce4cabae154"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:rivo:uniseg:v0.4.7:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/rivo/uniseg@v0.4.7"
+        }
+      ]
+    },
+    {
+      "name": "github.com/sagikazarmark/slog-shim",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-sagikazarmark-slog-shim-cd5ee665b7cc9db8",
+      "versionInfo": "v0.1.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7620c19d434af4dff7e783e0af1332c179c0c04af541970eafa82da3eba08d81"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sagikazarmark:slog-shim:v0.1.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sagikazarmark:slog_shim:v0.1.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/sagikazarmark/slog-shim@v0.1.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/sergi/go-diff",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-sergi-go-diff-e54c8dd0d1ce06bd",
+      "versionInfo": "v1.3.2-0.20230802210424-5b0b94c5c0d3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9faeb576bc9c385b8f2c237751cf2c07a07fb3a678b76c6f06053586d487baaf"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sergi:go-diff:v1.3.2-0.20230802210424-5b0b94c5c0d3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sergi:go_diff:v1.3.2-0.20230802210424-5b0b94c5c0d3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/sergi/go-diff@v1.3.2-0.20230802210424-5b0b94c5c0d3"
+        }
+      ]
+    },
+    {
+      "name": "github.com/sirupsen/logrus",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-sirupsen-logrus-66ed5acbc8d76eaf",
+      "versionInfo": "v1.9.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "76e794409d42daaf6813717bc2f992180695b539948b345ebba7e337cbaacdb4"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:sirupsen:logrus:v1.9.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/sirupsen/logrus@v1.9.3"
+        }
+      ]
+    },
+    {
+      "name": "github.com/skeema/knownhosts",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-skeema-knownhosts-953f945cdd6bcc86",
+      "versionInfo": "v1.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "22e8363f87cb983c3d7f8d4f07ab61c5490d5242730798bed7f7b16a3e342f70"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:skeema:knownhosts:v1.2.2:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/skeema/knownhosts@v1.2.2"
+        }
+      ]
+    },
+    {
+      "name": "github.com/spdx/tools-golang",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-spdx-tools-golang-8f7690a217bb3c13",
+      "versionInfo": "v0.5.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7d15b88b3d7a3f564252d592b45a92e9888c8272bb5a07d3154fe5aec625bea6"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spdx:tools-golang:v0.5.4:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spdx:tools_golang:v0.5.4:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spdx/tools-golang@v0.5.4"
+        }
+      ]
+    },
+    {
+      "name": "github.com/spf13/afero",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-spf13-afero-ef3090c2abb26899",
+      "versionInfo": "v1.11.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "58940a86da5d9b7bf6233a86f1532aaebe917f7518a44176dfd272f7035ea4cf"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spf13:afero:v1.11.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/afero@v1.11.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/spf13/cast",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-spf13-cast-522d293666417767",
+      "versionInfo": "v1.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1848931c42c5faf691e5d873dd5a997c54b366361b81e283a41c50552e06609d"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spf13:cast:v1.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/cast@v1.6.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/spf13/cobra",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-spf13-cobra-9118944e6f9d21ec",
+      "versionInfo": "v1.8.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7b9fefc4a77fad9b1f4893145f56a0b637930dffaabf5fc974117c820e64f593"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spf13:cobra:v1.8.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/cobra@v1.8.1"
+        }
+      ]
+    },
+    {
+      "name": "github.com/spf13/pflag",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-spf13-pflag-8d7b664552e69906",
+      "versionInfo": "v1.0.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8b2f951543823f56bef3216da3f76b836089e6ed3246807b7d9c370cabff2570"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spf13:pflag:v1.0.5:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/pflag@v1.0.5"
+        }
+      ]
+    },
+    {
+      "name": "github.com/spf13/viper",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-spf13-viper-c60b17a5d5a87125",
+      "versionInfo": "v1.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "456ab94848edf28db94913b2377cf63ab0c1f65ed13ddde5c13594f0470475c2"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:spf13:viper:v1.19.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/viper@v1.19.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/subosito/gotenv",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-subosito-gotenv-fad452303cfa1a66",
+      "versionInfo": "v1.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f4d9530dcd454ece2abb40c3abb004b533cdc3a4959bbb8132c50252300121ff"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:subosito:gotenv:v1.6.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/subosito/gotenv@v1.6.0"
+        }
+      ]
+    },
+    {
+      "name": "github.com/xanzy/ssh-agent",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-xanzy-ssh-agent-1148e2a0e3f19127",
+      "versionInfo": "v0.3.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fbfd79a497e0fd1b13c6a61c5fa7c7a8e5d9c3030ffb657261625e58cdaa4053"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:xanzy:ssh-agent:v0.3.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:xanzy:ssh_agent:v0.3.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/xanzy/ssh-agent@v0.3.3"
+        }
+      ]
+    },
+    {
+      "name": "github.com/zclconf/go-cty",
+      "SPDXID": "SPDXRef-Package-go-module-github.com-zclconf-go-cty-5319e2782c9ade36",
+      "versionInfo": "v1.8.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b3802fa9a790cc922ede776fe205488699550f492b53e6e0adc2d25549da5ae0"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:zclconf:go-cty:v1.8.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:zclconf:go_cty:v1.8.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/zclconf/go-cty@v1.8.0"
+        }
+      ]
+    },
+    {
+      "name": "golang.org/x/crypto",
+      "SPDXID": "SPDXRef-Package-go-module-golang.org-x-crypto-c68b191667356853",
+      "versionInfo": "v0.23.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "748254fefd89f0c760963ffcac9e9450e33765cf732d9c55670c31328a144802"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:x\\/crypto:v0.23.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/crypto@v0.23.0"
+        }
+      ]
+    },
+    {
+      "name": "golang.org/x/mod",
+      "SPDXID": "SPDXRef-Package-go-module-golang.org-x-mod-276157676d106068",
+      "versionInfo": "v0.17.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "cd8e78526be2a4788d77ea66fa6d31f4a859f61975ffb40d332c576dce880aa0"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:x\\/mod:v0.17.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/mod@v0.17.0"
+        }
+      ]
+    },
+    {
+      "name": "golang.org/x/net",
+      "SPDXID": "SPDXRef-Package-go-module-golang.org-x-net-0a52bad21e23c914",
+      "versionInfo": "v0.25.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "77f3820a804452adf7a63c9d2ab190870ec89543c8d8eca5afef2a2f1e3d91a7"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:networking:v0.25.0:*:*:*:*:go:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/net@v0.25.0"
+        }
+      ]
+    },
+    {
+      "name": "golang.org/x/sync",
+      "SPDXID": "SPDXRef-Package-go-module-golang.org-x-sync-2a8d53731cfcb23f",
+      "versionInfo": "v0.7.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "62c2267d20683fd40f60bd31c8a24fab481c689746deb227a2ac5359b7d0bbd3"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:x\\/sync:v0.7.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/sync@v0.7.0"
+        }
+      ]
+    },
+    {
+      "name": "golang.org/x/sys",
+      "SPDXID": "SPDXRef-Package-go-module-golang.org-x-sys-c1592a0dd4abcdbd",
+      "versionInfo": "v0.21.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ac5fa9633dc300649003102ed426c2edc6ad660e1e6c2e1421e2212b1059bf0b"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:x\\/sys:v0.21.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/sys@v0.21.0"
+        }
+      ]
+    },
+    {
+      "name": "golang.org/x/text",
+      "SPDXID": "SPDXRef-Package-go-module-golang.org-x-text-bb1383d8e3ca4b26",
+      "versionInfo": "v0.15.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "87557fe208c1bfcbfd723711ebe011e7efdc2182b937f580822bf8c65b04b409"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:text:v0.15.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/text@v0.15.0"
+        }
+      ]
+    },
+    {
+      "name": "google.golang.org/protobuf",
+      "SPDXID": "SPDXRef-Package-go-module-google.golang.org-protobuf-4c5762e174c02761",
+      "versionInfo": "v1.34.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f5d7500637c2c993ce1cf5223f1a5811204b73e4fc3f713e568e086ca6601568"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:google:protobuf:v1.34.1:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/google.golang.org/protobuf@v1.34.1"
+        }
+      ]
+    },
+    {
+      "name": "gopkg.in/ini.v1",
+      "SPDXID": "SPDXRef-Package-go-module-gopkg.in-ini.v1-bb2f6eb919591c6c",
+      "versionInfo": "v1.67.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0e09f1fbafa77c4f887f38d410848d7b274f261f405cd36c59b18ff4acc2b0e0"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/gopkg.in/ini.v1@v1.67.0"
+        }
+      ]
+    },
+    {
+      "name": "gopkg.in/warnings.v0",
+      "SPDXID": "SPDXRef-Package-go-module-gopkg.in-warnings.v0-73ad04d01793fe81",
+      "versionInfo": "v0.1.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c055d56c563c0d8e7fc4e7b510289674a0b3665c60b2171854d9011ecb4044c1"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/gopkg.in/warnings.v0@v0.1.2"
+        }
+      ]
+    },
+    {
+      "name": "gopkg.in/yaml.v3",
+      "SPDXID": "SPDXRef-Package-go-module-gopkg.in-yaml.v3-34274dfb9dc21855",
+      "versionInfo": "v3.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7f1566fc6cc0cc45aa2c7baf72d23dd4a4bd8613669963a85aed174d8252ec20"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:yaml_project:yaml:v3.0.1:*:*:*:*:go:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/gopkg.in/yaml.v3@v3.0.1"
+        }
+      ]
+    },
+    {
+      "name": "modernc.org/libc",
+      "SPDXID": "SPDXRef-Package-go-module-modernc.org-libc-57a2b6729bbc5f8a",
+      "versionInfo": "v1.40.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d78d491eadd28e138e0a31020600f82bc5604c53b2d7d0a71f0ae80b4f030228"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/modernc.org/libc@v1.40.6"
+        }
+      ]
+    },
+    {
+      "name": "modernc.org/mathutil",
+      "SPDXID": "SPDXRef-Package-go-module-modernc.org-mathutil-18a960714dc2e468",
+      "versionInfo": "v1.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7d17bdf8099895a7a3fbae09b04121a16b8060190eb5088c114ee7fd781f622e"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/modernc.org/mathutil@v1.6.0"
+        }
+      ]
+    },
+    {
+      "name": "modernc.org/memory",
+      "SPDXID": "SPDXRef-Package-go-module-modernc.org-memory-1531770f98bff484",
+      "versionInfo": "v1.7.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2a587dd12db5e66987f1cf603bdf10c5016c63e5b8e7513c027ce3a04d9e7b51"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/modernc.org/memory@v1.7.2"
+        }
+      ]
+    },
+    {
+      "name": "modernc.org/sqlite",
+      "SPDXID": "SPDXRef-Package-go-module-modernc.org-sqlite-b07389efc307a104",
+      "versionInfo": "v1.28.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "671f8bc830e65dcccd9c441dbcfb847dc15503664fc9a0fb5026438de7f70474"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/modernc.org/sqlite@v1.28.0"
+        }
+      ]
+    },
+    {
+      "name": "oras.land/oras-go/v2",
+      "SPDXID": "SPDXRef-Package-go-module-oras.land-oras-go-v2-b6d8df7e8afc9955",
+      "versionInfo": "v2.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a3c31ef642d8ef8569e6ec34ed05cf8a2b63b30eea3578bc4f077ed7d65fd367"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:oras-go:v2:v2.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:oras_go:v2:v2.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:oras:v2:v2.5.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/oras.land/oras-go/v2@v2.5.0"
+        }
+      ]
+    },
+    {
+      "name": "sigs.k8s.io/release-utils",
+      "SPDXID": "SPDXRef-Package-go-module-sigs.k8s.io-release-utils-0c869fe2302f7bab",
+      "versionInfo": "v0.8.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "04a08a69bb15931cbfad345d3de1f6b7fbf635253cb4cb747d82166f2de1c4a4"
+        }
+      ],
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/sigs.k8s.io/release-utils@v0.8.2"
+        }
+      ]
+    },
+    {
+      "name": "stdlib",
+      "SPDXID": "SPDXRef-Package-go-module-stdlib-f9d1785bc3385da5",
+      "versionInfo": "go1.22.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from go module information: bomctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:golang:go:1.22.0:-:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/stdlib@1.22.0"
+        }
+      ]
+    },
+    {
+      "name": "bomctl_0.3.0_linux_amd64.tar.gz",
+      "SPDXID": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "versionInfo": "sha256:fc27fbbf39ffb68c5e399d14033b1ce6496aa689ae689206e0b6da596fd6c5d5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fc27fbbf39ffb68c5e399d14033b1ce6496aa689ae689206e0b6da596fd6c5d5"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "primaryPackagePurpose": "FILE"
+    }
+  ],
+  "files": [
+    {
+      "fileName": "bomctl",
+      "SPDXID": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": ""
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-jbenet-go-context-0640ce3c7a2452e9",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-jbenet-go-context-0640ce3c7a2452e9",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-apparentlymart-go-textseg-v13-07089366cc51a2a6",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-apparentlymart-go-textseg-v13-07089366cc51a2a6",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-net-0a52bad21e23c914",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-net-0a52bad21e23c914",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-anchore-go-struct-converter-0c5d79af902b2afa",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-anchore-go-struct-converter-0c5d79af902b2afa",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-sigs.k8s.io-release-utils-0c869fe2302f7bab",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-sigs.k8s.io-release-utils-0c869fe2302f7bab",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-0fe0bf84407c7e5c",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-0fe0bf84407c7e5c",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-xanzy-ssh-agent-1148e2a0e3f19127",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-xanzy-ssh-agent-1148e2a0e3f19127",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-memory-1531770f98bff484",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-memory-1531770f98bff484",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-dustin-go-humanize-16cca4570a58f6bd",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-dustin-go-humanize-16cca4570a58f6bd",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-mathutil-18a960714dc2e468",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-mathutil-18a960714dc2e468",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mattn-go-runewidth-1a11006c3ca92c8d",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mattn-go-runewidth-1a11006c3ca92c8d",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-openapi-inflect-1d99db2dfb18d236",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-openapi-inflect-1d99db2dfb18d236",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-golang-groupcache-23ae699f1860c667",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-golang-groupcache-23ae699f1860c667",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mitchellh-mapstructure-256f63bcf3b13513",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mitchellh-mapstructure-256f63bcf3b13513",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-mod-276157676d106068",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-mod-276157676d106068",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-sync-2a8d53731cfcb23f",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-sync-2a8d53731cfcb23f",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-opencontainers-go-digest-2f168d90877d150c",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-opencontainers-go-digest-2f168d90877d150c",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-gopkg.in-yaml.v3-34274dfb9dc21855",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-gopkg.in-yaml.v3-34274dfb9dc21855",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-muesli-termenv-361e677fb141af3a",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-muesli-termenv-361e677fb141af3a",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-jdx-go-netrc-3b4d332e7d67a3c5",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-jdx-go-netrc-3b4d332e7d67a3c5",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-git-go-billy-v5-3c7814daccef7e9e",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-git-go-billy-v5-3c7814daccef7e9e",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-charmbracelet-x-ansi-439aaa5cdff71190",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-charmbracelet-x-ansi-439aaa5cdff71190",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-google.golang.org-protobuf-4c5762e174c02761",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-google.golang.org-protobuf-4c5762e174c02761",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-cast-522d293666417767",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-cast-522d293666417767",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-zclconf-go-cty-5319e2782c9ade36",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-zclconf-go-cty-5319e2782c9ade36",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-libc-57a2b6729bbc5f8a",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-libc-57a2b6729bbc5f8a",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-pjbgf-sha1cd-5c2fcf3ca5548074",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-pjbgf-sha1cd-5c2fcf3ca5548074",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-logfmt-logfmt-5d79a681a67c519e",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-logfmt-logfmt-5d79a681a67c519e",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-charmbracelet-lipgloss-6583a6a47fa3a7c6",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-charmbracelet-lipgloss-6583a6a47fa3a7c6",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-charmbracelet-log-66d3a41dc185538c",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-charmbracelet-log-66d3a41dc185538c",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-sirupsen-logrus-66ed5acbc8d76eaf",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-sirupsen-logrus-66ed5acbc8d76eaf",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-protobom-protobom-6de7c67bc559db1d",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-protobom-protobom-6de7c67bc559db1d",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-glebarez-go-sqlite-6e886231ce513230",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-glebarez-go-sqlite-6e886231ce513230",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-kevinburke-ssh-config-6f691afcfcb3091b",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-kevinburke-ssh-config-6f691afcfcb3091b",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-gopkg.in-warnings.v0-73ad04d01793fe81",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-gopkg.in-warnings.v0-73ad04d01793fe81",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-common-nighthawk-go-figure-744c54c97c8d51d1",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-common-nighthawk-go-figure-744c54c97c8d51d1",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-ariga.io-atlas-805f355627acc8bd",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-ariga.io-atlas-805f355627acc8bd",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mattn-go-isatty-821df2c2f649df6d",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mattn-go-isatty-821df2c2f649df6d",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-pflag-8d7b664552e69906",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-pflag-8d7b664552e69906",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spdx-tools-golang-8f7690a217bb3c13",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spdx-tools-golang-8f7690a217bb3c13",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-cobra-9118944e6f9d21ec",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-cobra-9118944e6f9d21ec",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-dario.cat-mergo-9460a5461d83dec9",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-dario.cat-mergo-9460a5461d83dec9",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-protobom-storage-9495c53e3b97c30c",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-protobom-storage-9495c53e3b97c30c",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-lucasb-eyer-go-colorful-94982af3eb81c9c0",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-lucasb-eyer-go-colorful-94982af3eb81c9c0",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-entgo.io-ent-94a9e2cb546f40bb",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-entgo.io-ent-94a9e2cb546f40bb",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-skeema-knownhosts-953f945cdd6bcc86",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-skeema-knownhosts-953f945cdd6bcc86",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-emirpasic-gods-9a7a40bd3fe2a5ff",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-emirpasic-gods-9a7a40bd3fe2a5ff",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-remyoudompheng-bigfft-9b35e6c9b0e4afda",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-remyoudompheng-bigfft-9b35e6c9b0e4afda",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-cloudflare-circl-a2099f6b44b77c4e",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-cloudflare-circl-a2099f6b44b77c4e",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-blang-semver-v4-a99a4ae3b8a9520b",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-blang-semver-v4-a99a4ae3b8a9520b",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-agext-levenshtein-ab5419bdc6b961d3",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-agext-levenshtein-ab5419bdc6b961d3",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-fsnotify-fsnotify-ad06595d96f13252",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-fsnotify-fsnotify-ad06595d96f13252",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-sqlite-b07389efc307a104",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-modernc.org-sqlite-b07389efc307a104",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-ProtonMail-go-crypto-b0917520eaf2da82",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-ProtonMail-go-crypto-b0917520eaf2da82",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-oras.land-oras-go-v2-b6d8df7e8afc9955",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-oras.land-oras-go-v2-b6d8df7e8afc9955",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-opencontainers-image-spec-b97e22480d336b18",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-opencontainers-image-spec-b97e22480d336b18",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-text-bb1383d8e3ca4b26",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-text-bb1383d8e3ca4b26",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-gopkg.in-ini.v1-bb2f6eb919591c6c",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-gopkg.in-ini.v1-bb2f6eb919591c6c",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-v2-bf4cffe4bd71f3d8",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-v2-bf4cffe4bd71f3d8",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-sys-c1592a0dd4abcdbd",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-sys-c1592a0dd4abcdbd",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-viper-c60b17a5d5a87125",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-viper-c60b17a5d5a87125",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-crypto-c68b191667356853",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-golang.org-x-crypto-c68b191667356853",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-rivo-uniseg-ccdf8ddb7b86ac1a",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-rivo-uniseg-ccdf8ddb7b86ac1a",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-sagikazarmark-slog-shim-cd5ee665b7cc9db8",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-sagikazarmark-slog-shim-cd5ee665b7cc9db8",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-google-go-cmp-ce5974bb53c7f503",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-google-go-cmp-ce5974bb53c7f503",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-pelletier-go-toml-v2-cf0444fca6c9e25a",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-pelletier-go-toml-v2-cf0444fca6c9e25a",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-git-go-git-v5-d04292a3262070b9",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-git-go-git-v5-d04292a3262070b9",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-aymanbagabas-go-osc52-v2-d129468519892e7b",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-aymanbagabas-go-osc52-v2-d129468519892e7b",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-google-uuid-e1554a794f192087",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-google-uuid-e1554a794f192087",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-sergi-go-diff-e54c8dd0d1ce06bd",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-sergi-go-diff-e54c8dd0d1ce06bd",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-magiconair-properties-e72c95c2d953e0b1",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-magiconair-properties-e72c95c2d953e0b1",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-cyphar-filepath-securejoin-e8b5c02f99894464",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-cyphar-filepath-securejoin-e8b5c02f99894464",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mitchellh-go-wordwrap-eb194b2e42fdf1b7",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-mitchellh-go-wordwrap-eb194b2e42fdf1b7",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-afero-ef3090c2abb26899",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-spf13-afero-ef3090c2abb26899",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-CycloneDX-cyclonedx-go-f43656c14ce4eb1c",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-CycloneDX-cyclonedx-go-f43656c14ce4eb1c",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-git-gcfg-f7558f6d2035b46b",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-go-git-gcfg-f7558f6d2035b46b",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-stdlib-f9d1785bc3385da5",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-stdlib-f9d1785bc3385da5",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-subosito-gotenv-fad452303cfa1a66",
+      "relatedSpdxElement": "SPDXRef-File-bomctl-71fa836d87ca4748",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-go-module-github.com-subosito-gotenv-fad452303cfa1a66",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "DEPENDENCY_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-ariga.io-atlas-805f355627acc8bd",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-dario.cat-mergo-9460a5461d83dec9",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-entgo.io-ent-94a9e2cb546f40bb",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-CycloneDX-cyclonedx-go-f43656c14ce4eb1c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-ProtonMail-go-crypto-b0917520eaf2da82",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-agext-levenshtein-ab5419bdc6b961d3",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-anchore-go-struct-converter-0c5d79af902b2afa",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-apparentlymart-go-textseg-v13-07089366cc51a2a6",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-aymanbagabas-go-osc52-v2-d129468519892e7b",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-blang-semver-v4-a99a4ae3b8a9520b",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-bomctl-bomctl-d57cea057b07b700",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-charmbracelet-lipgloss-6583a6a47fa3a7c6",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-charmbracelet-log-66d3a41dc185538c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-charmbracelet-x-ansi-439aaa5cdff71190",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-cloudflare-circl-a2099f6b44b77c4e",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-common-nighthawk-go-figure-744c54c97c8d51d1",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-cyphar-filepath-securejoin-e8b5c02f99894464",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-dustin-go-humanize-16cca4570a58f6bd",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-emirpasic-gods-9a7a40bd3fe2a5ff",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-fsnotify-fsnotify-ad06595d96f13252",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-glebarez-go-sqlite-6e886231ce513230",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-go-git-gcfg-f7558f6d2035b46b",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-go-git-go-billy-v5-3c7814daccef7e9e",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-go-git-go-git-v5-d04292a3262070b9",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-go-logfmt-logfmt-5d79a681a67c519e",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-go-openapi-inflect-1d99db2dfb18d236",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-golang-groupcache-23ae699f1860c667",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-google-go-cmp-ce5974bb53c7f503",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-google-uuid-e1554a794f192087",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-0fe0bf84407c7e5c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-hashicorp-hcl-v2-bf4cffe4bd71f3d8",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-jbenet-go-context-0640ce3c7a2452e9",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-jdx-go-netrc-3b4d332e7d67a3c5",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-kevinburke-ssh-config-6f691afcfcb3091b",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-lucasb-eyer-go-colorful-94982af3eb81c9c0",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-magiconair-properties-e72c95c2d953e0b1",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-mattn-go-isatty-821df2c2f649df6d",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-mattn-go-runewidth-1a11006c3ca92c8d",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-mitchellh-go-wordwrap-eb194b2e42fdf1b7",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-mitchellh-mapstructure-256f63bcf3b13513",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-muesli-termenv-361e677fb141af3a",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-opencontainers-go-digest-2f168d90877d150c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-opencontainers-image-spec-b97e22480d336b18",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-pelletier-go-toml-v2-cf0444fca6c9e25a",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-pjbgf-sha1cd-5c2fcf3ca5548074",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-protobom-protobom-6de7c67bc559db1d",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-protobom-storage-9495c53e3b97c30c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-remyoudompheng-bigfft-9b35e6c9b0e4afda",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-rivo-uniseg-ccdf8ddb7b86ac1a",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-sagikazarmark-slog-shim-cd5ee665b7cc9db8",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-sergi-go-diff-e54c8dd0d1ce06bd",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-sirupsen-logrus-66ed5acbc8d76eaf",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-skeema-knownhosts-953f945cdd6bcc86",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-spdx-tools-golang-8f7690a217bb3c13",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-spf13-afero-ef3090c2abb26899",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-spf13-cast-522d293666417767",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-spf13-cobra-9118944e6f9d21ec",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-spf13-pflag-8d7b664552e69906",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-spf13-viper-c60b17a5d5a87125",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-subosito-gotenv-fad452303cfa1a66",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-xanzy-ssh-agent-1148e2a0e3f19127",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-github.com-zclconf-go-cty-5319e2782c9ade36",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-golang.org-x-crypto-c68b191667356853",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-golang.org-x-mod-276157676d106068",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-golang.org-x-net-0a52bad21e23c914",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-golang.org-x-sync-2a8d53731cfcb23f",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-golang.org-x-sys-c1592a0dd4abcdbd",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-golang.org-x-text-bb1383d8e3ca4b26",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-google.golang.org-protobuf-4c5762e174c02761",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-gopkg.in-ini.v1-bb2f6eb919591c6c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-gopkg.in-warnings.v0-73ad04d01793fe81",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-gopkg.in-yaml.v3-34274dfb9dc21855",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-modernc.org-libc-57a2b6729bbc5f8a",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-modernc.org-mathutil-18a960714dc2e468",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-modernc.org-memory-1531770f98bff484",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-modernc.org-sqlite-b07389efc307a104",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-oras.land-oras-go-v2-b6d8df7e8afc9955",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-sigs.k8s.io-release-utils-0c869fe2302f7bab",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relatedSpdxElement": "SPDXRef-Package-go-module-stdlib-f9d1785bc3385da5",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-DocumentRoot-File-bomctl-0.3.0-linux-amd64.tar.gz",
+      "relationshipType": "DESCRIBES"
+    }
+  ],
+  "comment": "bomctl is format-agnostic Software Bill of Materials (SBOM) tooling, which is intended to bridge the gap between SBOM generation and SBOM analysis tools. It focuses on supporting more complex SBOM operations by being opinionated on only supporting the NTIA minimum fields or other fields supported by protobom.",
+  "hasExtractedLicensingInfos": [
+    {
+      "name": "Apache License 2.0",
+      "licenseId": "LicenseRef-Apache-2.0",
+      "seeAlsos": [
+        "https://raw.githubusercontent.com/bomctl/bomctl/main/LICENSE"
+      ],
+      "extractedText": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.\n"
+    }
+  ]
+}

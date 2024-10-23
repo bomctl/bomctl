@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 # SPDX-FileName: .goreleaser.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
@@ -175,7 +175,7 @@ docker_signs:
 
 nfpms:
   - license: Apache License 2.0
-    maintainer: bomctl authors
+    maintainer: bomctl a Series of LF Projects, LLC
     homepage: https://github.com/bomctl/bomctl
     description: Simpler Software Bill of Materials management
     formats: [apk, deb, rpm]

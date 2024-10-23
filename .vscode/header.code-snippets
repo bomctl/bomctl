@@ -3,12 +3,12 @@
     "prefix": ["spdx", "header", "license"],
     "description": "Add SPDX license file header",
     "body": [
-      "$LINE_COMMENT ------------------------------------------------------------------------",
-      "$LINE_COMMENT SPDX-FileCopyrightText: Copyright © ${CURRENT_YEAR:<current year>} bomctl authors",
-      "$LINE_COMMENT SPDX-FileName: ${RELATIVE_FILEPATH:<file name>}",
+      "$LINE_COMMENT -----------------------------------------------------------------------------",
+      "$LINE_COMMENT SPDX-FileCopyrightText: Copyright © ${CURRENT_YEAR:<current year>} bomctl a Series of LF Projects, LLC",
+      "$LINE_COMMENT SPDX-FileName: ${RELATIVE_FILEPATH/(\\\\)/\\//g}",
       "$LINE_COMMENT SPDX-FileType: SOURCE",
       "$LINE_COMMENT SPDX-License-Identifier: Apache-2.0",
-      "$LINE_COMMENT ------------------------------------------------------------------------",
+      "$LINE_COMMENT -----------------------------------------------------------------------------",
       "$LINE_COMMENT Licensed under the Apache License, Version 2.0 (the \"License\");",
       "$LINE_COMMENT you may not use this file except in compliance with the License.",
       "$LINE_COMMENT You may obtain a copy of the License at",
@@ -20,7 +20,8 @@
       "$LINE_COMMENT WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
       "$LINE_COMMENT See the License for the specific language governing permissions and",
       "$LINE_COMMENT limitations under the License.",
-      "$LINE_COMMENT ------------------------------------------------------------------------"
+      "$LINE_COMMENT -----------------------------------------------------------------------------",
+      ""
     ]
   }
 }

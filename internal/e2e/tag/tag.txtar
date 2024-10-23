@@ -1,0 +1,28 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# tag -h
+exec bomctl tag -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag --help
+exec bomctl tag --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag help
+exec bomctl tag help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help tag
+exec bomctl help tag --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag no input
+exec bomctl tag --cache-dir $WORK
+! stderr .
+stdout .

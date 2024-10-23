@@ -1,0 +1,86 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+add_files $WORK sbom.cdx.json
+
+# tag list -h
+exec bomctl tag list -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag list --help
+exec bomctl tag list --help --cache-dir $WORK
+! stderr . 
+stdout .
+
+# help tag list
+exec bomctl help tag list --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag list no input (FAILURE EXPECTED)
+! exec bomctl tag list --cache-dir $WORK
+stderr -count=1 '^(Error: accepts 1 arg\(s\), received 0)$'
+! stdout .
+
+# tag ls -h
+exec bomctl tag ls -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag ls --help
+exec bomctl tag ls --help --cache-dir $WORK
+! stderr . 
+stdout .
+
+# help tag ls
+exec bomctl help tag ls --cache-dir $WORK
+! stderr .
+stdout .
+
+# tag ls no input (FAILURE EXPECTED)
+! exec bomctl tag ls --cache-dir $WORK
+stderr -count=1 '^(Error: accepts 1 arg\(s\), received 0)$'
+! stdout .
+
+# tag list no tags
+exec bomctl import --cache-dir $WORK sbom.cdx.json
+! stdout .
+! stderr . 
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout initial_list.txt
+
+# tag ls no tags
+exec bomctl tag ls --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout initial_list.txt
+
+# tag list
+exec bomctl tag add --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 cherry banana
+! stderr .
+! stdout .
+
+exec bomctl tag list --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout populated_list.txt
+
+# tag ls no tags
+exec bomctl tag ls --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+! stderr .
+cmp stdout populated_list.txt
+
+-- populated_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+banana
+cherry
+
+-- initial_list.txt --
+
+Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+────────────────────────────────────────────────────────────────────────────────
+
+
