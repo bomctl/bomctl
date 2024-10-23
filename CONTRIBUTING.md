@@ -41,8 +41,10 @@ Here's a step-by-step guide for making a contribution:
     * `go test ./...`
     * `go generate ./...` and ensure any modified files are committed
 1. __Commit Changes__: Commit your changes with clear and concise commit messages following the [conventional commit format](https://www.conventionalcommits.org/).
+    * Your [commits must be signed](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) with a key associated with your GitHub account.
 1. __Push Changes__: Push your changes to your forked repository on GitHub.
 1. __Open a Pull Request__: Open a pull request from your branch to the main branch of the upstream repository.
+    * Your PR title should follow the [conventional commit format](https://www.conventionalcommits.org/).
 1. __Address Reviews__: Respond to any feedback or requests for changes from the project maintainers.
 
 ## Tips for Writing Pull Requests

@@ -1,0 +1,28 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# alias -h
+exec bomctl alias -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias --help
+exec bomctl alias --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias help
+exec bomctl alias help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help alias
+exec bomctl help alias --cache-dir $WORK
+! stderr .
+stdout .
+
+# alias no input
+exec bomctl alias --cache-dir $WORK
+! stderr .
+stdout .

@@ -84,10 +84,10 @@
   "go.coverMode": "atomic",
   "go.coverOnSave": true,
   "go.coverOnSingleTest": true,
-  "go.lintFlags": ["--fast", "--allow-parallel-runners", "--config=.golangci.yml"],
-  "go.lintOnSave": "file",
+  "go.lintFlags": ["--fast"],
+  "go.lintOnSave": "workspace",
   "go.lintTool": "golangci-lint",
-  "go.testFlags": ["-race", "-covermode=atomic"],
+  "go.testFlags": ["-race"],
 
   "json.schemaDownload.enable": true,
 

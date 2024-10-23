@@ -1,5 +1,5 @@
 # -------------------------------------------------------
-# SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 # SPDX-FileName: Makefile
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
@@ -176,6 +176,7 @@ endef
 .PHONY: lint-go
 lint-go: # Lint Golang code files
 	${call run-lint,golangci-lint,run --verbose}
+	${call run-lint,.github/scripts/check-go-headers.sh}
 
 .PHONY: lint-go-fix
 lint-go-fix: # Fix golangci-lint findings
@@ -201,10 +202,18 @@ lint-yaml: # Lint YAML files
 .PHONY: lint
 lint: lint-go lint-markdown lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files
 
+.PHONY: lint-fix
+lint-fix: lint-go-fix lint-markdown-fix lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files, apply fixes where possible
+
 #@ Test
 .PHONY: test-unit
 test-unit: # Run unit tests
-	go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
+	go test -failfast -v -coverprofile=coverage.out -covermode=atomic -short ./...
+
+.PHONY: test-e2e
+test-e2e: # Run unit tests
+	go test -failfast -v ./internal/e2e/...
 
 .PHONY: test
-test: test-unit # Run all tests
+test: # Run all tests
+	go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
