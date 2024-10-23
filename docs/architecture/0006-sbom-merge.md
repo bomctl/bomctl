@@ -5,7 +5,7 @@ You can use [adr-tools](https://github.com/npryce/adr-tools) for managing the AD
 
 In each ADR file, write the following sections.
 -->
-# 6. merge subcommand
+# 6. Merge subcommand
 
 Date: 2024-07-29
 
@@ -15,7 +15,7 @@ A decision may be "proposed" if the project stakeholders haven't agreed with it 
 If a later ADR changes or reverses a decision, it may be marked as "deprecated" or "superseded" with a reference to
 its replacement.
 -->
-Proposed
+Accepted
 
 ## Context
 <!--
