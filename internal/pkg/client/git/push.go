@@ -20,113 +20,104 @@
 package git
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
-	"os"
-	"path"
 	"path/filepath"
-	"strings"
+	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/protobom/protobom/pkg/sbom"
-	protowriter "github.com/protobom/protobom/pkg/writer"
+	"github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
-func (client *Client) Push(id, pushURL string, opts *options.PushOptions) error {
-	doc, err := getDocument(id, opts.Options)
+func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
+	document, err := getDocument(id, opts.Options)
 	if err != nil {
-		return fmt.Errorf("failed to initialize backend client: %w", err)
+		return err
 	}
 
-	parsedURL := client.Parse(pushURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	url := client.Parse(pushURL)
+	name := url.Fragment
+
+	// Create any parent directories specified in fragment.
+	if dir := filepath.Dir(name); dir != "." {
+		if err := client.worktree.Filesystem.MkdirAll(dir, fs.ModePerm); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
+	file, err := client.worktree.Filesystem.Create(name)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	defer file.Close()
+
+	opts.Logger.Info("Writing document", "name", name)
+
+	// Write the file specified in the URL fragment.
+	if err := writer.New(writer.WithFormat(opts.Format)).WriteStream(document, file); err != nil {
+		return fmt.Errorf("failed to write file %s: %w", name, err)
+	}
+
+	// Stage SBOM file to index.
+	if _, err := client.worktree.Add(name); err != nil {
+		return fmt.Errorf("failed to stage file %s for commit: %w", name, err)
+	}
+
+	return nil
+}
+
+func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
+	url := client.Parse(pushURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
+			return fmt.Errorf("setting .netrc auth: %w", err)
+		}
+	}
+
+	// Clone the repository into memory.
+	return client.cloneRepo(url, auth, opts.Options)
+}
+
+func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
+	url := client.Parse(pushURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+
+	if opts.UseNetRC {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
 
-	// Create temp directory to clone into.
-	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-"))
-	if err != nil {
-		return fmt.Errorf("failed to create temp directory: %w", err)
+	author := &object.Signature{
+		Name:  "bomctl",
+		Email: "bomctl@users.noreply.github.com",
+		When:  time.Now(),
 	}
 
-	// Clone the repository into the temp directory
-	repo, err := cloneRepo(tmpDir, parsedURL, auth, opts.Options)
-	if err != nil {
-		return fmt.Errorf("failed to clone Git repository: %w", err)
+	// Commit written SBOM file to cloned repo.
+	if _, err := client.worktree.Commit(
+		fmt.Sprintf("bomctl push of %s", url.Fragment), &git.CommitOptions{All: true, Author: author},
+	); err != nil {
+		return fmt.Errorf("committing worktree: %w", err)
 	}
 
-	// Defer removing the temp directory with the cloned repo, to clean up
-	defer os.RemoveAll(tmpDir)
-
-	filePath := filepath.Join(tmpDir, parsedURL.Fragment)
-
-	err = addFile(repo, filePath, opts, doc, parsedURL)
-	if err != nil {
-		return fmt.Errorf("failed to commit file %s: %w", filePath, err)
-	}
-
-	// Push changes to Repo remote
-	err = pushFile(repo, parsedURL, auth)
-	if err != nil {
-		return fmt.Errorf("failed to push to remote %s: %w", parsedURL, err)
-	}
-
-	return nil
-}
-
-func pushFile(repo *git.Repository, parsedURL *url.ParsedURL, auth *url.BasicAuth) error {
-	err := repo.Push(&git.PushOptions{Auth: auth})
-	if err != nil {
-		return fmt.Errorf("failed to push to remote %s: %w", parsedURL, err)
-	}
-
-	return nil
-}
-
-func addFile(repo *git.Repository, filePath string, opts *options.PushOptions,
-	doc *sbom.Document, parsedURL *url.ParsedURL,
-) error {
-	writer := protowriter.New(protowriter.WithFormat(opts.Format))
-
-	worktree, err := repo.Worktree()
-	if err != nil {
-		return fmt.Errorf("failed to create worktree for %s: %w", parsedURL.Fragment, err)
-	}
-
-	opts.Logger.Debug("Creating any needed directories prior to creating file")
-
-	if _, err := os.Stat(path.Dir(filePath)); os.IsNotExist(err) {
-		err = os.MkdirAll(path.Dir(filePath), fs.ModePerm) // fs.ModePerm == 0777
-		if err != nil {
-			return fmt.Errorf("failed to create required parent directory %s: %w", parsedURL.Fragment, err)
+	// Push changes to remote repository.
+	if err := client.repo.Push(&git.PushOptions{Auth: auth}); err != nil {
+		if !errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return fmt.Errorf("pushing to remote %s: %w", url, err)
 		}
-	}
 
-	opts.Logger.Debug("Writing document to: %s", parsedURL.Fragment)
-	// Write the file specified in the URL fragment
-	err = writer.WriteFile(doc, filePath)
-	if err != nil {
-		return fmt.Errorf("failed to write file %s: %w", parsedURL.Fragment, err)
-	}
-
-	// Stage written sbom for addition
-	_, err = worktree.Add(parsedURL.Fragment)
-	if err != nil {
-		return fmt.Errorf("failed to stage file %s for commit: %w", parsedURL.Fragment, err)
-	}
-
-	// Commit written SBOM file to cloned repo
-	_, err = worktree.Commit(fmt.Sprintf("bomctl push of %s", filePath), &git.CommitOptions{All: true})
-	if err != nil {
-		return fmt.Errorf("failed to commit file %s: %w", filePath, err)
+		opts.Logger.Warn("Already up-to-date; no changes pushed to remote")
 	}
 
 	return nil
@@ -138,7 +129,8 @@ func getDocument(sbomID string, opts *options.Options) (*sbom.Document, error) {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	opts.Logger.Debug("Pulling document: %s", sbomID)
+	opts.Logger.Debug("Retrieving document", "id", sbomID)
+
 	// Retrieve SBOM document from database.
 	doc, err := backend.GetDocumentByID(sbomID)
 	if err != nil {

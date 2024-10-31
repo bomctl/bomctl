@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
 type Client struct{}
@@ -43,7 +43,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *url.ParsedURL {
+func (client *Client) Parse(rawURL string) *netutil.URL {
 	results := map[string]string{}
 	pattern := client.RegExp()
 	match := pattern.FindStringSubmatch(rawURL)
@@ -59,7 +59,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		}
 	}
 
-	return &url.ParsedURL{
+	return &netutil.URL{
 		Scheme:   results["scheme"],
 		Username: results["username"],
 		Password: results["password"],

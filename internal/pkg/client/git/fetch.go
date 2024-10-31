@@ -21,42 +21,37 @@ package git
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
-	parsedURL := client.Parse(fetchURL)
-	auth := &url.BasicAuth{Username: parsedURL.Username, Password: parsedURL.Password}
+	url := client.Parse(fetchURL)
+	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(parsedURL.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
 			return nil, fmt.Errorf("failed to set auth: %w", err)
 		}
 	}
 
-	// Create temp directory to clone into.
-	tmpDir, err := os.MkdirTemp(os.TempDir(), strings.ReplaceAll(parsedURL.Path, "/", "-"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp directory: %w", err)
-	}
-
 	// Clone the repository into the temp directory
-	_, err = cloneRepo(tmpDir, parsedURL, auth, opts.Options)
-	if err != nil {
-		return nil, fmt.Errorf("failed to clone Git repository: %w", err)
+	if err := client.cloneRepo(url, auth, opts.Options); err != nil {
+		return nil, fmt.Errorf("cloning Git repository: %w", err)
 	}
 
-	defer os.RemoveAll(tmpDir)
-
-	// Read the file specified in the URL fragment
-	sbomData, err := os.ReadFile(filepath.Join(tmpDir, parsedURL.Fragment))
+	// Read the file specified in the URL fragment.
+	file, err := client.worktree.Filesystem.Open(url.Fragment)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file %s: %w", parsedURL.Fragment, err)
+		return nil, fmt.Errorf("opening file %s: %w", url.Fragment, err)
+	}
+
+	defer file.Close()
+
+	sbomData := []byte{}
+	if _, err := file.Read(sbomData); err != nil {
+		return nil, fmt.Errorf("reading file %s: %w", url.Fragment, err)
 	}
 
 	return sbomData, nil

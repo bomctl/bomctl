@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/oci/fetch_test.go
+// SPDX-FileName: internal/pkg/client/oci/client_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -22,28 +22,30 @@ package oci_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
 const testSHA string = "sha256:abcdef0123456789ABCDEF0123456789abcdef0123456789ABCDEF0123456789"
 
-func TestFetcher_Parse(t *testing.T) {
-	t.Parallel()
+type ociClientSuite struct {
+	suite.Suite
+}
 
-	fetcher := &oci.Client{}
+func (ocs *ociClientSuite) TestClient_Parse() {
+	client := &oci.Client{}
 
 	for _, data := range []struct {
-		expected *url.ParsedURL
+		expected *netutil.URL
 		name     string
 		url      string
 	}{
 		{
 			name: "oci scheme",
 			url:  "oci://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -53,7 +55,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "oci-archive scheme",
 			url:  "oci-archive://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -63,7 +65,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "docker scheme",
 			url:  "docker://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -73,7 +75,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "docker-archive scheme",
 			url:  "docker-archive://registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -83,7 +85,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "no scheme",
 			url:  "registry.acme.com/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Hostname: "registry.acme.com",
 				Path:     "example/image",
@@ -93,7 +95,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "oci scheme with username, port, tag",
 			url:  "oci://username@registry.acme.com:12345/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Hostname: "registry.acme.com",
@@ -105,7 +107,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "oci scheme with username, password, port, tag",
 			url:  "oci://username:password@registry.acme.com:12345/example/image:1.2.3",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Password: "password",
@@ -118,7 +120,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "oci scheme with username, port, digest",
 			url:  "oci://username@registry.acme.com:12345/example/image@" + testSHA,
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Hostname: "registry.acme.com",
@@ -130,7 +132,7 @@ func TestFetcher_Parse(t *testing.T) {
 		{
 			name: "oci scheme with username, password, port, digest",
 			url:  "oci://username:password@registry.acme.com:12345/example/image@" + testSHA,
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "oci",
 				Username: "username",
 				Password: "password",
@@ -151,12 +153,14 @@ func TestFetcher_Parse(t *testing.T) {
 			expected: nil,
 		},
 	} {
-		t.Run(data.name, func(t *testing.T) {
-			t.Parallel()
-
-			actual := fetcher.Parse(data.url)
-
-			assert.Equal(t, data.expected, actual, data.url)
+		ocs.Run(data.name, func() {
+			actual := client.Parse(data.url)
+			ocs.Require().Equal(data.expected, actual, data.url)
 		})
 	}
+}
+
+func TestOCIClientSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(ociClientSuite))
 }

@@ -20,7 +20,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -37,12 +36,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-var (
-	errEncodingNotSupported = errors.New("encoding not supported for selected format")
-	errFormatNotSupported   = errors.New("format not supported")
-)
-
-func exportCmd() *cobra.Command {
+func exportCmd() *cobra.Command { //nolint:funlen
 	opts := &options.ExportOptions{}
 	outputFile := outputFileValue("")
 
@@ -88,7 +82,11 @@ func exportCmd() *cobra.Command {
 			// Get the documents to obtain their IDs, in case the provided IDs were aliases.
 			documents, err := backend.GetDocumentsByIDOrAlias(args...)
 			if err != nil {
-				opts.Logger.Fatal(err, "documentIDs", args)
+				opts.Logger.Fatal(err, "documentID(s)", args)
+			}
+
+			if len(documents) == 0 {
+				opts.Logger.Errorf("documentID(s) not found: %s", args)
 			}
 
 			for _, document := range documents {
@@ -138,6 +136,7 @@ func formatOptions() []string {
 		formats.CDXFORMAT + "-1.3",
 		formats.CDXFORMAT + "-1.4",
 		formats.CDXFORMAT + "-1.5",
+		formats.CDXFORMAT + "-1.6",
 	}
 
 	return append(spdxFormats, cdxFormats...)
@@ -155,11 +154,11 @@ func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	baseFormat := results["name"]
 	version := results["version"]
 
-	if err := validateFormat(baseFormat); err != nil {
+	if err := validateFormat(formatStr); err != nil {
 		return formats.EmptyFormat, err
 	}
 
-	if err := validateEncoding(formatStr, encoding); err != nil {
+	if err := validateEncoding(baseFormat, encoding); err != nil {
 		return formats.EmptyFormat, err
 	}
 
@@ -168,7 +167,7 @@ func parseFormat(formatStr, encoding string) (formats.Format, error) {
 	switch baseFormat {
 	case formats.CDXFORMAT:
 		if version == "" {
-			version = "1.5"
+			version = "1.6"
 		}
 
 		baseFormat = "application/vnd.cyclonedx"

@@ -20,16 +20,30 @@
 package oci
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
 
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/v2/content/memory"
+	"oras.land/oras-go/v2/registry/remote"
+	orasauth "oras.land/oras-go/v2/registry/remote/auth"
+	"oras.land/oras-go/v2/registry/remote/retry"
+
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 var errMultipleSBOMs = errors.New("more than one SBOM document identified in OCI image")
 
-type Client struct{}
+type Client struct {
+	ctx         context.Context
+	store       *memory.Store
+	repo        *remote.Repository
+	descriptors []ocispec.Descriptor
+}
 
 func (*Client) Name() string {
 	return "OCI"
@@ -47,7 +61,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *url.ParsedURL {
+func (client *Client) Parse(rawURL string) *netutil.URL {
 	results := map[string]string{}
 	pattern := client.RegExp()
 	match := pattern.FindStringSubmatch(rawURL)
@@ -79,7 +93,7 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		return nil
 	}
 
-	return &url.ParsedURL{
+	return &netutil.URL{
 		Scheme:   results["scheme"],
 		Username: results["username"],
 		Password: results["password"],
@@ -89,4 +103,45 @@ func (client *Client) Parse(rawURL string) *url.ParsedURL {
 		Tag:      results["tag"],
 		Digest:   results["digest"],
 	}
+}
+
+func (client *Client) createRepository(
+	url *netutil.URL,
+	auth *netutil.BasicAuth,
+	opts *options.Options,
+) (err error) {
+	client.ctx = opts.Context()
+	client.store = memory.New()
+
+	repoPath := (&netutil.URL{
+		Hostname: url.Hostname,
+		Port:     url.Port,
+		Path:     url.Path,
+	}).String()
+
+	if client.repo, err = remote.NewRepository(repoPath); err != nil {
+		return fmt.Errorf("creating OCI registry repository %s: %w", repoPath, err)
+	}
+
+	if auth != nil {
+		client.repo.Client = &orasauth.Client{
+			Client: retry.DefaultClient,
+			Cache:  orasauth.DefaultCache,
+			Credential: orasauth.StaticCredential(url.Hostname, orasauth.Credential{
+				Username: auth.Username,
+				Password: auth.Password,
+			}),
+		}
+	}
+
+	return nil
+}
+
+func descriptorJSON(obj *ocispec.Descriptor) string {
+	output, err := json.MarshalIndent(obj, "", "  ")
+	if err != nil {
+		return ""
+	}
+
+	return string(output)
 }

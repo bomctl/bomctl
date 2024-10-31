@@ -20,61 +20,13 @@
 package imprt
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
 
-	"github.com/protobom/protobom/pkg/reader"
-	"github.com/protobom/protobom/pkg/sbom"
-
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
-
-func parseDocument(sbomReader *reader.Reader, inputFile *os.File) (*sbom.Document, error) {
-	data, err := io.ReadAll(inputFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read from %s: %w", inputFile.Name(), err)
-	}
-
-	sbomDocument, err := sbomReader.ParseStream(bytes.NewReader(data))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", inputFile.Name(), err)
-	}
-
-	return sbomDocument, nil
-}
-
-func saveDocument(backend *db.Backend, documentFile *os.File, alias string, opts *options.ImportOptions) error {
-	data, err := io.ReadAll(documentFile)
-	if err != nil {
-		return fmt.Errorf("failed to read from %s: %w", documentFile.Name(), err)
-	}
-
-	sbomReader := reader.New()
-
-	document, err := parseDocument(sbomReader, documentFile)
-	if err != nil {
-		return fmt.Errorf("failed to parse SBOM document %w", err)
-	}
-
-	if _, err := backend.AddDocument(data); err != nil {
-		return fmt.Errorf("failed to store document: %w", err)
-	}
-
-	if alias != "" {
-		if err := backend.SetAlias(document.GetMetadata().GetId(), alias, false); err != nil {
-			opts.Logger.Warn("Alias could not be set.", "err", err)
-		}
-	}
-
-	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
-		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
-	}
-
-	return nil
-}
 
 func Import(opts *options.ImportOptions) error {
 	backend, err := db.BackendFromContext(opts.Context())
@@ -89,8 +41,32 @@ func Import(opts *options.ImportOptions) error {
 		}
 
 		if err := saveDocument(backend, opts.InputFiles[idx], alias, opts); err != nil {
-			return fmt.Errorf("failed to save document: %w", err)
+			return fmt.Errorf("importing document: %w", err)
 		}
+	}
+
+	return nil
+}
+
+func saveDocument(backend *db.Backend, documentFile *os.File, alias string, opts *options.ImportOptions) error {
+	data, err := io.ReadAll(documentFile)
+	if err != nil {
+		return fmt.Errorf("failed to read from %s: %w", documentFile.Name(), err)
+	}
+
+	document, err := backend.AddDocument(data)
+	if err != nil {
+		return fmt.Errorf("failed to store document: %w", err)
+	}
+
+	if alias != "" {
+		if err := backend.SetAlias(document.GetMetadata().GetId(), alias, false); err != nil {
+			opts.Logger.Warn("Alias could not be set.", "err", err)
+		}
+	}
+
+	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
 	return nil

@@ -20,114 +20,30 @@
 package git_test
 
 import (
-	"context"
-	"os"
-	"path/filepath"
 	"testing"
 
-	gogit "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
-	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
-type gitSuite struct {
+type gitClientSuite struct {
 	suite.Suite
-	tmpDir  string
-	repo    *gogit.Repository
-	opts    *options.Options
-	backend *db.Backend
-	gc      *git.Client
-	docs    []*sbom.Document
 }
 
-func (gs *gitSuite) SetupSuite() {
-	var err error
-
-	if gs.tmpDir, err = os.MkdirTemp("", "testrepo"); err != nil {
-		gs.T().Fatalf("Failed to create temporary directory: %v", err)
-	}
-
-	if gs.repo, err = gogit.PlainInit(gs.tmpDir, false); err != nil {
-		gs.T().Fatalf("Failed to initialize Git repo: %v", err)
-	}
-
-	repoConfig := config.NewConfig()
-	repoConfig.Author.Name = "bomctl-unit-test"
-	repoConfig.Author.Email = "bomctl-unit-test@users.noreply.github.com"
-
-	if err := gs.repo.SetConfig(repoConfig); err != nil {
-		gs.T().Fatalf("Failed to set Git repo config: %v", err)
-	}
-
-	if gs.backend, err = db.NewBackend(db.WithDatabaseFile(db.DatabaseFile)); err != nil {
-		gs.T().Fatalf("%v", err)
-	}
-
-	testdataDir := filepath.Join("..", "..", "db", "testdata")
-
-	sboms, err := os.ReadDir(testdataDir)
-	if err != nil {
-		gs.T().Fatalf("%v", err)
-	}
-
-	for sbomIdx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[sbomIdx].Name()))
-		if err != nil {
-			gs.T().Fatalf("%v", err)
-		}
-
-		doc, err := gs.backend.AddDocument(sbomData)
-		if err != nil {
-			gs.FailNow("failed storing document", "err", err)
-		}
-
-		gs.docs = append(gs.docs, doc)
-	}
-
-	gs.opts = options.New().WithCacheDir(viper.GetString("cache_dir"))
-	gs.opts = gs.opts.WithContext(context.WithValue(context.Background(), db.BackendKey{}, gs.backend))
-	gs.gc = &git.Client{}
-}
-
-func (gs *gitSuite) TearDownSuite() {
-	err := os.RemoveAll(gs.tmpDir)
-	if err != nil {
-		gs.T().Fatalf("Error removing repo file %s", db.DatabaseFile)
-	}
-
-	gs.backend.CloseClient()
-
-	if _, err := os.Stat(db.DatabaseFile); err == nil {
-		if err := os.Remove(db.DatabaseFile); err != nil {
-			gs.T().Fatalf("Error removing database file %s", db.DatabaseFile)
-		}
-	}
-}
-
-func TestGitSuite(t *testing.T) {
-	t.Parallel()
-	suite.Run(t, new(gitSuite))
-}
-
-func (gs *gitSuite) TestParse() {
-	gs.T().Parallel()
+func (gcs *gitClientSuite) TestClient_Parse() {
+	client := &git.Client{}
 
 	for _, data := range []struct {
-		expected *url.ParsedURL
+		expected *netutil.URL
 		name     string
 		url      string
 	}{
 		{
 			name: "git+http scheme",
 			url:  "git+http://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "http",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl.git",
@@ -138,7 +54,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git+https scheme with username, port",
 			url:  "git+https://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "https",
 				Username: "git",
 				Hostname: "github.com",
@@ -151,7 +67,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git+https scheme with username, password, port",
 			url:  "git+https://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "https",
 				Username: "username",
 				Password: "password",
@@ -165,7 +81,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git+https scheme with username",
 			url:  "git+https://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "https",
 				Username: "git",
 				Hostname: "github.com",
@@ -177,7 +93,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "ssh scheme",
 			url:  "ssh://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl.git",
@@ -188,7 +104,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "ssh scheme with username, port",
 			url:  "ssh://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Username: "git",
 				Hostname: "github.com",
@@ -201,7 +117,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "ssh scheme with username, password, port",
 			url:  "ssh://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Username: "username",
 				Password: "password",
@@ -215,7 +131,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "ssh scheme with username",
 			url:  "ssh://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Username: "git",
 				Hostname: "github.com",
@@ -227,7 +143,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git scheme",
 			url:  "git://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "git",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl.git",
@@ -238,7 +154,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git scheme with username, port",
 			url:  "git://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "git",
 				Username: "git",
 				Hostname: "github.com",
@@ -251,7 +167,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git scheme with username, password, port",
 			url:  "git://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "git",
 				Username: "username",
 				Password: "password",
@@ -265,7 +181,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git scheme with username",
 			url:  "git://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "git",
 				Username: "git",
 				Hostname: "github.com",
@@ -277,7 +193,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git SCP-like syntax",
 			url:  "github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl.git",
@@ -288,7 +204,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git SCP-like syntax with username",
 			url:  "git@github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Username: "git",
 				Hostname: "github.com",
@@ -300,7 +216,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git SCP-like syntax with username, password",
 			url:  "username:password@github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Username: "username",
 				Password: "password",
@@ -313,7 +229,7 @@ func (gs *gitSuite) TestParse() {
 		{
 			name: "git SCP-like syntax with username",
 			url:  "git@github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &url.ParsedURL{
+			expected: &netutil.URL{
 				Scheme:   "ssh",
 				Username: "git",
 				Hostname: "github.com",
@@ -338,8 +254,14 @@ func (gs *gitSuite) TestParse() {
 			expected: nil,
 		},
 	} {
-		actual := gs.gc.Parse(data.url)
-
-		gs.Equal(data.expected, actual)
+		gcs.Run(data.name, func() {
+			actual := client.Parse(data.url)
+			gcs.Require().Equal(data.expected, actual, data.url)
+		})
 	}
+}
+
+func TestGitClientSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(gitClientSuite))
 }

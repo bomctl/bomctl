@@ -26,22 +26,24 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/url"
 )
 
 var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
 
 type Client interface {
-	url.Parser
+	netutil.Parser
+	AddFile(pushURL, id string, opts *options.PushOptions) error
 	Name() string
-	Fetch(string, *options.FetchOptions) ([]byte, error)
-	Push(string, string, *options.PushOptions) error
+	Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error)
+	PreparePush(pushURL string, opts *options.PushOptions) error
+	Push(pushURL string, opts *options.PushOptions) error
 }
 
 func New(sbomURL string) (Client, error) {
 	for _, client := range []Client{&git.Client{}, &http.Client{}, &oci.Client{}} {
-		if parsedURL := client.Parse(sbomURL); parsedURL != nil {
+		if url := client.Parse(sbomURL); url != nil {
 			return client, nil
 		}
 	}
