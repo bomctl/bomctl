@@ -5,7 +5,7 @@ You can use [adr-tools](https://github.com/npryce/adr-tools) for managing the AD
 
 In each ADR file, write the following sections.
 -->
-# 6. SBOM Linking
+# 9. SBOM Linking
 
 Date: 2024-09-18
 
