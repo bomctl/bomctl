@@ -21,6 +21,7 @@ package http_test
 
 import (
 	"context"
+	"fmt"
 	nethttp "net/http"
 	"net/http/httptest"
 	"testing"
@@ -42,16 +43,23 @@ type httpFetchSuite struct {
 }
 
 func (hfs *httpFetchSuite) SetupSuite() {
+	hfs.Server = httptest.NewTLSServer(nethttp.FileServer(nethttp.Dir(testutil.GetTestdataDir())))
+	hfs.Client = &http.Client{}
+
+	hfs.Client.SetHTTPClient(hfs.Server.Client())
+}
+
+func (hfs *httpFetchSuite) SetupSubTest() {
 	var err error
 
 	hfs.Backend, err = testutil.NewTestBackend()
 	hfs.Require().NoError(err, "failed database backend creation")
 
 	hfs.Options = options.New().WithContext(context.WithValue(context.Background(), db.BackendKey{}, hfs.Backend))
-	hfs.Server = httptest.NewTLSServer(nethttp.FileServer(nethttp.Dir(testutil.GetTestdataDir())))
-	hfs.Client = &http.Client{}
+}
 
-	hfs.Client.SetHTTPClient(hfs.Server.Client())
+func (hfs *httpFetchSuite) TearDownSubTest() {
+	hfs.Backend.CloseClient()
 }
 
 func (hfs *httpFetchSuite) TearDownSuite() {
@@ -60,12 +68,36 @@ func (hfs *httpFetchSuite) TearDownSuite() {
 }
 
 func (hfs *httpFetchSuite) TestClient_Fetch() {
-	opts := &options.FetchOptions{Options: hfs.Options}
+	for _, alias := range []string{"cdx", "spdx"} {
+		hfs.Run(alias, func() {
+			fetchURL := fmt.Sprintf("%s/testdata/sbom.%s.json", hfs.Server.URL, alias)
+			opts := &options.FetchOptions{Options: hfs.Options}
 
-	data, err := hfs.Fetch(hfs.Server.URL+"/testdata/sbom.cdx.json", opts)
-	hfs.Require().NoError(err)
+			data, err := hfs.Fetch(fetchURL, opts)
+			hfs.Require().NoError(err)
 
-	hfs.GreaterOrEqual(len(data), 0)
+			document, err := hfs.GetDocumentByIDOrAlias(alias)
+			hfs.Require().NoError(err)
+
+			annotations, err := hfs.GetDocumentAnnotations(document.GetMetadata().GetId(),
+				db.SourceDataAnnotation,
+				db.SourceFormatAnnotation,
+				db.SourceURLAnnotation,
+			)
+			hfs.Require().NoError(err)
+
+			for idx := range annotations {
+				switch annotations[idx].Name {
+				case db.SourceDataAnnotation:
+					hfs.Len(annotations[idx].Value, len(data))
+				case db.SourceFormatAnnotation:
+					hfs.Contains(annotations[idx].Value, alias)
+				case db.SourceURLAnnotation:
+					hfs.Equal(annotations[idx].Value, fetchURL)
+				}
+			}
+		})
+	}
 }
 
 func TestHTTPFetchSuite(t *testing.T) {
