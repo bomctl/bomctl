@@ -45,14 +45,10 @@ import (
 
 const schemaVersion = 2
 
-type (
-	Annotations map[string]string
-
-	ociClientWriter struct {
-		*bytes.Buffer
-		*io.PipeReader
-	}
-)
+type ociClientWriter struct {
+	*bytes.Buffer
+	*io.PipeReader
+}
 
 func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
 	document, err := getDocument(id, opts.Options)
@@ -117,9 +113,17 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 		}
 	}
 
-	manifestDesc, manifestBytes, err := client.packManifest(tag, nil)
+	manifestDesc, manifestBytes, err := client.generateManifest(nil)
 	if err != nil {
 		return err
+	}
+
+	if err := client.store.Push(client.ctx, manifestDesc, bytes.NewReader(manifestBytes)); err != nil {
+		return fmt.Errorf("pushing manifest to memory store: %w", err)
+	}
+
+	if err := client.store.Tag(client.ctx, manifestDesc, tag); err != nil {
+		return fmt.Errorf("tagging manifest: %w", err)
 	}
 
 	opts.Logger.Debug("Packed manifest", "descriptor", descriptorJSON(&manifestDesc), "data", string(manifestBytes))
@@ -133,7 +137,7 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	return nil
 }
 
-func (client *Client) packManifest(tag string, annotations Annotations) (ocispec.Descriptor, []byte, error) {
+func (client *Client) generateManifest(annotations map[string]string) (ocispec.Descriptor, []byte, error) {
 	configDesc := ocispec.Descriptor{
 		MediaType: ocispec.MediaTypeImageConfig,
 		Digest:    ocispec.DescriptorEmptyJSON.Digest,
@@ -151,7 +155,7 @@ func (client *Client) packManifest(tag string, annotations Annotations) (ocispec
 	}
 
 	if annotations == nil {
-		annotations = make(Annotations)
+		annotations = make(map[string]string)
 	}
 
 	// Add the "org.opencontainers.image.created" annotation to the blob descriptor if not provided.
@@ -173,18 +177,12 @@ func (client *Client) packManifest(tag string, annotations Annotations) (ocispec
 
 	manifestDesc := content.NewDescriptorFromBytes(ocispec.MediaTypeImageManifest, manifestBytes)
 
-	if err := client.store.Push(client.ctx, manifestDesc, bytes.NewReader(manifestBytes)); err != nil {
-		return manifestDesc, manifestBytes, fmt.Errorf("pushing manifest to memory store: %w", err)
-	}
-
-	if err := client.store.Tag(client.ctx, manifestDesc, tag); err != nil {
-		return manifestDesc, manifestBytes, fmt.Errorf("tagging manifest: %w", err)
-	}
-
 	return manifestDesc, manifestBytes, nil
 }
 
-func (client *Client) pushBlob(mediaType string, data io.Reader, annotations Annotations) (ocispec.Descriptor, error) {
+func (client *Client) pushBlob(
+	mediaType string, data io.Reader, annotations map[string]string,
+) (ocispec.Descriptor, error) {
 	blob := bytes.NewBuffer([]byte{})
 	if _, err := io.Copy(blob, data); err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("reading blob content: %w", err)

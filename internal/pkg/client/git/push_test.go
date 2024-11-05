@@ -43,6 +43,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 type gitPushSuite struct {
@@ -52,7 +53,8 @@ type gitPushSuite struct {
 	*db.Backend
 	*git.Client
 	*httptest.Server
-	docs []*sbom.Document
+	documents    []*sbom.Document
+	documentInfo []testutil.DocumentInfo
 }
 
 func (gps *gitPushSuite) setupGitServer() {
@@ -121,34 +123,20 @@ func (gps *gitPushSuite) SetupSuite() {
 	var err error
 
 	gps.tmpDir, err = os.MkdirTemp("", "git-push-test")
-	gps.Require().NoErrorf(err, "Failed to create temporary directory: %v", err)
+	gps.Require().NoError(err, "Failed to create temporary directory")
 
-	gps.Backend, err = db.NewBackend(db.WithDatabaseFile(":memory"))
-	gps.Require().NoError(err)
+	gps.Backend, err = testutil.NewTestBackend()
+	gps.Require().NoError(err, "failed database backend creation")
+
+	gps.documentInfo, err = testutil.AddTestDocuments(gps.Backend)
+	gps.Require().NoError(err, "failed database backend setup")
 
 	gps.Client = &git.Client{}
 
 	gps.setupGitServer()
 
-	testdataDir := filepath.Join("..", "..", "db", "testdata")
-
-	sboms, err := os.ReadDir(testdataDir)
-	if err != nil {
-		gps.T().Fatalf("%v", err)
-	}
-
-	for sbomIdx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[sbomIdx].Name()))
-		if err != nil {
-			gps.T().Fatalf("%v", err)
-		}
-
-		doc, err := gps.Backend.AddDocument(sbomData)
-		if err != nil {
-			gps.FailNow("failed storing document", "err", err)
-		}
-
-		gps.docs = append(gps.docs, doc)
+	for idx := range gps.documentInfo {
+		gps.documents = append(gps.documents, gps.documentInfo[idx].Document)
 	}
 
 	gps.Options = options.New().
@@ -193,7 +181,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 
 	if err := gps.Client.AddFile(
 		gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx.json",
-		gps.docs[0].GetMetadata().GetId(),
+		gps.documents[0].GetMetadata().GetId(),
 		opts,
 	); err != nil {
 		gps.FailNowf("Error testing AddFile", "%s", err.Error())
@@ -216,12 +204,12 @@ func (gps *gitPushSuite) TestClient_Push() {
 		UseTree: false,
 	}
 
-	gps.Require().NoError(gps.Client.AddFile(pushURL, gps.docs[0].GetMetadata().GetId(), opts))
+	gps.Require().NoError(gps.Client.AddFile(pushURL, gps.documents[0].GetMetadata().GetId(), opts))
 	gps.Require().NoError(gps.Client.Push(pushURL, opts))
 }
 
 func (gps *gitPushSuite) TestGetDocument() {
-	for _, document := range gps.docs {
+	for _, document := range gps.documents {
 		retrieved, err := git.GetDocument(document.GetMetadata().GetId(), gps.Options)
 		if err != nil {
 			gps.FailNow("failed retrieving document", "id", document.GetMetadata().GetId())

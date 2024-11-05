@@ -28,7 +28,6 @@ import (
 	"github.com/protobom/protobom/pkg/formats"
 	orasauth "oras.land/oras-go/v2/registry/remote/auth"
 
-	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -69,14 +68,14 @@ func (ocs *ociClientSuite) TestClient_Push() {
 
 	ocs.Repo().Client = &orasauth.Client{Client: ocs.Server.Client()}
 	pushURL := fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag+"-single")
-	annotations := oci.Annotations{ocispec.AnnotationCreated: created}
+	annotations := map[string]string{ocispec.AnnotationCreated: created}
 
 	for idx := range ocs.sbomBlobs {
 		_, err := ocs.Client.PushBlob("application/spdx+json", bytes.NewBuffer(ocs.sbomBlobs[idx]), annotations)
 		ocs.Require().NoError(err)
 	}
 
-	_, _, err = ocs.Client.PackManifest(manifestTag+"-single", annotations)
+	_, _, err = ocs.Client.GenerateManifest(annotations)
 	ocs.Require().NoError(err)
 
 	ocs.Require().NoError(ocs.Client.Push(pushURL, &options.PushOptions{

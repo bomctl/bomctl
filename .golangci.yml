@@ -221,8 +221,9 @@ linters-settings:
       - name: exported
         arguments: [checkPrivateReceivers, sayRepetitiveInsteadOfStutters]
 
+      # Handled by `funlen` linter
       - name: function-length
-        exclude: [TEST]
+        disabled: true
 
       - name: line-length-limit
         arguments: [120]

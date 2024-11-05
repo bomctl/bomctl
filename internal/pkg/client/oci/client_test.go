@@ -46,6 +46,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 const (
@@ -71,7 +72,9 @@ type (
 		*oci.Client
 		*ociTestRepository
 		*options.Options
-		sbomBlobs [][]byte
+		documents    []*sbom.Document
+		documentInfo []testutil.DocumentInfo
+		sbomBlobs    [][]byte
 	}
 
 	ociTestRepository struct {
@@ -80,7 +83,6 @@ type (
 		manifests   map[string][]byte
 		blobs       map[string][]byte
 		descriptors map[string]ocispec.Descriptor
-		documents   []*sbom.Document
 	}
 )
 
@@ -90,8 +92,11 @@ func (ocs *ociClientSuite) BeforeTest(_suiteName, _testName string) {
 
 	var err error
 
-	ocs.Backend, err = db.NewBackend(db.WithDatabaseFile(":memory:"))
-	ocs.Require().NoErrorf(err, "database setup: %v", err)
+	ocs.Backend, err = testutil.NewTestBackend()
+	ocs.Require().NoError(err, "failed database backend creation")
+
+	ocs.documentInfo, err = testutil.AddTestDocuments(ocs.Backend)
+	ocs.Require().NoError(err, "failed database backend setup")
 
 	ocs.Options = options.New().WithContext(context.WithValue(context.Background(), db.BackendKey{}, ocs.Backend))
 
@@ -108,14 +113,17 @@ func (ocs *ociClientSuite) BeforeTest(_suiteName, _testName string) {
 	}
 
 	ocs.Require().NoError(ocs.Client.CreateRepository(url, nil, ocs.Options))
+
 	ocs.ctx = ocs.Context()
-
-	ocs.Require().NoErrorf(ocs.mapManifests(), "mapping manifests: %v", err)
-
-	testdataDir := filepath.Join("..", "..", "db", "testdata")
+	testdataDir := testutil.GetTestdataDir()
 
 	sboms, err := os.ReadDir(testdataDir)
 	ocs.Require().NoError(err)
+
+	ocs.ociTestRepository.blobs[string(configDesc.Digest)] = ocispec.DescriptorEmptyJSON.Data
+	ocs.ociTestRepository.descriptors[string(configDesc.Digest)] = configDesc
+
+	descriptors := []ocispec.Descriptor{configDesc}
 
 	for idx := range sboms {
 		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[idx].Name()))
@@ -128,9 +136,24 @@ func (ocs *ociClientSuite) BeforeTest(_suiteName, _testName string) {
 			ocs.FailNow("failed storing document", "err", err)
 		}
 
+		desc := ocispec.Descriptor{
+			MediaType: "application/spdx+json",
+			Digest:    digest.FromBytes(sbomData),
+			Size:      int64(len(sbomData)),
+		}
+
 		ocs.sbomBlobs = append(ocs.sbomBlobs, sbomData)
 		ocs.documents = append(ocs.documents, doc)
+		descriptors = append(descriptors, desc)
+
+		ocs.ociTestRepository.blobs[string(desc.Digest)] = sbomData
+		ocs.ociTestRepository.descriptors[string(desc.Digest)] = desc
 	}
+
+	// Generate manifests for testing
+	ocs.Require().NoError(ocs.ociTestRepository.packManifest("v1-empty"))
+	ocs.Require().NoError(ocs.ociTestRepository.packManifest("v1-single", descriptors[0]))
+	ocs.Require().NoError(ocs.ociTestRepository.packManifest("v1-multiple", descriptors[0:2]...))
 
 	ocs.Repo().Client = &orasauth.Client{Client: ocs.Server.Client()}
 }
@@ -254,58 +277,14 @@ func (otr *ociTestRepository) manifestsHandler() http.Handler {
 	})
 }
 
-func (otr *ociTestRepository) mapManifests() error {
-	testdataDir := filepath.Join("..", "..", "db", "testdata")
-
-	sboms, err := os.ReadDir(testdataDir)
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	otr.blobs[string(configDesc.Digest)] = ocispec.DescriptorEmptyJSON.Data
-	otr.descriptors[string(configDesc.Digest)] = configDesc
-
-	descriptors := []ocispec.Descriptor{configDesc}
-
-	for idx := range sboms {
-		blob, err := os.ReadFile(filepath.Join(testdataDir, sboms[idx].Name()))
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-
-		desc := ocispec.Descriptor{
-			MediaType: "application/spdx+json",
-			Digest:    digest.FromBytes(blob),
-			Size:      int64(len(blob)),
-		}
-
-		descriptors = append(descriptors, desc)
-		otr.blobs[string(desc.Digest)] = blob
-		otr.descriptors[string(desc.Digest)] = desc
-	}
-
-	// Generate manifests for testing
-	if err := otr.packManifest("v1-empty"); err != nil {
-		return err
-	}
-
-	if err := otr.packManifest("v1-single", descriptors[0]); err != nil {
-		return err
-	}
-
-	return otr.packManifest("v1-multiple", descriptors[0:2]...)
-}
-
 func (otr *ociTestRepository) packManifest(tag string, layers ...ocispec.Descriptor) error {
 	layers = append([]ocispec.Descriptor{ocispec.DescriptorEmptyJSON}, layers...)
 
 	manifest := ocispec.Manifest{
-		Versioned:    specs.Versioned{SchemaVersion: 2},
-		MediaType:    ocispec.MediaTypeImageManifest,
-		ArtifactType: ocispec.MediaTypeImageManifest,
-		Config:       configDesc,
-		Layers:       layers,
-		Annotations:  map[string]string{ocispec.AnnotationCreated: created},
+		Versioned:   specs.Versioned{SchemaVersion: 2},
+		Config:      configDesc,
+		Layers:      layers,
+		Annotations: map[string]string{ocispec.AnnotationCreated: created},
 	}
 
 	manifestBytes, err := json.Marshal(manifest)

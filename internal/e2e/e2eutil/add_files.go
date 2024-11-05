@@ -25,6 +25,8 @@ import (
 	"strings"
 
 	"github.com/rogpeppe/go-internal/testscript"
+
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 const (
@@ -57,7 +59,7 @@ func addFiles(script *testscript.TestScript, _ bool, args []string) {
 		fileMatch = args[1]
 	}
 
-	testDataDir := filepath.Join("..", "testdata")
+	testDataDir := testutil.GetTestdataDir()
 
 	sboms, err := os.ReadDir(testDataDir)
 	script.Check(err)

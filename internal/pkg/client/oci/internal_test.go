@@ -40,11 +40,13 @@ func (client *Client) Descriptors() []ocispec.Descriptor {
 	return client.descriptors
 }
 
-func (client *Client) PackManifest(tag string, annotations Annotations) (ocispec.Descriptor, []byte, error) {
-	return client.packManifest(tag, annotations)
+func (client *Client) GenerateManifest(annotations map[string]string) (ocispec.Descriptor, []byte, error) {
+	return client.generateManifest(annotations)
 }
 
-func (client *Client) PushBlob(mediaType string, data io.Reader, annotations Annotations) (ocispec.Descriptor, error) {
+func (client *Client) PushBlob(
+	mediaType string, data io.Reader, annotations map[string]string,
+) (ocispec.Descriptor, error) {
 	return client.pushBlob(mediaType, data, annotations)
 }
 

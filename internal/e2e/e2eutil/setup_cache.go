@@ -27,6 +27,7 @@ import (
 	"github.com/rogpeppe/go-internal/testscript"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 const (
@@ -60,7 +61,7 @@ func setupCache(script *testscript.TestScript, _ bool, args []string) {
 	backend, err := db.NewBackend(db.WithDatabaseFile(filepath.Join(workDir, db.DatabaseFile)))
 	script.Check(err)
 
-	testDataDir := filepath.Join("..", "testdata")
+	testDataDir := testutil.GetTestdataDir()
 
 	sboms, err := os.ReadDir(testDataDir)
 	script.Check(err)
