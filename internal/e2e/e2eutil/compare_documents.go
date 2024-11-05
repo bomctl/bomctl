@@ -91,10 +91,10 @@ func reportResult(script *testscript.TestScript, docsMatch, neg bool) { //nolint
 	}
 
 	if docsMatch && neg {
-		script.Fatalf("documents Match")
+		script.Fatalf("documents match")
 	}
 
-	script.Logf("documents Match")
+	script.Logf("documents match")
 }
 
 func getFile(script *testscript.TestScript, filePath string) *os.File {
@@ -118,22 +118,23 @@ func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) b
 			return strings.Compare(i.GetName(), j.GetName())
 		})
 	}
-	// remove sourceData to avoid hash mismatches due to format specific losses
+
+	// Remove SourceData to avoid hash mismatches due to format specific losses.
 	have.SourceData = nil
 	want.SourceData = nil
 
-	// remove timestamp to ignore time created mismatch
+	// Remove Date to ignore time created mismatch.
 	have.Date = nil
 	want.Date = nil
 
 	haveBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(have)
 	if err != nil {
-		script.Fatalf("failed to Marshal MetaData: %v", err)
+		script.Fatalf("failed to marshal metadata: %v", err)
 	}
 
 	wantBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(want)
 	if err != nil {
-		script.Fatalf("failed to Marshal MetaData: %v", err)
+		script.Fatalf("failed to marshal metadata: %v", err)
 	}
 
 	return bytes.Equal(haveBytes, wantBytes)
