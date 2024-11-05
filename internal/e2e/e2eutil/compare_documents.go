@@ -27,12 +27,15 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"slices"
 	"sort"
+	"strings"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/rogpeppe/go-internal/testscript"
+	"google.golang.org/protobuf/proto"
 )
 
 const compareDocsRequiredArgNum = 3
@@ -108,31 +111,32 @@ func getFile(script *testscript.TestScript, filePath string) *os.File {
 }
 
 func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) bool {
-	switch {
-	case have.GetId() != want.GetId():
-		script.Logf("MetaData Id does not match. have %s, want: %s", have.GetId(), want.GetId())
-
-		return false
-	case have.GetVersion() != want.GetVersion():
-		script.Logf("MetaData Version does not match. have %s, want: %s", have.GetVersion(), want.GetVersion())
-
-		return false
-	case have.GetName() != want.GetName():
-		script.Logf("MetaData Name does not match. have %s, want: %s", have.GetName(), want.GetName())
-
-		return false
-	case len(have.GetAuthors()) != len(want.GetAuthors()):
-		script.Logf("MetaData Authors do not match. have %s, want: %s", have.GetAuthors(), want.GetAuthors())
-
-		return false
-	case len(have.GetDocumentTypes()) != len(want.GetDocumentTypes()):
-		script.Logf("MetaData DocTypes do not match. have %s, want: %s",
-			have.GetDocumentTypes(), want.GetDocumentTypes())
-
-		return false
-	default:
-		return true
+	// append protobom tool entry to match expected value
+	if format := want.GetSourceData().GetFormat(); strings.Contains(format, "spdx") {
+		want.Tools = append(want.GetTools(), &sbom.Tool{Name: "protobom-devel"})
+		slices.SortFunc(want.GetTools(), func(i, j *sbom.Tool) int {
+			return strings.Compare(i.GetName(), j.GetName())
+		})
 	}
+	// remove sourceData to avoid hash mismatches due to format specific losses
+	have.SourceData = nil
+	want.SourceData = nil
+
+	// remove timestamp to ignore time created mismatch
+	have.Date = nil
+	want.Date = nil
+
+	haveBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(have)
+	if err != nil {
+		script.Fatalf("failed to Marshal MetaData: %v", err)
+	}
+
+	wantBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(want)
+	if err != nil {
+		script.Fatalf("failed to Marshal MetaData: %v", err)
+	}
+
+	return bytes.Equal(haveBytes, wantBytes)
 }
 
 func fileExists(filename string) bool {
