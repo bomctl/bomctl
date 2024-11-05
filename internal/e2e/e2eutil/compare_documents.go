@@ -108,46 +108,31 @@ func getFile(script *testscript.TestScript, filePath string) *os.File {
 }
 
 func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) bool {
-	equal := true
+	switch {
+	case have.GetId() != want.GetId():
+		script.Logf("MetaData Id does not match. have %s, want: %s", have.GetId(), want.GetId())
 
-	if have.GetId() != want.GetId() {
-		script.Logf("MetaData GetId() does not match. have %s, want: %s", have.GetId(), want.GetId())
-
-		equal = false
-	}
-
-	if have.GetVersion() != want.GetVersion() {
+		return false
+	case have.GetVersion() != want.GetVersion():
 		script.Logf("MetaData Version does not match. have %s, want: %s", have.GetVersion(), want.GetVersion())
 
-		equal = false
-	}
-
-	if have.GetName() != want.GetName() {
+		return false
+	case have.GetName() != want.GetName():
 		script.Logf("MetaData Name does not match. have %s, want: %s", have.GetName(), want.GetName())
 
-		equal = false
-	}
-
-	if have.GetName() != want.GetName() {
-		script.Logf("MetaData Name does not match. have %s, want: %s", have.GetName(), want.GetName())
-
-		equal = false
-	}
-
-	if len(have.GetAuthors()) != len(want.GetAuthors()) {
+		return false
+	case len(have.GetAuthors()) != len(want.GetAuthors()):
 		script.Logf("MetaData Authors do not match. have %s, want: %s", have.GetAuthors(), want.GetAuthors())
 
-		equal = false
-	}
-
-	if len(have.GetDocumentTypes()) != len(want.GetDocumentTypes()) {
+		return false
+	case len(have.GetDocumentTypes()) != len(want.GetDocumentTypes()):
 		script.Logf("MetaData DocTypes do not match. have %s, want: %s",
 			have.GetDocumentTypes(), want.GetDocumentTypes())
 
-		equal = false
+		return false
+	default:
+		return true
 	}
-
-	return equal
 }
 
 func fileExists(filename string) bool {
