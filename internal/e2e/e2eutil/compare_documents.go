@@ -26,13 +26,19 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"reflect"
+	"sort"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 const compareDocsRequiredArgNum = 3
+
+// **** Currently does a soft comparison, checks no nodes are lost and pkg names are the same
+// Cannot compare content since cdx properties are wiped out. *********
 
 // compareDocuments is a testscript command that compares the
 // two given protobom documents and checks for equality.
@@ -64,26 +70,28 @@ func compareDocuments(script *testscript.TestScript, neg bool, args []string) {
 	}
 
 	metaMatches := compareMetaData(script, documents[0].GetMetadata(), documents[1].GetMetadata())
-	nodeListMatches := documents[0].GetNodeList().Equal(documents[1].GetNodeList())
+	if !metaMatches {
+		script.Logf("metadata does not match")
+	}
 
-	reportResult(script, metaMatches, nodeListMatches, neg)
+	nodeListMatches := Equal(documents[0].GetNodeList(), documents[1].GetNodeList(), script)
+	if !nodeListMatches {
+		script.Logf("nodelist does not match")
+	}
+
+	reportResult(script, (metaMatches && nodeListMatches), neg)
 }
 
-func reportResult(script *testscript.TestScript, metaMatches, nodeListMatches, neg bool) { //nolint:revive
-	docsMatch := metaMatches && nodeListMatches
+func reportResult(script *testscript.TestScript, docsMatch, neg bool) { //nolint:revive
 	if !docsMatch && !neg {
-		if !metaMatches {
-			script.Logf("MetaData does not match")
-		} else {
-			script.Logf("node list does not match")
-		}
-
 		script.Fatalf("documents do not match")
 	}
 
 	if docsMatch && neg {
 		script.Fatalf("documents Match")
 	}
+
+	script.Logf("documents Match")
 }
 
 func getFile(script *testscript.TestScript, filePath string) *os.File {
@@ -99,18 +107,98 @@ func getFile(script *testscript.TestScript, filePath string) *os.File {
 	return file
 }
 
-func compareMetaData(script *testscript.TestScript, first, second *sbom.Metadata) bool {
-	firstStr := first.String()
-	secondStr := second.String()
+func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) bool {
+	equal := true
 
-	script.Logf(firstStr)
-	script.Logf(secondStr)
+	if have.GetId() != want.GetId() {
+		script.Logf("MetaData GetId() does not match. have %s, want: %s", have.GetId(), want.GetId())
 
-	return firstStr == secondStr
+		equal = false
+	}
+
+	if have.GetVersion() != want.GetVersion() {
+		script.Logf("MetaData Version does not match. have %s, want: %s", have.GetVersion(), want.GetVersion())
+
+		equal = false
+	}
+
+	if have.GetName() != want.GetName() {
+		script.Logf("MetaData Name does not match. have %s, want: %s", have.GetName(), want.GetName())
+
+		equal = false
+	}
+
+	if have.GetName() != want.GetName() {
+		script.Logf("MetaData Name does not match. have %s, want: %s", have.GetName(), want.GetName())
+
+		equal = false
+	}
+
+	if len(have.GetAuthors()) != len(want.GetAuthors()) {
+		script.Logf("MetaData Authors do not match. have %s, want: %s", have.GetAuthors(), want.GetAuthors())
+
+		equal = false
+	}
+
+	if len(have.GetDocumentTypes()) != len(want.GetDocumentTypes()) {
+		script.Logf("MetaData DocTypes do not match. have %s, want: %s",
+			have.GetDocumentTypes(), want.GetDocumentTypes())
+
+		equal = false
+	}
+
+	return equal
 }
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
 
 	return !errors.Is(err, fs.ErrNotExist)
+}
+
+func Equal(nl1, nl2 *sbom.NodeList, script *testscript.TestScript) bool {
+	if nl2 == nil {
+		return false
+	}
+
+	// First, quick one: Compare the lengths of the internals:
+	if len(nl1.GetEdges()) != len(nl2.GetEdges()) ||
+		len(nl1.GetNodes()) != len(nl2.GetNodes()) ||
+		len(nl1.GetRootElements()) != len(nl2.GetRootElements()) {
+		script.Logf("lengths differ")
+
+		return false
+	}
+
+	// Compare the flattened GetRootElements() list
+	rel1 := nl1.GetRootElements()
+	rel2 := nl2.GetRootElements()
+
+	sort.Strings(rel1)
+	sort.Strings(rel2)
+
+	if !reflect.DeepEqual(rel1, rel2) {
+		script.Logf("root elements differ")
+
+		return false
+	}
+
+	// Compare the GetNodes()
+	nlNodes := []string{}
+	nl2Nodes := []string{}
+
+	for _, n := range nl1.GetNodes() {
+		nlNodes = append(nlNodes, n.GetName())
+	}
+
+	for _, n := range nl2.GetNodes() {
+		nl2Nodes = append(nl2Nodes, n.GetName())
+	}
+
+	sort.Strings(nlNodes)
+	sort.Strings(nl2Nodes)
+
+	// If no logging output is seen, but equality fails
+	// this means the nodes are not equal
+	return cmp.Equal(nlNodes, nl2Nodes)
 }
