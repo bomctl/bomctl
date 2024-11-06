@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -62,7 +61,6 @@ func AddTestDocuments(backend *db.Backend) ([]DocumentInfo, error) {
 		}
 
 		name := strings.Split(sboms[idx].Name(), ".")[1]
-		log.Printf("alias: %s", name)
 
 		if err := backend.SetUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation, name); err != nil {
 			return nil, fmt.Errorf("setting alias: %w", err)

@@ -87,7 +87,7 @@ func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) err
 		return fmt.Errorf("%w", netutil.ErrParsingURL)
 	}
 
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
 		if err := auth.UseNetRC(url.Hostname); err != nil {

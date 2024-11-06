@@ -169,7 +169,7 @@ func (gps *gitPushSuite) TearDownSuite() {
 	gps.Backend.CloseClient()
 
 	if err := os.RemoveAll(gps.tmpDir); err != nil {
-		gps.T().Fatalf("Error removing temp directory %s", db.DatabaseFile)
+		gps.T().Fatalf("Error removing temp directory %s", gps.tmpDir)
 	}
 }
 

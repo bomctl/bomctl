@@ -11,7 +11,7 @@ require (
 	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
-	github.com/protobom/protobom v0.4.4
+	github.com/protobom/protobom v0.5.0
 	github.com/protobom/storage v0.1.5
 	github.com/rogpeppe/go-internal v1.13.1
 	github.com/spf13/cobra v1.8.1

@@ -34,7 +34,7 @@ import (
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
 		if err := auth.UseNetRC(url.Hostname); err != nil {

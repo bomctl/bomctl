@@ -76,7 +76,7 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
 	url := client.Parse(pushURL)
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
 		if err := auth.UseNetRC(url.Hostname); err != nil {
@@ -90,7 +90,7 @@ func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) err
 
 func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	url := client.Parse(pushURL)
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
 		if err := auth.UseNetRC(url.Hostname); err != nil {

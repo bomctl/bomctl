@@ -20,49 +20,16 @@
 package netutil
 
 import (
-	"encoding/base64"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/jdx/go-netrc"
 )
 
 type BasicAuth struct {
-	Username, Password string
-}
-
-func (auth *BasicAuth) Encode() string {
-	if auth == nil {
-		return ""
-	}
-
-	data := []byte(strings.Join([]string{auth.Username, auth.Password}, ":"))
-
-	return base64.URLEncoding.EncodeToString(data)
-}
-
-func (*BasicAuth) Name() string {
-	return "http-basic-auth"
-}
-
-func (auth *BasicAuth) SetAuth(request *http.Request) {
-	if auth == nil {
-		return
-	}
-
-	request.SetBasicAuth(auth.Username, auth.Password)
-}
-
-func (auth *BasicAuth) String() string {
-	masked := "*******"
-	if auth.Password == "" {
-		masked = "<empty>"
-	}
-
-	return fmt.Sprintf("Authorization: Basic %s:%s", auth.Username, masked)
+	githttp.BasicAuth
 }
 
 func (auth *BasicAuth) UseNetRC(hostname string) error {
@@ -83,4 +50,8 @@ func (auth *BasicAuth) UseNetRC(hostname string) error {
 	}
 
 	return nil
+}
+
+func NewBasicAuth(username, password string) *BasicAuth {
+	return &BasicAuth{githttp.BasicAuth{Username: username, Password: password}}
 }

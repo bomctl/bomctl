@@ -24,6 +24,8 @@ import (
 	"fmt"
 	nethttp "net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -40,10 +42,12 @@ type httpFetchSuite struct {
 	*db.Backend
 	*http.Client
 	*httptest.Server
+	documentInfo []testutil.DocumentInfo
 }
 
 func (hfs *httpFetchSuite) SetupSuite() {
-	hfs.Server = httptest.NewTLSServer(nethttp.FileServer(nethttp.Dir(testutil.GetTestdataDir())))
+	fileServer := nethttp.FileServer(nethttp.Dir(testutil.GetTestdataDir()))
+	hfs.Server = httptest.NewTLSServer(nethttp.StripPrefix("/testdata/", fileServer))
 	hfs.Client = &http.Client{}
 
 	hfs.Client.SetHTTPClient(hfs.Server.Client())
@@ -54,6 +58,9 @@ func (hfs *httpFetchSuite) SetupSubTest() {
 
 	hfs.Backend, err = testutil.NewTestBackend()
 	hfs.Require().NoError(err, "failed database backend creation")
+
+	hfs.documentInfo, err = testutil.AddTestDocuments(hfs.Backend)
+	hfs.Require().NoError(err, "failed database backend setup")
 
 	hfs.Options = options.New().WithContext(context.WithValue(context.Background(), db.BackendKey{}, hfs.Backend))
 }
@@ -69,33 +76,25 @@ func (hfs *httpFetchSuite) TearDownSuite() {
 
 func (hfs *httpFetchSuite) TestClient_Fetch() {
 	for _, alias := range []string{"cdx", "spdx"} {
+		want, err := os.ReadFile(filepath.Join(testutil.GetTestdataDir(), fmt.Sprintf("sbom.%s.json", alias)))
+		hfs.Require().NoError(err)
+
 		hfs.Run(alias, func() {
 			fetchURL := fmt.Sprintf("%s/testdata/sbom.%s.json", hfs.Server.URL, alias)
 			opts := &options.FetchOptions{Options: hfs.Options}
 
-			data, err := hfs.Fetch(fetchURL, opts)
+			got, err := hfs.Fetch(fetchURL, opts)
 			hfs.Require().NoError(err)
+
+			hfs.Len(got, len(want))
 
 			document, err := hfs.GetDocumentByIDOrAlias(alias)
 			hfs.Require().NoError(err)
 
-			annotations, err := hfs.GetDocumentAnnotations(document.GetMetadata().GetId(),
-				db.SourceDataAnnotation,
-				db.SourceFormatAnnotation,
-				db.SourceURLAnnotation,
-			)
+			srcData, err := hfs.GetDocumentUniqueAnnotation(document.GetMetadata().GetId(), db.SourceDataAnnotation)
 			hfs.Require().NoError(err)
 
-			for idx := range annotations {
-				switch annotations[idx].Name {
-				case db.SourceDataAnnotation:
-					hfs.Len(annotations[idx].Value, len(data))
-				case db.SourceFormatAnnotation:
-					hfs.Contains(annotations[idx].Value, alias)
-				case db.SourceURLAnnotation:
-					hfs.Equal(annotations[idx].Value, fetchURL)
-				}
-			}
+			hfs.Len(srcData, len(want))
 		})
 	}
 }
