@@ -26,6 +26,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/protobom/protobom/pkg/sbom"
 
@@ -36,6 +37,8 @@ type DocumentInfo struct {
 	Document *sbom.Document
 	Content  []byte
 }
+
+var lock = sync.Mutex{} //nolint:gochecknoglobals
 
 // AddTestDocuments preloads a Backend with SBOMs from the testdata directory.
 // In addition, the stored Documents and corresponding bytes data are captured and returned.
@@ -80,6 +83,9 @@ func AddTestDocuments(backend *db.Backend) ([]DocumentInfo, error) {
 
 // NewTestBackend creates a Backend for testing with in-memory storage.
 func NewTestBackend() (*db.Backend, error) {
+	lock.Lock()
+	defer lock.Unlock()
+
 	backend, err := db.NewBackend(db.WithDatabaseFile(":memory:"))
 	if err != nil {
 		return nil, fmt.Errorf("database setup: %w", err)

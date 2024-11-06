@@ -51,7 +51,7 @@ stdout '.*("serialNumber": "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db",).*'
 
 # export -o cdx sbom
 ! exists bulbasaur.json
-exec bomctl export --cache-dir $WORK -o bulbasaur.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 -o bulbasaur.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 exists bulbasaur.json
@@ -68,7 +68,7 @@ compare_docs $WORK squirtle.json test-linked.cdx.json
 # export spdx sbom
 exec bomctl export --cache-dir $WORK -f spdx-2.3 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
-stdout '.*("documentNamespace": "https://spdx.org/spdxdocs/",).*'
+stdout '.*("documentNamespace": "https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa",).*'
 
 # export -o spdx sbom
 ! exists pikachu.json
@@ -76,10 +76,7 @@ exec bomctl export --cache-dir $WORK -o pikachu.json -f spdx 'https://anchore.co
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists pikachu.json
-# compare_docs $WORK pikachu.json test-linked.spdx.json
-# Fails with MetaData values differing:
-# id:"https://spdx.org/spdxdocs/#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1727723761} tools:{name:"protobom-devel"} tools:{name:"syft-1.9.0"}
-# id:"https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1723065476} tools:{name:"syft-1.9.0"} authors:{name:"Anchore, Inc" is_org:true}
+compare_docs $WORK pikachu.json test-linked.spdx.json
 
 # export --output-file spdx sbom
 ! exists mewtwo.json
@@ -87,7 +84,4 @@ exec bomctl export --cache-dir $WORK --output-file mewtwo.json -f spdx 'https://
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists mewtwo.json
-# compare_docs $WORK mewtwo.json test-linked.spdx.json
-# Fails with MetaData values differing:
-# id:"https://spdx.org/spdxdocs/#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1727723887} tools:{name:"protobom-devel"} tools:{name:"syft-1.9.0"}
-# id:"https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT" version:"0" name:"bomctl_0.3.0_linux_amd64.tar.gz" date:{seconds:1723065476} tools:{name:"syft-1.9.0"} authors:{name:"Anchore, Inc" is_org:true}
+compare_docs $WORK mewtwo.json test-linked.spdx.json
