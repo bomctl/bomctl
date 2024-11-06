@@ -20,128 +20,17 @@
 package git_test
 
 import (
-	"context"
-	"net/http/cgi"
-	"net/http/httptest"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"testing"
-	"time"
 
-	"github.com/go-git/go-billy/v5/osfs"
-	gogit "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/cache"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/serverinfo"
-	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/protobom/protobom/pkg/formats"
-	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
-	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 type gitPushSuite struct {
-	suite.Suite
-	tmpDir string
-	*options.Options
-	*db.Backend
-	*git.Client
-	*httptest.Server
-	documents    []*sbom.Document
-	documentInfo []testutil.DocumentInfo
-}
-
-func (gps *gitPushSuite) setupGitServer() {
-	gps.T().Helper()
-
-	// Create server root and test repository directories.
-	serverRoot := filepath.Join(gps.tmpDir, "git-test-server")
-	repoDir := filepath.Join(serverRoot, "test", "repo.git")
-	gps.Require().NoError(os.MkdirAll(repoDir, os.ModePerm))
-
-	// Create storage for test Git server repository.
-	repoFS := osfs.New(repoDir)
-	storer := filesystem.NewStorage(repoFS, cache.NewObjectLRUDefault())
-
-	// Initialize test Git server repository.
-	repo, err := gogit.InitWithOptions(storer, repoFS, gogit.InitOptions{DefaultBranch: plumbing.Main})
-	gps.Require().NoError(err)
-
-	worktree, err := repo.Worktree()
-	gps.Require().NoError(err)
-
-	// Create initial commit and pack Git objects.
-	_, err = worktree.Commit("Initial commit", &gogit.CommitOptions{
-		AllowEmptyCommits: true,
-		Author: &object.Signature{
-			Name:  "bomctl-unit-test",
-			Email: "bomctl-unit-test@users.noreply.github.com",
-			When:  time.Now(),
-		},
-	})
-	gps.Require().NoError(err)
-	gps.Require().NoError(repo.Storer.PackRefs())
-	gps.Require().NoError(serverinfo.UpdateServerInfo(storer, repoFS))
-
-	// Update test Git server repository config to bare and unset worktree.
-	// This is to allow clients to update the server repository's main branch.
-	repoConfig, err := repo.Config()
-	gps.Require().NoError(err)
-
-	repoConfig.Core.IsBare = true
-	repoConfig.Core.Worktree = ""
-
-	gps.Require().NoError(repo.SetConfig(repoConfig), "Failed to set Git repo config")
-
-	// Get path to git executable.
-	gitPath, err := exec.LookPath("git")
-	gps.Require().NoError(err, "Unable to find git executable")
-
-	// Create CGI handler to handle Git smart protocol requests.
-	gitHandler := &cgi.Handler{
-		Path: gitPath,
-		Args: []string{
-			"-c", "http.getanyfile",
-			"-c", "http.receivepack",
-			"-c", "http.uploadpack",
-			"http-backend",
-		},
-		Env: []string{"GIT_PROJECT_ROOT=" + serverRoot, "GIT_HTTP_EXPORT_ALL=true"},
-	}
-
-	// Start the test server.
-	gps.Server = httptest.NewServer(gitHandler)
-}
-
-func (gps *gitPushSuite) SetupSuite() {
-	var err error
-
-	gps.tmpDir, err = os.MkdirTemp("", "git-push-test")
-	gps.Require().NoError(err, "Failed to create temporary directory")
-
-	gps.Backend, err = testutil.NewTestBackend()
-	gps.Require().NoError(err, "failed database backend creation")
-
-	gps.documentInfo, err = testutil.AddTestDocuments(gps.Backend)
-	gps.Require().NoError(err, "failed database backend setup")
-
-	gps.Client = &git.Client{}
-
-	gps.setupGitServer()
-
-	for idx := range gps.documentInfo {
-		gps.documents = append(gps.documents, gps.documentInfo[idx].Document)
-	}
-
-	gps.Options = options.New().
-		WithCacheDir(gps.tmpDir).
-		WithContext(context.WithValue(context.Background(), db.BackendKey{}, gps.Backend))
+	gitClientSuite
 }
 
 func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
@@ -164,15 +53,6 @@ func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
 	gps.Require().NoError(gps.Client.Repo().SetConfig(repoConfig), "Failed to set Git repo config")
 }
 
-func (gps *gitPushSuite) TearDownSuite() {
-	gps.Server.Close()
-	gps.Backend.CloseClient()
-
-	if err := os.RemoveAll(gps.tmpDir); err != nil {
-		gps.T().Fatalf("Error removing temp directory %s", gps.tmpDir)
-	}
-}
-
 func (gps *gitPushSuite) TestClient_AddFile() {
 	opts := &options.PushOptions{
 		Options: gps.Options,
@@ -192,7 +72,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 	gps.Require().NoError(err)
 
 	// File must be staged with a status of "A" (added).
-	gps.Require().Equal("A", string(status.File("path/to/sbom.cdx.json").Staging))
+	gps.Require().Equal("M", string(status.File("path/to/sbom.cdx.json").Staging))
 }
 
 func (gps *gitPushSuite) TestClient_Push() {
