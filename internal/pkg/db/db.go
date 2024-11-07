@@ -238,7 +238,7 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 	return documents, nil
 }
 
-func (backend *Backend) SetAlias(documentID, alias string, force bool) (err error) { //nolint:revive
+func (backend *Backend) SetAlias(documentID, alias string, force bool) (err error) { //revive:disable:flag-parameter
 	if err := backend.validateNewAlias(alias); err != nil {
 		return fmt.Errorf("failed to set alias: %w", err)
 	}

@@ -20,7 +20,6 @@
 package merge_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -528,11 +527,11 @@ func createMetadata(val string, tools []*sbom.Tool, authors []*sbom.Person,
 	docTypes []*sbom.DocumentType,
 ) *sbom.Metadata {
 	return &sbom.Metadata{
-		Name:          fmt.Sprintf("metadata%s", val),
-		Id:            fmt.Sprintf("metadata%s", val),
+		Name:          "metadata" + val,
+		Id:            "metadata" + val,
 		Date:          timestamppb.New(defaultTime),
 		Version:       val,
-		Comment:       fmt.Sprintf("metadata%s", val),
+		Comment:       "metadata" + val,
 		Tools:         tools,
 		Authors:       authors,
 		DocumentTypes: docTypes,
@@ -541,10 +540,10 @@ func createMetadata(val string, tools []*sbom.Tool, authors []*sbom.Person,
 
 func createPerson(val string) *sbom.Person {
 	return &sbom.Person{
-		Name:  fmt.Sprintf("person%s", val),
-		Email: fmt.Sprintf("person%s@test.com", val),
+		Name:  "person" + val,
+		Email: "person" + val + "@test.com",
 		Phone: "0123456789",
-		Url:   fmt.Sprintf("http://person%s.com", val),
+		Url:   "http://person" + val + ".com",
 	}
 }
 

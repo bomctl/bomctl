@@ -21,81 +21,45 @@ package db_test
 
 import (
 	"cmp"
-	"os"
-	"path/filepath"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 type dbSuite struct {
 	suite.Suite
-	backend   *db.Backend
-	documents []*sbom.Document
+	*db.Backend
+	documents    []*sbom.Document
+	documentInfo []testutil.DocumentInfo
 }
 
-var documentTags = [][]string{{"tag1", "tag2"}, {"tag2", "tag3"}}
-
 func (dbs *dbSuite) SetupSuite() {
-	backend, err := db.NewBackend(db.WithDatabaseFile(":memory:"))
-	if err != nil {
-		dbs.T().Fatalf("%v", err)
-	}
+	var err error
 
-	dbs.backend = backend
+	dbs.Backend, err = testutil.NewTestBackend()
+	dbs.Require().NoError(err, "failed database backend creation")
 
-	sboms, err := os.ReadDir("testdata")
-	if err != nil {
-		dbs.T().Fatalf("%v", err)
-	}
+	dbs.documentInfo, err = testutil.AddTestDocuments(dbs.Backend)
+	dbs.Require().NoError(err, "failed database backend setup")
 
-	for idx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join("testdata", sboms[idx].Name()))
-		if err != nil {
-			dbs.T().Fatalf("%v", err)
-		}
-
-		doc, err := dbs.backend.AddDocument(sbomData)
-		if err != nil {
-			dbs.FailNow("failed storing document", "err", err)
-		}
-
-		name := strings.Split(sboms[idx].Name(), ".")[1]
-		dbs.Require().NoError(
-			backend.SetUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation, name),
-			"failed to set alias", "err", err,
-		)
-
-		dbs.Require().NoError(
-			backend.AddAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, documentTags[idx]...),
-			"failed to add tags", "err", err,
-		)
-
-		dbs.documents = append(dbs.documents, doc)
+	for _, docInfo := range dbs.documentInfo {
+		dbs.documents = append(dbs.documents, docInfo.Document)
 	}
 }
 
 func (dbs *dbSuite) TearDownSuite() {
-	dbs.backend.CloseClient()
-
-	if _, err := os.Stat(":memory:"); err == nil {
-		if err := os.Remove(":memory:"); err != nil {
-			dbs.T().Logf("Error removing database file %s", ":memory:")
-		}
-	}
+	dbs.Backend.CloseClient()
 }
 
 func (dbs *dbSuite) TestGetDocumentByID() {
 	for _, document := range dbs.documents {
-		retrieved, err := dbs.backend.GetDocumentByID(document.GetMetadata().GetId())
-		if err != nil {
-			dbs.Fail("failed retrieving document", "id", document.GetMetadata().GetId())
-		}
+		retrieved, err := dbs.Backend.GetDocumentByID(document.GetMetadata().GetId())
+		dbs.Require().NoError(err, "failed retrieving document", "id", document.GetMetadata().GetId())
 
 		expectedEdges := consolidateEdges(document.GetNodeList().GetEdges())
 		actualEdges := consolidateEdges(retrieved.GetNodeList().GetEdges())
@@ -108,12 +72,12 @@ func (dbs *dbSuite) TestGetDocumentByID() {
 }
 
 func (dbs *dbSuite) TestGetDocumentByIDOrAlias() {
-	cdxDoc, err := dbs.backend.GetDocumentByIDOrAlias("cdx")
+	cdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("cdx")
 	if err != nil {
 		dbs.Fail("failed retrieving document", "alias", "cdx")
 	}
 
-	spdxDoc, err := dbs.backend.GetDocumentByIDOrAlias("spdx")
+	spdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("spdx")
 	if err != nil {
 		dbs.Fail("failed retrieving document", "alias", "spdx")
 	}
@@ -123,7 +87,7 @@ func (dbs *dbSuite) TestGetDocumentByIDOrAlias() {
 }
 
 func (dbs *dbSuite) TestGetDocumentsByIDOrAlias() {
-	docs, err := dbs.backend.GetDocumentsByIDOrAlias("cdx", "spdx")
+	docs, err := dbs.Backend.GetDocumentsByIDOrAlias("cdx", "spdx")
 	if err != nil {
 		dbs.Fail("failed retrieving document", "aliases", "cdx, spdx")
 	}
@@ -133,13 +97,13 @@ func (dbs *dbSuite) TestGetDocumentsByIDOrAlias() {
 }
 
 func (dbs *dbSuite) TestGetDocumentTags() {
-	tags, err := dbs.backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
+	tags, err := dbs.Backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
 	dbs.Require().NoError(err)
 	dbs.Require().EqualValues([]string{"tag1", "tag2"}, tags)
 }
 
 func (dbs *dbSuite) TestFilterDocumentsByTag() {
-	docs, err := dbs.backend.GetDocumentsByID()
+	docs, err := dbs.Backend.GetDocumentsByID()
 	dbs.Require().NoError(err)
 
 	for _, data := range []struct {
@@ -179,7 +143,7 @@ func (dbs *dbSuite) TestFilterDocumentsByTag() {
 		},
 	} {
 		dbs.Run(data.name, func() {
-			filteredDocs, err := dbs.backend.FilterDocumentsByTag(docs, data.tags...)
+			filteredDocs, err := dbs.Backend.FilterDocumentsByTag(docs, data.tags...)
 			dbs.Require().NoError(err)
 			dbs.Require().Len(filteredDocs, len(data.expected))
 
@@ -191,7 +155,7 @@ func (dbs *dbSuite) TestFilterDocumentsByTag() {
 }
 
 func (dbs *dbSuite) TestSetAlias() {
-	docs, err := dbs.backend.GetDocumentsByID()
+	docs, err := dbs.Backend.GetDocumentsByID()
 	dbs.Require().NoError(err)
 
 	for _, data := range []struct {
@@ -238,20 +202,20 @@ func (dbs *dbSuite) TestSetAlias() {
 		},
 	} {
 		dbs.Run(data.name, func() {
-			err := dbs.backend.RemoveAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
+			err := dbs.Backend.RemoveAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
 			dbs.Require().NoError(err)
 
 			if data.doc0Alias != "" {
 				dbs.Require().NoError(
-					dbs.backend.SetUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation, data.doc0Alias),
+					dbs.Backend.SetUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation, data.doc0Alias),
 					"failed to set alias", "err", err,
 				)
 			}
 
-			err = dbs.backend.SetAlias(docs[0].GetMetadata().GetId(), data.alias, data.force)
+			err = dbs.Backend.SetAlias(docs[0].GetMetadata().GetId(), data.alias, data.force)
 			if data.errorMsg == "" {
 				dbs.Require().NoError(err)
-				docAlias, err := dbs.backend.GetDocumentUniqueAnnotation(
+				docAlias, err := dbs.Backend.GetDocumentUniqueAnnotation(
 					docs[0].GetMetadata().GetId(), db.AliasAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.alias, docAlias)

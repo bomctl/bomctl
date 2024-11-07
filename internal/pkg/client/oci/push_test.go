@@ -20,181 +20,67 @@
 package oci_test
 
 import (
-	"context"
+	"bytes"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	neturl "net/url"
-	"os"
-	"path/filepath"
-	"strconv"
-	"testing"
 
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/protobom/protobom/pkg/formats"
-	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/stretchr/testify/suite"
+	orasauth "oras.land/oras-go/v2/registry/remote/auth"
 
-	"github.com/bomctl/bomctl/internal/pkg/client/oci"
-	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const (
-	repoName    = "oci-push-test"
-	manifestTag = "0.0.1"
-)
+func (ocs *ociClientSuite) TestClient_AddFile() {
+	serverURL, err := neturl.Parse(ocs.Server.URL)
+	ocs.Require().NoError(err)
 
-type ociPushSuite struct {
-	suite.Suite
-	tmpDir string
-	*options.Options
-	*db.Backend
-	*oci.Client
-	*httptest.Server
-	docs []*sbom.Document
-}
-
-func (ops *ociPushSuite) setupOCIRepository() {
-	ops.T().Helper()
-
-	prefix := fmt.Sprintf("/v2/%s/manifests/", repoName)
-	ociServeMux := http.NewServeMux()
-	ops.Server = httptest.NewTLSServer(ociServeMux)
-
-	ociServeMux.Handle(prefix, http.StripPrefix(prefix, http.HandlerFunc(
-		func(resp http.ResponseWriter, req *http.Request) {
-			switch {
-			case req.Method == http.MethodPut:
-				desc, err := ops.Store().Resolve(ops.Context(), req.URL.Path)
-				if err != nil {
-					http.NotFound(resp, req)
-
-					return
-				}
-
-				resp.Header().Set("Docker-Content-Digest", string(desc.Digest))
-				resp.WriteHeader(http.StatusCreated)
-			case req.Method == http.MethodHead:
-				predecessors, err := ops.Store().Predecessors(ops.Context(), ops.Descriptors()[0])
-				if err != nil || len(predecessors) == 0 {
-					http.NotFound(resp, req)
-
-					return
-				}
-
-				manifestDesc := predecessors[0]
-
-				resp.Header().Set("Content-Length", strconv.Itoa(int(manifestDesc.Size)))
-				resp.Header().Set("Content-Type", manifestDesc.MediaType)
-				resp.Header().Set("Docker-Content-Digest", manifestDesc.Digest.String())
-			default:
-				resp.WriteHeader(http.StatusMethodNotAllowed)
-			}
-		})),
-	)
-}
-
-func (ops *ociPushSuite) SetupSuite() {
-	var err error
-
-	ops.tmpDir, err = os.MkdirTemp("", repoName)
-	ops.Require().NoErrorf(err, "Failed to create temporary directory: %v", err)
-
-	ops.Backend, err = db.NewBackend(db.WithDatabaseFile(filepath.Join(ops.tmpDir, db.DatabaseFile)))
-	ops.Require().NoError(err)
-
-	ops.Client = &oci.Client{}
-
-	ops.setupOCIRepository()
-
-	testdataDir := filepath.Join("..", "..", "db", "testdata")
-
-	sboms, err := os.ReadDir(testdataDir)
-	if err != nil {
-		ops.T().Fatalf("%v", err)
-	}
-
-	for idx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join(testdataDir, sboms[idx].Name()))
-		if err != nil {
-			ops.T().Fatalf("%v", err)
-		}
-
-		doc, err := ops.Backend.AddDocument(sbomData)
-		if err != nil {
-			ops.FailNow("failed storing document", "err", err)
-		}
-
-		ops.docs = append(ops.docs, doc)
-	}
-
-	ops.Options = options.New().
-		WithCacheDir(ops.tmpDir).
-		WithContext(context.WithValue(context.Background(), db.BackendKey{}, ops.Backend))
-}
-
-func (ops *ociPushSuite) BeforeTest(_suiteName, _testName string) {
-	serverURL, err := neturl.Parse(ops.Server.URL)
-	ops.Require().NoError(err)
-
-	ops.Require().NoError(
-		ops.Client.PreparePush(
+	ocs.Require().NoError(
+		ocs.Client.PreparePush(
 			fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag),
-			&options.PushOptions{Options: ops.Options},
+			&options.PushOptions{Options: ocs.Options},
 		),
 	)
 
-	ops.Repo().Client = ops.Server.Client()
-}
-
-func (ops *ociPushSuite) TearDownSuite() {
-	ops.Server.Close()
-	ops.Backend.CloseClient()
-
-	if err := os.RemoveAll(ops.tmpDir); err != nil {
-		ops.T().Fatalf("Error removing temp directory %s", db.DatabaseFile)
-	}
-}
-
-func (ops *ociPushSuite) TestClient_AddFile() {
-	serverURL, err := neturl.Parse(ops.Server.URL)
-	ops.Require().NoError(err)
+	ocs.Repo().Client = &orasauth.Client{Client: ocs.Server.Client()}
 
 	// Test adding all SBOM files to artifact archive.
-	for _, document := range ops.docs {
-		ops.Require().NoError(ops.Client.AddFile(
+	for _, document := range ocs.documents {
+		ocs.Require().NoError(ocs.Client.AddFile(
 			fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag),
 			document.GetMetadata().GetId(),
-			&options.PushOptions{Options: ops.Options, Format: formats.SPDX23JSON},
+			&options.PushOptions{Options: ocs.Options, Format: formats.SPDX23JSON},
 		))
 	}
 
-	ops.Require().Len(ops.Descriptors(), len(ops.docs))
+	ocs.Require().Len(ocs.Descriptors(), len(ocs.documents))
 
-	for _, descriptor := range ops.Descriptors() {
-		exists, err := ops.Client.Store().Exists(ops.Context(), descriptor)
-		ops.Require().NoError(err)
-		ops.True(exists)
+	for _, descriptor := range ocs.Descriptors() {
+		exists, err := ocs.Client.Store().Exists(ocs.Context(), descriptor)
+		ocs.Require().NoError(err)
+		ocs.True(exists)
 	}
 }
 
-func (ops *ociPushSuite) TestClient_Push() {
-	serverURL, err := neturl.Parse(ops.Server.URL)
-	ops.Require().NoError(err)
+func (ocs *ociClientSuite) TestClient_Push() {
+	serverURL, err := neturl.Parse(ocs.Server.URL)
+	ocs.Require().NoError(err)
 
-	pushURL := fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag)
+	ocs.Repo().Client = &orasauth.Client{Client: ocs.Server.Client()}
+	pushURL := fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag+"-single")
+	annotations := map[string]string{ocispec.AnnotationCreated: created}
 
-	opts := &options.PushOptions{
-		Options: ops.Options,
+	for idx := range ocs.sbomBlobs {
+		_, err := ocs.Client.PushBlob("application/spdx+json", bytes.NewBuffer(ocs.sbomBlobs[idx]), annotations)
+		ocs.Require().NoError(err)
+	}
+
+	_, _, err = ocs.Client.GenerateManifest(annotations)
+	ocs.Require().NoError(err)
+
+	ocs.Require().NoError(ocs.Client.Push(pushURL, &options.PushOptions{
+		Options: ocs.Options,
 		Format:  formats.SPDX23JSON,
 		UseTree: false,
-	}
-
-	ops.Require().NoError(ops.Client.AddFile(pushURL, ops.docs[0].GetMetadata().GetId(), opts))
-	ops.Require().NoError(ops.Client.Push(pushURL, opts))
-}
-
-func TestOCIPushSuite(t *testing.T) {
-	t.Parallel()
-	suite.Run(t, new(ociPushSuite))
+	}))
 }

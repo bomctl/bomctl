@@ -35,7 +35,6 @@ import (
 type Client struct {
 	repo     *git.Repository
 	worktree *git.Worktree
-	basePath string
 }
 
 func (*Client) Name() string {
@@ -88,8 +87,6 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 }
 
 func (client *Client) cloneRepo(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
-	client.basePath = url.Fragment
-
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
 	baseURL := &netutil.URL{
 		Scheme:   url.Scheme,

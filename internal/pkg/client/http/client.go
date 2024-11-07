@@ -21,12 +21,15 @@ package http
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
-type Client struct{}
+type Client struct {
+	httpClient *http.Client
+}
 
 func (*Client) Name() string {
 	return "HTTP"
