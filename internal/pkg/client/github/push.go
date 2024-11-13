@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/git/push.go
+// SPDX-FileName: internal/pkg/client/github/push.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
