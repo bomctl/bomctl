@@ -20,7 +20,6 @@
 package e2e_push_test
 
 import (
-	"fmt"
 	"net/http/cgi"
 	"net/http/httptest"
 	"os"
@@ -121,7 +120,7 @@ func setupGitServer(t *testing.T, tmpDir string) *httptest.Server {
 			"-c", "http.uploadpack",
 			"http-backend",
 		},
-		Env: []string{fmt.Sprintf("GIT_PROJECT_ROOT=%s", serverRoot), "GIT_HTTP_EXPORT_ALL=true"},
+		Env: []string{"GIT_PROJECT_ROOT=" + serverRoot, "GIT_HTTP_EXPORT_ALL=true"},
 	}
 
 	// Start the test server.
@@ -141,7 +140,7 @@ func TestBomctlPush(t *testing.T) {
 		Setup: func(env *testscript.Env) error {
 			server := setupGitServer(t, env.Getenv("WORK"))
 
-			pushURL := fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.cdx.json", server.URL)
+			pushURL := server.URL + "/test/repo.git@main#path/to/sbom.cdx.json"
 			env.Setenv("PUSH_URL", pushURL)
 			env.Setenv("HTTPS_PROXY", os.Getenv("HTTPS_PROXY"))
 

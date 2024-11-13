@@ -21,101 +21,62 @@ package merge_test
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"testing"
 
-	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/merge"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
-
-var TestDataDir = filepath.Join("..", "db", "testdata")
 
 type mergeSuite struct {
 	suite.Suite
-	opts    *options.Options
-	backend *db.Backend
-	docs    []*sbom.Document
+	*options.Options
+	*db.Backend
+	documentInfo []testutil.DocumentInfo
 }
 
 func (ms *mergeSuite) SetupSuite() {
-	backend, err := db.NewBackend(db.WithDatabaseFile(db.DatabaseFile))
-	if err != nil {
-		ms.T().Fatalf("%v", err)
-	}
+	var err error
 
-	ms.backend = backend
+	ms.Backend, err = testutil.NewTestBackend()
+	ms.Require().NoError(err, "failed database backend creation")
 
-	sboms, err := os.ReadDir(TestDataDir)
-	if err != nil {
-		ms.T().Fatalf("%v", err)
-	}
+	ms.documentInfo, err = testutil.AddTestDocuments(ms.Backend)
+	ms.Require().NoError(err, "failed database backend setup")
 
-	for sbomIdx := range sboms {
-		sbomData, err := os.ReadFile(filepath.Join(TestDataDir, sboms[sbomIdx].Name()))
-		if err != nil {
-			ms.T().Fatalf("%v", err)
-		}
-
-		doc, err := ms.backend.AddDocument(sbomData)
-		if err != nil {
-			ms.FailNow("failed storing document", "err", err)
-		}
-
-		ms.docs = append(ms.docs, doc)
-	}
-
-	ms.opts = options.New().
-		WithCacheDir(viper.GetString("cache_dir"))
-
-	ms.backend, err = db.NewBackend(
-		db.WithDatabaseFile(filepath.Join(viper.GetString("cache_dir"), db.DatabaseFile)),
-	)
-	if err != nil {
-		ms.T().Fatalf("%v", err)
-	}
-
-	ms.opts = ms.opts.WithContext(context.WithValue(context.Background(), db.BackendKey{}, ms.backend))
+	ms.Options = options.New().WithContext(context.WithValue(context.Background(), db.BackendKey{}, ms.Backend))
 }
 
 func (ms *mergeSuite) TearDownSuite() {
-	ms.backend.CloseClient()
-
-	if _, err := os.Stat(db.DatabaseFile); err == nil {
-		if err := os.Remove(db.DatabaseFile); err != nil {
-			ms.T().Logf("Error removing database file %s", db.DatabaseFile)
-		}
-	}
+	ms.Backend.CloseClient()
 }
 
 func (ms *mergeSuite) TestMerge() {
 	opts := &options.MergeOptions{
-		Options: ms.opts,
+		Options: ms.Options,
 	}
 
-	docID, err := merge.Merge([]string{ms.docs[0].GetMetadata().GetId(), ms.docs[1].GetMetadata().GetId()}, opts)
+	baseDocument := ms.documentInfo[0].Document
+	otherDocument := ms.documentInfo[1].Document
 
+	docID, err := merge.Merge([]string{baseDocument.GetMetadata().GetId(), otherDocument.GetMetadata().GetId()}, opts)
 	ms.Require().NoError(err)
 
-	mergedDoc, err := ms.backend.GetDocumentByID(docID)
-	if err != nil {
-		ms.Fail("Failed to get merged document from DB")
+	mergedDocument, err := ms.Backend.GetDocumentByID(docID)
+	ms.Require().NoError(err, "Failed to get merged document from DB")
+
+	if baseDocument.GetMetadata().GetName() != "" {
+		ms.Equal(baseDocument.GetMetadata().GetName(), mergedDocument.GetMetadata().GetName())
+	} else if otherDocument.GetMetadata().GetName() != "" {
+		ms.Equal(otherDocument.GetMetadata().GetName(), mergedDocument.GetMetadata().GetName())
 	}
 
-	if ms.docs[0].GetMetadata().GetName() != "" {
-		ms.Equal(ms.docs[0].GetMetadata().GetName(), mergedDoc.GetMetadata().GetName())
-	} else if ms.docs[0].GetMetadata().GetName() == "" && ms.docs[1].GetMetadata().GetName() != "" {
-		ms.Equal(ms.docs[1].GetMetadata().GetName(), mergedDoc.GetMetadata().GetName())
-	}
+	mergedTools := append(baseDocument.GetMetadata().GetTools(), otherDocument.GetMetadata().GetTools()...)
 
-	expectedToolLength := len(ms.docs[0].GetMetadata().GetTools()) + len(ms.docs[1].GetMetadata().GetTools())
-
-	ms.Len(mergedDoc.GetMetadata().GetTools(), expectedToolLength)
+	ms.Len(mergedDocument.GetMetadata().GetTools(), len(mergedTools))
 }
 
 func TestMergeSuite(t *testing.T) {
