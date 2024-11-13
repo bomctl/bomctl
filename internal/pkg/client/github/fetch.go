@@ -44,14 +44,11 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 		}
 	}
 
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: auth.Password},
-	)
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: auth.Password})
 	tc := oauth2.NewClient(ctx, ts)
-
 	client.ghClient = *github.NewClient(tc)
-	repoURL := strings.Split(url.Path, "/")
 
+	repoURL := strings.Split(url.Path, "/")
 	owner := repoURL[0]
 	repo := repoURL[1] + "/dependency-graph/sbom"
 	u := fmt.Sprintf("repos/%s/%s", owner, repo)
