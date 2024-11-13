@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: cmd/internal_test.go
+// SPDX-FileName: internal/pkg/outpututil/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,9 +17,10 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package cmd
+package outpututil
 
 var (
-	EncodingOptions = encodingOptions
-	ParseFormat     = parseFormat
+	MatchesOriginFormat = matchesOriginFormat
+	CheckIfModified     = checkIfModified
+	WriteOriginStream   = writeOriginStream
 )

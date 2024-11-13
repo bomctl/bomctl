@@ -21,10 +21,6 @@ package e2eutil
 
 import (
 	"bytes"
-	"errors"
-	"io"
-	"io/fs"
-	"os"
 	"path"
 	"reflect"
 	"slices"
@@ -45,6 +41,8 @@ const compareDocsRequiredArgNum = 3
 
 // compareDocuments is a testscript command that compares the
 // two given protobom documents and checks for equality.
+// **** Currently does a soft comparison, checks no nodes are lost and pkg names are the same
+// Cannot compare content since cdx properties are wiped out. *********.
 func compareDocuments(script *testscript.TestScript, neg bool, args []string) {
 	if len(args) != compareDocsRequiredArgNum {
 		script.Fatalf("syntax: compare_docs directory_name file_name1 file_name2")
@@ -57,17 +55,10 @@ func compareDocuments(script *testscript.TestScript, neg bool, args []string) {
 	for i := 1; i < len(args); i++ {
 		fileString := path.Join(dir, args[i])
 
-		file := getFile(script, fileString)
+		file := script.ReadFile(fileString)
 
-		data, err := io.ReadAll(file)
-		if err != nil {
-			script.Fatalf("failed to read from input file: %s", file.Name())
-		}
-
-		document, err := sbomReader.ParseStream(bytes.NewReader(data))
-		if err != nil {
-			script.Fatalf("failed to parse SBOM data from file: %s", file.Name())
-		}
+		document, err := sbomReader.ParseStream(strings.NewReader(file))
+		script.Check(err)
 
 		documents = append(documents, document)
 	}
@@ -85,7 +76,7 @@ func compareDocuments(script *testscript.TestScript, neg bool, args []string) {
 	reportResult(script, (metaMatches && nodeListMatches), neg)
 }
 
-func reportResult(script *testscript.TestScript, docsMatch, neg bool) { //nolint:revive
+func reportResult(script *testscript.TestScript, docsMatch, neg bool) { //revive:disable:flag-parameter
 	if !docsMatch && !neg {
 		script.Fatalf("documents do not match")
 	}
@@ -94,22 +85,10 @@ func reportResult(script *testscript.TestScript, docsMatch, neg bool) { //nolint
 		script.Fatalf("documents match")
 	}
 
-	script.Logf("documents match")
+	script.Logf("document comparison passed")
 }
 
-func getFile(script *testscript.TestScript, filePath string) *os.File {
-	if !fileExists(filePath) {
-		script.Fatalf("file not found %s", filePath)
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		script.Fatalf("failed to open input file: %s", file.Name())
-	}
-
-	return file
-}
-
+// checks for metadata equality, taking expected diffs into account.
 func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) bool {
 	// append protobom tool entry to match expected value
 	if format := want.GetSourceData().GetFormat(); strings.Contains(format, "spdx") {
@@ -140,12 +119,7 @@ func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) b
 	return bytes.Equal(haveBytes, wantBytes)
 }
 
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-
-	return !errors.Is(err, fs.ErrNotExist)
-}
-
+// Performs soft comparison of two nodelists.
 func Equal(nl1, nl2 *sbom.NodeList, script *testscript.TestScript) bool {
 	if nl2 == nil {
 		return false

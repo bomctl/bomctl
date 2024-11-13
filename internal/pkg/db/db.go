@@ -29,6 +29,7 @@ import (
 	"slices"
 
 	"github.com/charmbracelet/log"
+	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/storage"
@@ -49,6 +50,8 @@ const (
 	DatabaseFile string = "bomctl.db"
 
 	EntDebugLevel int = 2
+
+	OriginalFormat formats.Format = "original"
 )
 
 type (
@@ -123,11 +126,6 @@ func (backend *Backend) AddDocument(sbomData []byte) (*sbom.Document, error) {
 				{
 					Name:     SourceHashAnnotation,
 					Value:    string(hash[:]),
-					IsUnique: true,
-				},
-				{
-					Name:     SourceFormatAnnotation,
-					Value:    sbomReader.Options.Format.Type(),
 					IsUnique: true,
 				},
 			},

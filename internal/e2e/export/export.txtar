@@ -45,7 +45,7 @@ stderr -count=1 '^(FATAL export: error creating output file outputFile=\.)$'
 ! stdout .
 
 # export cdx sbom
-exec bomctl export --cache-dir $WORK urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 stdout '.*("serialNumber": "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db",).*'
 
@@ -55,15 +55,15 @@ exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 -o bulbasaur.json urn:uuid
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 exists bulbasaur.json
-compare_docs $WORK bulbasaur.json test-linked.cdx.json
+cmp bulbasaur.json test-linked.cdx.json
 
 # export --output-file cdx sbom
 ! exists squirtle.json
-exec bomctl export --cache-dir $WORK --output-file squirtle.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 --output-file squirtle.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 exists squirtle.json
-compare_docs $WORK squirtle.json test-linked.cdx.json
+cmp squirtle.json test-linked.cdx.json
 
 # export spdx sbom
 exec bomctl export --cache-dir $WORK -f spdx-2.3 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
@@ -76,7 +76,7 @@ exec bomctl export --cache-dir $WORK -o pikachu.json -f spdx 'https://anchore.co
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists pikachu.json
-compare_docs $WORK pikachu.json test-linked.spdx.json
+cmp pikachu.json test-linked.spdx.json
 
 # export --output-file spdx sbom
 ! exists mewtwo.json
@@ -84,4 +84,4 @@ exec bomctl export --cache-dir $WORK --output-file mewtwo.json -f spdx 'https://
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists mewtwo.json
-compare_docs $WORK mewtwo.json test-linked.spdx.json
+cmp mewtwo.json test-linked.spdx.json
