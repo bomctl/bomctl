@@ -7,8 +7,8 @@ require (
 	github.com/charmbracelet/log v0.4.0
 	github.com/go-git/go-billy/v5 v5.6.0
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/google/go-github/v66 v66.0.0
 	github.com/google/go-cmp v0.6.0
+	github.com/google/go-github/v66 v66.0.0
 	github.com/google/uuid v1.6.0
 	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/go-digest v1.0.0
@@ -21,7 +21,6 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/oauth2 v0.18.0
-	golang.org/x/term v0.25.0
 	golang.org/x/term v0.26.0
 	google.golang.org/protobuf v1.35.1
 	oras.land/oras-go/v2 v2.5.0
@@ -34,8 +33,6 @@ require (
 )
 
 require (
-	ariga.io/atlas v0.19.1-0.20240203083654-5948b60a8e43 // indirect
-	dario.cat/mergo v1.0.0 // indirect
 	ariga.io/atlas v0.28.1 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	entgo.io/ent v0.14.1 // indirect
