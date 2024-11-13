@@ -21,14 +21,14 @@ package github
 
 import "github.com/bomctl/bomctl/internal/pkg/options"
 
-func (_ *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
+func (*Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
 	return nil
 }
 
-func (_ *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
+func (*Client) PreparePush(pushURL string, opts *options.PushOptions) error {
 	return nil
 }
 
-func (_ *Client) Push(sbomID string, opts *options.PushOptions) error {
+func (*Client) Push(sbomID string, opts *options.PushOptions) error {
 	return nil
 }
