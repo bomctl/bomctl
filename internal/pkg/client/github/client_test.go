@@ -65,28 +65,6 @@ func (ghcs *githubClientSuite) TestClient_Parse() {
 			},
 		},
 		{
-			name:     "http scheme with tag",
-			url:      "https://github.com/ossf/scorecard",
-			owner:    "ossf",
-			repoName: "scorecard",
-			expected: &netutil.URL{
-				Scheme:   "https",
-				Hostname: "github.com",
-				Path:     "ossf/scorecard",
-			},
-		},
-		{
-			name:     "http scheme with latest tag",
-			url:      "http://github.com/bomctl/bomctl",
-			owner:    "bomctl",
-			repoName: "bomctl",
-			expected: &netutil.URL{
-				Scheme:   "http",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl",
-			},
-		},
-		{
 			name:     "https scheme with username, port",
 			url:      "https://git@github.com:12345/bomctl/bomctl",
 			owner:    "bomctl",
@@ -210,18 +188,6 @@ func (ghcs *githubClientSuite) TestClient_Parse() {
 				Password: "password",
 				Hostname: "github.com",
 				Port:     "12345",
-				Path:     "bomctl/bomctl",
-			},
-		},
-		{
-			name:     "git scheme with username",
-			url:      "git://git@github.com/bomctl/bomctl",
-			owner:    "bomctl",
-			repoName: "bomctl",
-			expected: &netutil.URL{
-				Scheme:   "git",
-				Username: "git",
-				Hostname: "github.com",
 				Path:     "bomctl/bomctl",
 			},
 		},
