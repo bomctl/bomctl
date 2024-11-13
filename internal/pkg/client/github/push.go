@@ -21,7 +21,7 @@ package github
 
 import "github.com/bomctl/bomctl/internal/pkg/options"
 
-func (*Client) AddFile(_pushURL, id string, _opts *options.PushOptions) error {
+func (*Client) AddFile(_pushURL, _id string, _opts *options.PushOptions) error {
 	return nil
 }
 
