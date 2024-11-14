@@ -45,6 +45,10 @@ func fetchCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
+			clientString, err := cmd.Flags().GetString("client")
+			cobra.CheckErr(err)
+			opts.Client = clientString
+
 			if outputFileName != "" {
 				if len(args) > 1 {
 					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
@@ -71,6 +75,7 @@ func fetchCmd() *cobra.Command {
 	fetchCmd.Flags().VarP(&outputFileName, "output-file", "o", "Path to output file")
 	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
 	fetchCmd.Flags().StringVar(&opts.Alias, "alias", "", "Readable identifier to apply to document")
+	fetchCmd.Flags().StringVar(&opts.Client, "client", "", "Specify client type to use for fetch")
 	fetchCmd.Flags().StringArrayVar(&opts.Tags, "tag", []string{},
 		"Tag(s) to apply to document (can be specified multiple times)")
 
