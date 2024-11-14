@@ -36,7 +36,7 @@ func Push(sbomID, pushURL string, opts *options.PushOptions) error {
 	opts.Logger.Info("Pushing document", "id", sbomID)
 
 	// Create appropriate push client based on user provided destination.
-	pushClient, err := client.New(pushURL, opts.Client)
+	pushClient, err := client.New(pushURL)
 	if err != nil {
 		return fmt.Errorf("creating push client: %w", err)
 	}

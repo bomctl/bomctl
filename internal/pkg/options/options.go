@@ -55,7 +55,6 @@ type (
 		*Options
 		OutputFile *os.File
 		Alias      string
-		Client     string
 		Tags       []string
 		UseNetRC   bool
 	}
@@ -76,7 +75,6 @@ type (
 
 	PushOptions struct {
 		*Options
-		Client   string
 		Format   formats.Format
 		UseTree  bool
 		UseNetRC bool

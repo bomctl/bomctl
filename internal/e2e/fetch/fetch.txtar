@@ -42,7 +42,7 @@ exists second.cdx.json
 exists second-1.json
 
 # fetch --alias
-[net] exec bomctl fetch --cache-dir $WORK --alias third --client http https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json
+[net] exec bomctl fetch --cache-dir $WORK --alias third https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl_0.1.3_darwin_amd64.tar.gz.cdx.json
 cmp stderr fetch_alias.txt
 ! stdout .
 
@@ -51,7 +51,7 @@ cmp stdout fetch_alias_list.txt
 ! stderr .
 
 # fetch --tag
-[net] exec bomctl fetch --cache-dir $WORK --tag fourth --client http https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_arm64.tar.gz.spdx.json
+[net] exec bomctl fetch --cache-dir $WORK --tag fourth https://raw.githubusercontent.com/bomctl/bomctl/main/internal/e2e/testdata/merge_A.cdx.json
 cmp stderr fetch_tag.txt
 ! stdout .
 
@@ -63,7 +63,7 @@ cmp stdout fetch_tag_list.txt
 INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
 INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json
 -- fetch_alias.txt --
-INFO  fetch: Fetching from HTTP URL url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl_0.1.3_darwin_amd64.tar.gz.cdx.json
 -- fetch_alias_list.txt --
 
 ID      : urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
@@ -76,17 +76,17 @@ Alias   :
 Version : 0
 # Nodes : 81
 
-ID      : https://anchore.com/syft/file/bomctl_0.4.1_darwin_amd64.tar.gz-c7628350-c94b-4684-a68e-60da899682bc#DOCUMENT
+ID      : urn:uuid:22ff1e59-cd6e-485a-83d1-24e64f87c5db
 Alias   : third
-Version : 0
+Version : 1
 # Nodes : 81
 
 -- fetch_tag.txt --
-INFO  fetch: Fetching from HTTP URL url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_arm64.tar.gz.spdx.json
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl/main/internal/e2e/testdata/merge_A.cdx.json
 -- fetch_tag_list.txt --
 
-ID      : https://anchore.com/syft/file/bomctl_0.4.1_darwin_arm64.tar.gz-35920d56-4519-40d4-82af-d695799d1df6#DOCUMENT
+ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
 Alias   : 
-Version : 0
-# Nodes : 81
+Version : 1
+# Nodes : 5
 

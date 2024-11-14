@@ -41,7 +41,7 @@ func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	fetcher, err := client.New(sbomURL, opts.Client)
+	fetcher, err := client.New(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
 	}

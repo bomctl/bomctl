@@ -22,7 +22,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/github"
@@ -43,13 +42,7 @@ type Client interface {
 	Push(pushURL string, opts *options.PushOptions) error
 }
 
-func New(sbomURL, clientString string) (Client, error) {
-	for _, client := range []Client{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}} {
-		if strings.EqualFold(clientString, client.Name()) {
-			return client, nil
-		}
-	}
-
+func New(sbomURL string) (Client, error) {
 	for _, client := range []Client{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}} {
 		if url := client.Parse(sbomURL); url != nil {
 			return client, nil
