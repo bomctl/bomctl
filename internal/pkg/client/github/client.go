@@ -42,7 +42,7 @@ func (*Client) RegExp() *regexp.Regexp {
 		fmt.Sprintf("^%s%s%s%s$",
 			`(?P<scheme>https?|git|ssh):\/\/?`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
-			`(?P<hostname>github\.com+)(?::(?P<port>\d+))?`,
+			`(?P<hostname>github(\.[A-Za-z0-9_-]+)*\.com+)(?::(?P<port>\d+))?`,
 			`(?:[\/:](?P<path>[^@#]+)@?)`,
 		),
 	)
@@ -70,6 +70,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 
 	const length = 2
 	pathComponents := strings.Split(results["path"], "/")
+
 	if len(pathComponents) != length {
 		return nil
 	}
