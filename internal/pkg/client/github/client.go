@@ -22,6 +22,7 @@ package github
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/google/go-github/v66/github"
 
@@ -65,6 +66,12 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		if value, ok := results[required]; !ok || value == "" {
 			return nil
 		}
+	}
+
+	const length = 2
+	pathComponents := strings.Split(results["path"], "/")
+	if len(pathComponents) != length {
+		return nil
 	}
 
 	return &netutil.URL{
