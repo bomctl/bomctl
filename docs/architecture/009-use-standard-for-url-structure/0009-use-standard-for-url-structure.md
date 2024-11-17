@@ -1,5 +1,5 @@
 
-# 9. Formalize URL format
+# 9. Use Standard for URL format
 
 Date: 2024-11-17
 
@@ -56,30 +56,31 @@ to use or fails with a message to the user.
 Main issues being:
 
 - Managing N # of regular expressions to only capture items for that client and nothing else
-- The iterative nature means a cmd Intended for client N+3 could be captured by a mistake in the parsing function for N+1.
+- The iterative nature means a cmd intended for client N+3 could be captured by a mistake in the parsing function for N+1.
 
 ```mermaid
 flowchart TD
   A[cmd] --> B(client.New)
-  B --> C(Client_N)
-  C --> D(Client_N.Parse)
-  D --> E(Match?)
-  E -- No --> B
-  E -- Yes --> F(Process cmd)
+  B --> C(For Each Client)
+  C --> D(Client_N)
+  D --> E(Client_N.Parse)
+  E --> F(Match?)
+  F -- No --> C
+  F -- Yes --> G(Process cmd)
 ```
 
 #### Proposed Parsing Structure
 
 Improvements being:
 
-- All Parsing is done in one function
+- All parsing is done in one function
 - Assuming no error in parsing, correct client will be selected
 - No iteration to potentially be sent to incorrect client (Although that possibility is still there)
 
 Drawbacks:
 
 - Parsing function would be key point of failure
-- Would require Extensive Testing suite
+- Would require extensive testing suite
 - May prove difficult to make additions
 
 ```mermaid
@@ -97,11 +98,50 @@ flowchart TD
 Options (Please suggest any that may be a good fit)
 
 - Package URL [(PURL)](https://github.com/package-url/purl-spec)
-- net/url Go URL [Library](https://pkg.go.dev/net/url@go1.23.3)
+- net/url Go URL [Library](https://pkg.go.dev/net/url@go1.23.3). AKA Standard URL Structure
 
 #### Package URL
 
+Detailed writeup on using Package URL [here](0009-supporting-packageurl.md)
+
 #### net/url
+
+Detailed writeup on using URL Schema [here](0009-supporting-standard-url.md)
+
+### Comparison of Example location strings
+
+- Http Client
+  - Current: `example.acme.com`
+    - Purl: `pkg:generic/acme?download_url=example.acme.com`
+    - URL:
+  - Current: `https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
+    - Purl: `pkg:generic/bomctl@0.4.1?download_url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
+    - URL:
+    - Notes: If we want the future github client to take this:
+      - `pkg:github/bomctl/bomctl@0.4.1#bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
+- Git Client (Although these examples could use the future github client with purls also)
+  - Current: `git+https://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json`
+    - Purl: `pkg:git/bomct/bomctl@main?user=git#sbom.cdx.json`
+    - URL:
+  - Current: `ssh://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json`
+    - Purl: `pkg:git/bomct/bomctl@main?user=git&port=12345&scheme=ssh#sbom.cdx.json`
+    - URL:
+  - Current: `git://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json`
+    - Purl: `pkg:git/bomct/bomctl@main?user=git&password=password&port=12345&scheme=git#sbom.cdx.json`
+    - URL:
+  - Current: `git@github.com:bomctl/bomctl.git@main#sbom.cdx.json`
+    - Purl: `pkg:git/bomct/bomctl@main?user=git#sbom.cdx.json`
+    - URL:
+  - Current: `https://github.com/bomctl/bomctl.git@main#path/to/sbom.cdx.json`
+    - Purl: `pkg:git/bomct/bomctl@main?user=git#path/to/sbom.cdx.json`
+    - URL:
+- OCI Client
+  - Current: `oci://username@registry.acme.com:12345/example/image:1.2.3`
+    - Purl: `pkg:oci/example/image@1.2.3?repository_url=registry.acme.com&username=username&port=12345`
+    - URL:
+  - Current: `registry.acme.com/example/image:1.2.3`
+    - Purl: `pkg:oci/example/image@1.2.3?repository_url=registry.acme.com`
+    - URL:
 
 ## Decision
 
