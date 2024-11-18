@@ -45,13 +45,13 @@ stderr -count=1 '^(FATAL export: error creating output file outputFile=\.)$'
 ! stdout .
 
 # export cdx sbom
-exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+exec bomctl export --cache-dir $WORK urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 stdout '.*("serialNumber": "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db",).*'
 
 # export -o cdx sbom
 ! exists bulbasaur.json
-exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 -o bulbasaur.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+exec bomctl export --cache-dir $WORK -o bulbasaur.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 exists bulbasaur.json
@@ -59,20 +59,20 @@ cmp bulbasaur.json test-linked.cdx.json
 
 # export --output-file cdx sbom
 ! exists squirtle.json
-exec bomctl export --cache-dir $WORK -f cyclonedx-1.5 --output-file squirtle.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+exec bomctl export --cache-dir $WORK --output-file squirtle.json urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)$'
 exists squirtle.json
 cmp squirtle.json test-linked.cdx.json
 
 # export spdx sbom
-exec bomctl export --cache-dir $WORK -f spdx-2.3 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+exec bomctl export --cache-dir $WORK 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 stdout '.*("documentNamespace": "https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa",).*'
 
 # export -o spdx sbom
 ! exists pikachu.json
-exec bomctl export --cache-dir $WORK -o pikachu.json -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+exec bomctl export --cache-dir $WORK -o pikachu.json 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists pikachu.json
@@ -80,7 +80,7 @@ cmp pikachu.json test-linked.spdx.json
 
 # export --output-file spdx sbom
 ! exists mewtwo.json
-exec bomctl export --cache-dir $WORK --output-file mewtwo.json -f spdx 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
+exec bomctl export --cache-dir $WORK --output-file mewtwo.json 'https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT'
 ! stdout .
 stderr '^(INFO  export: Exporting document sbomID=https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT)$'
 exists mewtwo.json
