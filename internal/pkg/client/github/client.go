@@ -69,6 +69,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 
 	const length = 2
+	
 	pathComponents := strings.Split(results["path"], "/")
 
 	if len(pathComponents) != length {
