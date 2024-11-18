@@ -99,7 +99,7 @@ func exportCmd() *cobra.Command { //nolint:funlen
 	}
 
 	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "path to output file")
-	exportCmd.Flags().StringP("format", "f", formats.CDXFORMAT, formatHelp())
+	exportCmd.Flags().StringP("format", "f", string(db.OriginalFormat), formatHelp())
 	exportCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
 
 	return exportCmd
