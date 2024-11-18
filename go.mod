@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/oauth2 v0.18.0
 	golang.org/x/term v0.26.0
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.35.2
 	oras.land/oras-go/v2 v2.5.0
 )
 
