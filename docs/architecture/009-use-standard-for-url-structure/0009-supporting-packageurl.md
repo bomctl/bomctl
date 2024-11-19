@@ -74,7 +74,7 @@ pkg:rpm/opensuse/curl@7.56.1-1.1.?arch=i386&distro=opensuse-tumbleweed
 - Potentially requires users to know which client they'd want to use, which it'd be better to avoid
 - Cannot express local files in this schema, may have to be handled as a generic string (as it is now)
 
-## Practicality/Usablity
+## Practicality/Usability
 
 - Soft enforcement of `pkg` prefix
   - We could allow users to leave off the `pkg:` prefix from their cmd and handle it if it's not there.
@@ -91,7 +91,7 @@ pkg:rpm/opensuse/curl@7.56.1-1.1.?arch=i386&distro=opensuse-tumbleweed
 
 ## Examples
 
-- Http Client
+- HTTP Client
   - `pkg:generic/acme?download_url=example.acme.com`
   - `pkg:generic/bomctl@0.4.1?download_url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
     - If we would want the future github client to take this: `pkg:github/bomctl/bomctl@0.4.1#bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`

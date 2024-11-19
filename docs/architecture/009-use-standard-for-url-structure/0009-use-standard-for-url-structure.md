@@ -25,7 +25,7 @@ psuedo url structure is not documented anywhere an thus bomctl is hard to pick u
 
 Some examples of current url structure in their respective commands:
 
-- Http Client
+- HTTP Client
   - `example.acme.com`
   - `https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
 - Git Client
@@ -110,7 +110,7 @@ Detailed writeup on using URL Schema [here](0009-supporting-standard-url.md)
 
 ### Comparison of Example location strings
 
-- Http Client
+- HTTP Client
   - Current: `example.acme.com`
     - Purl: `pkg:generic/acme?download_url=example.acme.com`
     - URL:

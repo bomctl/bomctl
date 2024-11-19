@@ -46,7 +46,7 @@ with a different client upon failure.
 
 ## Examples
 
-- Http Client
+- HTTP Client
   - `https://example.acme.com`
   - `https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
 - Git Client
