@@ -102,13 +102,13 @@ Options (Please suggest any that may be a good fit)
 <details>
 <summary>Package URL Breakdown</summary>
 
-## Description
+## PURL Description
 
 Package URL Specification (purl spec): A minimal specification for purl aka. a package "mostly universal" URL.
 
 - [GitHub](https://github.com/package-url/purl-spec)
 
-## Advantages
+## PURL Advantages
 
 - Similar to the format in use currently in bomctl
   - Many of the fields bomctl is looking for exist within a purl
@@ -119,7 +119,7 @@ Package URL Specification (purl spec): A minimal specification for purl aka. a p
 - This would simplify commands for operations on boms:
   - Linking would require pointing to a component within an sbom, which would use purl spec
 
-## Disadvantages
+## PURL Disadvantages
 
 - Bare urls would need to be wrapped in a useless formatting, or go through additional processing to turn into a purl
   - `pkg:generic/bomctl@0.4.1?download_url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
@@ -132,7 +132,7 @@ Package URL Specification (purl spec): A minimal specification for purl aka. a p
 - Cannot express local files in this schema, may have to be handled as a generic string (as it is now)
   - Could also use generic pkg: `pkg:generic/sbom.cdx.json@v0.4.1?download_url=file:///path/to/sbom.cdx.json`
 
-## Practicality/Usability
+## PURL Practicality/Usability
 
 - Soft enforcement of `pkg` prefix
   - We could allow users to leave off the `pkg:` prefix from their cmd and handle it if it's not there.
@@ -147,7 +147,7 @@ Package URL Specification (purl spec): A minimal specification for purl aka. a p
     - Supporting username and password in commands does help simplify running in CICD environments (with proper precautions setup)
     - Maybe separate flags for this?
 
-## Examples
+## PURL Examples
 
 - HTTP Client
   - `pkg:generic/acme?download_url=example.acme.com`
@@ -170,7 +170,7 @@ Package URL Specification (purl spec): A minimal specification for purl aka. a p
 <details>
 <summary>net/url Breakdown</summary>
 
-## Description
+## net/url Description
 
 `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
 
@@ -190,7 +190,7 @@ Examples:
 - `http://www.ietf.org/rfc/rfc2396.txt`
 - `file://this/one/over/here.json`
 
-## Advantages
+## net/url Advantages
 
 - Expressive standard that supports all fields currently in use by bomctl
 - Very close to what we're already using in bomctl
@@ -200,7 +200,7 @@ Examples:
 - Will require less translation, since sbom locations will probably be mostly urls
 - Authentication info and port are embedded, not requiring extra qualifiers
 
-## Disadvantages
+## net/url Disadvantages
 
 - No support of different clients (git, gitlab, oci)
 - Not sure this alleviates the problem of location strings in commands becoming and long and unwieldy with the use of queries/fragments.
@@ -208,13 +208,13 @@ Examples:
 leading to incorrect client chosen or may have to attempt and retry
 with a different client upon failure.
 
-## Practicality/Usablity
+## net/url Practicality/Usablity
 
 - Component Mapping:
   - Most uri component parts map directly to information we are currently collecting
   - Any information missing, could be stored as queries
 
-## Examples
+## net/url Examples
 
 - HTTP Client
   - `https://example.acme.com`
