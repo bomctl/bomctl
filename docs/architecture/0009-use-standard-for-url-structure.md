@@ -11,19 +11,19 @@ Proposed
 
 The current command structure requires a 'url' to specify the location bomctl needs to fetch an sbom from or
 push an sbom (or collection of sboms) to. The resposibility of parsing is left up to the individual clients,
-which as we add more clients the number of individual places that the url gets parsed increases as well as the
+which as we add more clients the number of individual places that the URL gets parsed increases as well as the
 number of potential corner cases or duplicate matches. In addition the needs of client apis may vary wildly and
-force the addition of fields into the url structure to gather the requisite information. All this while the url
+force the addition of fields into the URL structure to gather the requisite information. All this while the url
 may become increasingly unwieldy for users to accurately enter or decipher which leads to mistakes in entry,
 which increases frustration with bomctl.
 
-The current url parsing scheme is an amalgam of various schemes, like those used for ansible and pip support as
-well as traditional URL structure. The intention with the original url schema support as many forms of expression
-as possible and stay as close to valid URL structure as possible. Using a home grown, non standard url structure
+The current URL parsing scheme is an amalgam of various schemes, like those used for ansible and pip support as
+well as traditional URL structure. The intention with the original URL schema support as many forms of expression
+as possible and stay as close to valid URL structure as possible. Using a home grown, non standard URL structure
 makes it harder for users to learn and harder for us to maintain long term. It also doesn't help that the current
-psuedo url structure is not documented anywhere an thus bomctl is hard to pick up and use quickly.
+psuedo URL structure is not documented anywhere an thus bomctl is hard to pick up and use quickly.
 
-Some examples of current url structure in their respective commands:
+Some examples of current URL structure in their respective commands:
 
 - HTTP Client
   - `example.acme.com`
@@ -123,7 +123,7 @@ Package URL Specification (purl spec): A minimal specification for purl aka. a p
 
 - Bare urls would need to be wrapped in a useless formatting, or go through additional processing to turn into a purl
   - `pkg:generic/bomctl@0.4.1?download_url=https://github.com/bomctl/bomctl/releases/download/v0.4.1/bomctl_0.4.1_darwin_amd64.tar.gz.spdx.json`
-  - Or bare urls just get parsed and passed to http client. (make it a special case for usability)
+  - Or bare urls just get parsed and passed to HTTP client. (make it a special case for usability)
 - Does not support all prospective future clients (gitlab, dependency track, etc.)
   - Although gitlab is listed as a candidate for a potential future purl type
 - Has support for many purl types we may never want to use (not necessarily a bad thing)
@@ -165,12 +165,12 @@ Package URL Specification (purl spec): A minimal specification for purl aka. a p
 
 </details>
 
-- net/url Go URL [Library](https://pkg.go.dev/net/url@go1.23.3). AKA Standard URL/URI Structure
+- NET/URL Go [Library](https://pkg.go.dev/net/url@go1.23.3). AKA Standard URL/URI Structure
 
 <details>
-<summary>net/url Breakdown</summary>
+<summary>Standard URL/URI Breakdown</summary>
 
-## net/url Description
+## Standard URL/URI Description
 
 `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
 
@@ -190,7 +190,7 @@ Examples:
 - `http://www.ietf.org/rfc/rfc2396.txt`
 - `file://this/one/over/here.json`
 
-## net/url Advantages
+## Standard URL/URI Advantages
 
 - Expressive standard that supports all fields currently in use by bomctl
 - Very close to what we're already using in bomctl
@@ -200,7 +200,7 @@ Examples:
 - Will require less translation, since sbom locations will probably be mostly urls
 - Authentication info and port are embedded, not requiring extra qualifiers
 
-## net/url Disadvantages
+## Standard URL/URI Disadvantages
 
 - No support of different clients (git, gitlab, oci)
 - Not sure this alleviates the problem of location strings in commands becoming and long and unwieldy with the use of queries/fragments.
@@ -208,13 +208,13 @@ Examples:
 leading to incorrect client chosen or may have to attempt and retry
 with a different client upon failure.
 
-## net/url Practicality/Usablity
+## Standard URL/URI Practicality/Usablity
 
 - Component Mapping:
   - Most uri component parts map directly to information we are currently collecting
   - Any information missing, could be stored as queries
 
-## net/url Examples
+## Standard URL/URI Examples
 
 - HTTP Client
   - `https://example.acme.com`
