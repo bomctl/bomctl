@@ -98,7 +98,7 @@ pkg:rpm/opensuse/curl@7.56.1-1.1.?arch=i386&distro=opensuse-tumbleweed
 - Git  (Although all these examples could also have the prefix `pkg:github` and use the future github client)
   - `pkg:git/bomct/bomctl@main?user=git#sbom.cdx.json`
   - `pkg:git/bomct/bomctl@main?user=git&port=12345&scheme=ssh#sbom.cdx.json`
-  - `pkg:git/bomct/bomctl@main?user=git&password=password&port=12345&scheme=git#sbom.cdx.json`
+  - `pkg:git/bomct/bomctl@main?user=git&password=password&port=12345#sbom.cdx.json`
   - `pkg:git/bomct/bomctl@main?user=git#sbom.cdx.json`
   - `pkg:git/bomct/bomctl@main?user=git#path/to/sbom.cdx.json`
 - OCI Client
