@@ -34,8 +34,12 @@ This section describes our response to these forces. It is stated in full senten
     - Merge component dependencies
     - Merge component properties
 
-- Ability to take a flag to "expand" any externally referenced SBOMs
-  - Any nested components should be moved to "top level" components and the depends_on section updated to show the dependency.
+- Initial implementation leverages existing protobom augmenting / merging
+
+- Future capabilities should include:
+  - Ability to take a flag to "expand" any externally referenced SBOMs
+    - Any nested components should be moved to "top level" components and the depends_on section updated to show the dependency.
+  - Fuzzy matching on components
 
 ### Investigation
 
