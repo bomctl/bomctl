@@ -28,6 +28,7 @@ import (
 
 func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
 	url := client.Parse(pushURL)
+
 	if url.Fragment != "" && url.GitRef != "" {
 		return client.gitAddFile(pushURL, id, opts)
 	}
@@ -37,6 +38,7 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
 	url := client.Parse(pushURL)
+
 	if url.Fragment != "" && url.GitRef != "" {
 		return client.gitPreparePush(pushURL, opts)
 	}
@@ -46,6 +48,7 @@ func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) err
 
 func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 	url := client.Parse(pushURL)
+
 	if url.Fragment != "" && url.GitRef != "" {
 		return client.gitPush(pushURL, opts)
 	}
