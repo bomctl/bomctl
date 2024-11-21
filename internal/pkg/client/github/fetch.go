@@ -51,9 +51,9 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 	repoURL := strings.Split(url.Path, "/")
 	owner := repoURL[0]
 	repo := repoURL[1] + "/dependency-graph/sbom"
-	u := fmt.Sprintf("repos/%s/%s", owner, repo)
+	urlStr := fmt.Sprintf("repos/%s/%s", owner, repo)
 
-	req, err := client.ghClient.NewRequest("GET", u, nil)
+	req, err := client.ghClient.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
