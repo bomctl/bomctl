@@ -179,7 +179,7 @@ func (fs *fileSuite) TestMatchesOriginFormat() {
 
 func (fs *fileSuite) TestWriteOriginStream() {
 	for _, docInfo := range fs.documentInfo {
-		stream := testutil.FakeWriter{Buffer: &bytes.Buffer{}}
+		stream := testutil.TestWriter{Buffer: &bytes.Buffer{}}
 		err := outpututil.WriteOriginStream(docInfo.Document, fs.Backend, &stream)
 		fs.Require().NoError(err)
 
@@ -219,7 +219,7 @@ func (fs *fileSuite) TestWriteStream() {
 	} {
 		fs.Run(data.name, func() {
 			for _, docInfo := range fs.documentInfo {
-				stream := testutil.FakeWriter{Buffer: &bytes.Buffer{}}
+				stream := testutil.TestWriter{Buffer: &bytes.Buffer{}}
 				err := outpututil.WriteStream(docInfo.Document, data.fmt, fs.Options, &stream)
 				fs.Require().NoError(err)
 			}
@@ -272,21 +272,3 @@ func TestFileSuite(t *testing.T) {
 	t.Parallel()
 	suite.Run(t, new(fileSuite))
 }
-
-// SetupTest runs before each test in the suite.
-func (*fileSuite) SetupTest() {}
-
-// SetupSubtTest runs before each subtest in the suite.
-func (*fileSuite) SetupSubTest() {}
-
-// BeforeTest is executed right before the test starts.
-func (*fileSuite) BeforeTest(_, _ string) {}
-
-// AfterTest is executed right after the test finishes.
-func (*fileSuite) AfterTest(_, _ string) {}
-
-// TearDownSubTest runs after each subtest in the suite have been run.
-func (*fileSuite) TearDownSubTest() {}
-
-// TearDownTest runs after each test in the suite.
-func (*fileSuite) TearDownTest() {}

@@ -29,7 +29,6 @@ import (
 	"slices"
 
 	"github.com/charmbracelet/log"
-	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/storage"
@@ -51,7 +50,7 @@ const (
 
 	EntDebugLevel int = 2
 
-	OriginalFormat formats.Format = "original"
+	OriginalFormat = "original"
 )
 
 type (

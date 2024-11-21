@@ -99,7 +99,7 @@ func exportCmd() *cobra.Command { //nolint:funlen
 	}
 
 	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "path to output file")
-	exportCmd.Flags().StringP("format", "f", string(db.OriginalFormat), formatHelp())
+	exportCmd.Flags().StringP("format", "f", db.OriginalFormat, formatHelp())
 	exportCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
 
 	return exportCmd
@@ -114,19 +114,19 @@ func encodingHelp() string {
 
 func encodingOptions() map[string][]string {
 	return map[string][]string{
-		formats.CDXFORMAT:         {formats.JSON, formats.XML},
-		formats.SPDXFORMAT:        {formats.JSON},
-		string(db.OriginalFormat): {formats.JSON, formats.XML},
+		formats.CDXFORMAT:  {formats.JSON, formats.XML},
+		formats.SPDXFORMAT: {formats.JSON},
+		db.OriginalFormat:  {formats.JSON, formats.XML},
 	}
 }
 
 func formatHelp() string {
-	return fmt.Sprintf("SBOM output format [%s]", strings.Join(FormatOptions(), ", "))
+	return fmt.Sprintf("SBOM output format [%s]", strings.Join(formatOptions(), ", "))
 }
 
-func FormatOptions() []string {
+func formatOptions() []string {
 	specialFormats := []string{
-		string(db.OriginalFormat),
+		db.OriginalFormat,
 	}
 
 	spdxFormats := []string{
@@ -209,7 +209,7 @@ func validateEncoding(fs, encoding string) error {
 }
 
 func validateFormat(format string) error {
-	if !slices.Contains(FormatOptions(), format) {
+	if !slices.Contains(formatOptions(), format) {
 		return errFormatNotSupported
 	}
 

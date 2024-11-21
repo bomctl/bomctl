@@ -34,11 +34,11 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
-type FakeWriter struct {
+type TestWriter struct {
 	*bytes.Buffer
 }
 
-func (*FakeWriter) Close() error {
+func (*TestWriter) Close() error {
 	return nil
 }
 

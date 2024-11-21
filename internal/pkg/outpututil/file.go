@@ -69,7 +69,7 @@ func WriteStream(document *sbom.Document, format formats.Format, opts *options.O
 		return fmt.Errorf("%w", err)
 	}
 
-	if format == db.OriginalFormat || (!modified && matchesOriginFormat(document, format)) {
+	if string(format) == db.OriginalFormat || (!modified && matchesOriginFormat(document, format)) {
 		return writeOriginStream(document, backend, stream)
 	}
 

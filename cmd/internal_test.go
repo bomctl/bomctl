@@ -21,5 +21,6 @@ package cmd
 
 var (
 	EncodingOptions = encodingOptions
+	FormatOptions   = formatOptions
 	ParseFormat     = parseFormat
 )
