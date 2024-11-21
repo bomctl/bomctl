@@ -43,17 +43,6 @@ func (ghcs *githubClientSuite) TestClient_Parse() {
 		repoName string
 	}{
 		{
-			name:     "https scheme",
-			url:      "https://github.com/bomctl/bomctl",
-			owner:    "bomctl",
-			repoName: "bomctl",
-			expected: &netutil.URL{
-				Scheme:   "https",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl",
-			},
-		},
-		{
 			name:     "http scheme",
 			url:      "http://github.com/bomctl/bomctl",
 			owner:    "bomctl",
@@ -201,6 +190,19 @@ func (ghcs *githubClientSuite) TestClient_Parse() {
 				Username: "git",
 				Hostname: "github.com",
 				Path:     "bomctl/bomctl",
+			},
+		},
+		{
+			name:     "https scheme with git ref, fragment",
+			url:      "https://github.com/bomctl/bomctl@main#sbom.cdx.json",
+			owner:    "bomctl",
+			repoName: "bomctl",
+			expected: &netutil.URL{
+				Hostname: "github.com",
+				Path:     "bomctl/bomctl",
+				GitRef:   "main",
+				Fragment: "sbom.cdx.json",
+				Scheme:   "https",
 			},
 		},
 	} {

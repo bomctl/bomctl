@@ -35,6 +35,11 @@ import (
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
+
+	if url.Fragment != "" && url.GitRef != "" {
+		return client.gitFetch(fetchURL, opts)
+	}
+
 	ctx := context.Background()
 	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
@@ -81,6 +86,18 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 	sbomData, err := json.Marshal(data["sbom"])
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract SBOM from response: %w", err)
+	}
+
+	return sbomData, nil
+}
+
+func (client *Client) gitFetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
+	urlParts := strings.Split(fetchURL, "@")
+	gitURL := "git+" + urlParts[0] + ".git@" + urlParts[1]
+
+	sbomData, err := client.gitClient.Fetch(gitURL, opts)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	return sbomData, nil
