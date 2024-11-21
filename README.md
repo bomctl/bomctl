@@ -148,6 +148,12 @@ represents an application within the container image.
 bomctl fetch https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
 ```
 
+Alternatively, use the following syntax to directly fetch the most recent dependency graph SBOM of a GitHub repository (In this case, the bomctl repository). This syntax works for both public and private repositories, although credentials will need to be provided via `--netrc` to access a private repo.
+
+```shell
+bomctl fetch https://github.com/bomctl/bomctl
+```
+
 ### Import
 
 Import SBOM files from either standard input or the local file system.
