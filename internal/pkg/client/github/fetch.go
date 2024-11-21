@@ -44,9 +44,9 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 		}
 	}
 
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: auth.Password})
-	tc := oauth2.NewClient(ctx, ts)
-	client.ghClient = *github.NewClient(tc)
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: auth.Password})
+	tokenClient := oauth2.NewClient(ctx, tokenSource)
+	client.ghClient = *github.NewClient(tokenClient)
 
 	repoURL := strings.Split(url.Path, "/")
 	owner := repoURL[0]
@@ -58,7 +58,7 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Add("Authorization", ("Bearer " + auth.Password))
+	req.Header.Add("Authorization", "Bearer "+auth.Password)
 
 	resp, err := client.ghClient.BareDo(ctx, req)
 	if err != nil {

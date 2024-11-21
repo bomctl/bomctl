@@ -40,10 +40,10 @@ func (*Client) Name() string {
 func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
 		fmt.Sprintf("^%s%s%s%s$",
-			`(?P<scheme>https?|git|ssh):\/\/?`,
+			`((?P<scheme>https?|git|ssh):\/\/)?`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
 			`(?P<hostname>github(\.[A-Za-z0-9_-]+)*\.com+)(?::(?P<port>\d+))?`,
-			`(?:[\/:](?P<path>[^@#]+)@?)`,
+			`(?:[\/:](?P<path>.+))`,
 		),
 	)
 }
