@@ -8,20 +8,28 @@ require (
 	github.com/go-git/go-billy/v5 v5.6.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/google/go-cmp v0.6.0
+	github.com/google/go-github/v66 v66.0.0
 	github.com/google/uuid v1.6.0
 	github.com/jdx/go-netrc v1.0.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/protobom/protobom v0.5.0
-	github.com/protobom/storage v0.1.5
+	github.com/protobom/storage v0.1.6-0.20241114015657-685d55dfe2f3
 	github.com/rogpeppe/go-internal v1.13.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/oauth2 v0.18.0
 	golang.org/x/term v0.26.0
 	google.golang.org/protobuf v1.35.2
 	oras.land/oras-go/v2 v2.5.0
+)
+
+require (
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
 )
 
 require (

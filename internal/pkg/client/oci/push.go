@@ -33,7 +33,6 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/protobom/protobom/pkg/writer"
 	oras "oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/errdef"
@@ -41,6 +40,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
 const schemaVersion = 2
@@ -58,8 +58,7 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 
 	buf := &ociClientWriter{bytes.NewBuffer([]byte{}), &io.PipeReader{}}
 
-	wr := writer.New(writer.WithFormat(opts.Format))
-	if err := wr.WriteStream(document, buf); err != nil {
+	if err := outpututil.WriteStream(document, opts.Format, opts.Options, buf); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 

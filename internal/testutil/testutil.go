@@ -20,6 +20,7 @@
 package testutil
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,6 +33,14 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 )
+
+type TestWriter struct {
+	*bytes.Buffer
+}
+
+func (*TestWriter) Close() error {
+	return nil
+}
 
 type DocumentInfo struct {
 	Document *sbom.Document

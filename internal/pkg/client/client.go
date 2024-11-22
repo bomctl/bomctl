@@ -24,6 +24,7 @@ import (
 	"fmt"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
+	"github.com/bomctl/bomctl/internal/pkg/client/github"
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
@@ -42,7 +43,7 @@ type Client interface {
 }
 
 func New(sbomURL string) (Client, error) {
-	for _, client := range []Client{&git.Client{}, &http.Client{}, &oci.Client{}} {
+	for _, client := range []Client{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}} {
 		if url := client.Parse(sbomURL); url != nil {
 			return client, nil
 		}
