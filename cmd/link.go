@@ -20,9 +20,13 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
+
+	"github.com/bomctl/bomctl/internal/pkg/link"
 )
 
 func linkCmd() *cobra.Command {
@@ -49,13 +53,22 @@ func linkAddCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			if !(strings.HasPrefix(args[0], "document:") || strings.HasPrefix(args[0], "node:")) {
-				opts.Logger.Fatal(
-					"Must be prefixed with either 'document:' or 'node:'", "argument", args[0],
-				)
+			linkFrom, linkTo := args[0], args[1]
+
+			document, err := validateLinkArg(linkFrom)
+			if err != nil {
+				opts.Logger.Fatal(err)
 			}
 
-			opts.Logger.Warn("Not yet implemented.")
+			if document.GetMetadata() != nil {
+				err = link.AddLink(document, linkTo, backend)
+			} else {
+				err = link.AddLink(document.GetNodeList().GetNodes()[0], linkTo, backend)
+			}
+
+			if err != nil {
+				opts.Logger.Fatal(err)
+			}
 		},
 	}
 
@@ -75,14 +88,15 @@ func linkClearCmd() *cobra.Command {
 			defer backend.CloseClient()
 
 			for _, arg := range args {
-				if !(strings.HasPrefix(arg, "document:") || strings.HasPrefix(arg, "node:")) {
-					opts.Logger.Fatal(
-						"Positional arguments must be prefixed with either 'document:' or 'node:'", "argument", arg,
-					)
+				document, err := validateLinkArg(arg)
+				if err != nil {
+					opts.Logger.Fatal(err)
+				}
+
+				if err := link.ClearLinks(document, backend); err != nil {
+					opts.Logger.Fatal(err)
 				}
 			}
-
-			opts.Logger.Warn("Not yet implemented.")
 		},
 	}
 
@@ -102,13 +116,20 @@ func linkListCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			if !(strings.HasPrefix(args[0], "document:") || strings.HasPrefix(args[0], "node:")) {
-				opts.Logger.Fatal(
-					"Must be prefixed with either 'document:' or 'node:'", "argument", args[0],
-				)
+			document, err := validateLinkArg(args[0])
+			if err != nil {
+				opts.Logger.Fatal(err)
 			}
 
-			opts.Logger.Warn("Not yet implemented.")
+			if document.GetMetadata() != nil {
+				err = link.ListLinks(document, backend)
+			} else {
+				err = link.ListLinks(document.GetNodeList().GetNodes()[0], backend)
+			}
+
+			if err != nil {
+				opts.Logger.Fatal(err)
+			}
 		},
 	}
 
@@ -128,15 +149,45 @@ func linkRemoveCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			if !(strings.HasPrefix(args[0], "document:") || strings.HasPrefix(args[0], "node:")) {
-				opts.Logger.Fatal(
-					"Must be prefixed with either 'document:' or 'node:'", "argument", args[0],
-				)
+			linkFrom, linkTo := args[0], args[1:]
+
+			document, err := validateLinkArg(linkFrom)
+			if err != nil {
+				opts.Logger.Fatal(err)
 			}
 
-			opts.Logger.Warn("Not yet implemented.")
+			isDocument := document.GetMetadata() != nil
+
+			for idx := range linkTo {
+				if isDocument {
+					err = link.RemoveLink(document, linkTo[idx], backend)
+				} else {
+					err = link.RemoveLink(document.GetNodeList().GetNodes()[0], linkTo[idx], backend)
+				}
+
+				if err != nil {
+					opts.Logger.Fatal(err)
+				}
+			}
 		},
 	}
 
 	return removeCmd
+}
+
+func validateLinkArg(arg string) (*sbom.Document, error) {
+	document := &sbom.Document{}
+
+	linkType, id, _ := strings.Cut(arg, ":")
+
+	switch linkType {
+	case "document":
+		document.Metadata = &sbom.Metadata{Id: id}
+	case "node":
+		document.NodeList = &sbom.NodeList{Nodes: []*sbom.Node{{Id: id}}}
+	default:
+		return nil, fmt.Errorf("%w: %s", errInvalidLinkPrefix, arg)
+	}
+
+	return document, nil
 }

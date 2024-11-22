@@ -40,6 +40,7 @@ import (
 
 const (
 	AliasAnnotation        string = "bomctl_annotation_alias"
+	LinkToAnnotation       string = "bomctl_annotation_link_to"
 	SourceDataAnnotation   string = "bomctl_annotation_source_data"
 	SourceFormatAnnotation string = "bomctl_annotation_source_format"
 	SourceHashAnnotation   string = "bomctl_annotation_source_hash"

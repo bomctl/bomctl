@@ -20,6 +20,7 @@
 !/.taskfiles/*.yml
 !/.vscode/adr.code-snippets
 !/.vscode/extensions.json
+!/.vscode/go.code-snippets
 !/.vscode/header.code-snippets
 !/.vscode/launch.json
 !/.vscode/settings.json
