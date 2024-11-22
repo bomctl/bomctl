@@ -117,7 +117,7 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
-			if err := backend.RemoveAnnotations(document.GetMetadata().GetId(),
+			if err := backend.RemoveDocumentAnnotations(document.GetMetadata().GetId(),
 				db.AliasAnnotation, docAlias); err != nil {
 				backend.Logger.Fatal(err, "name", db.AliasAnnotation, "value", docAlias)
 			}

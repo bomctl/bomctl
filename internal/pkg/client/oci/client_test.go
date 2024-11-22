@@ -131,7 +131,7 @@ func (ocs *ociClientSuite) BeforeTest(_suiteName, _testName string) {
 			ocs.T().Fatalf("%v", err)
 		}
 
-		doc, err := ocs.Backend.AddDocument(sbomData)
+		doc, err := ocs.Backend.AddSourceDocument(sbomData)
 		if err != nil {
 			ocs.FailNow("failed storing document", "err", err)
 		}

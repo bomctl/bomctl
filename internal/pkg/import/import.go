@@ -54,7 +54,7 @@ func saveDocument(backend *db.Backend, documentFile *os.File, alias string, opts
 		return fmt.Errorf("failed to read from %s: %w", documentFile.Name(), err)
 	}
 
-	document, err := backend.AddDocument(data)
+	document, err := backend.AddSourceDocument(data)
 	if err != nil {
 		return fmt.Errorf("failed to store document: %w", err)
 	}
@@ -65,7 +65,8 @@ func saveDocument(backend *db.Backend, documentFile *os.File, alias string, opts
 		}
 	}
 
-	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+	err = backend.AddDocumentAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...)
+	if err != nil {
 		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 

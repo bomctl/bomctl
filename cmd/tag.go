@@ -69,7 +69,7 @@ func tagAddCmd() *cobra.Command {
 				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
-			if err := backend.AddAnnotations(document.GetMetadata().GetId(),
+			if err := backend.AddDocumentAnnotations(document.GetMetadata().GetId(),
 				db.TagAnnotation, args[1:]...); err != nil {
 				backend.Logger.Fatalf("failed to add tags: %v", err)
 			}
@@ -104,7 +104,7 @@ func tagClearCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
 
-			err = backend.RemoveAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, tagsToRemove...)
+			err = backend.RemoveDocumentAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, tagsToRemove...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
@@ -171,7 +171,7 @@ func tagRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(errDocumentNotFound)
 			}
 
-			err = backend.RemoveAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, args[1:]...)
+			err = backend.RemoveDocumentAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, args[1:]...)
 			if err != nil {
 				backend.Logger.Fatalf("failed to remove tags: %v", err)
 			}
