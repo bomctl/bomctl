@@ -190,6 +190,10 @@ linters-settings:
     enable:
       - fieldalignment
 
+  mnd:
+    ignored-functions:
+      - cobra.*Args
+
   nolintlint:
     allow-unused: false
     require-specific: true

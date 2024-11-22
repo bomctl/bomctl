@@ -30,13 +30,6 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
-const (
-	tagAddMinArgs     = 2
-	tagClearExactArgs = 1
-	tagListExactArgs  = 1
-	tagRemoveMinArgs  = 2
-)
-
 func tagCmd() *cobra.Command {
 	tagCmd := &cobra.Command{
 		Use:   "tag",
@@ -54,7 +47,7 @@ func tagAddCmd() *cobra.Command {
 		Use:   "add [flags] SBOM_ID TAGS...",
 		Short: "Add tags to a document",
 		Long:  "Add tags to a document",
-		Args:  cobra.MinimumNArgs(tagAddMinArgs),
+		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -84,7 +77,7 @@ func tagClearCmd() *cobra.Command {
 		Use:   "clear [flags] SBOM_ID...",
 		Short: "Clear all tags from a document",
 		Long:  "Clear all tags from a document",
-		Args:  cobra.ExactArgs(tagClearExactArgs),
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -120,7 +113,7 @@ func tagListCmd() *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "List the tags of a document",
 		Long:    "List the tags of a document",
-		Args:    cobra.ExactArgs(tagListExactArgs),
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -156,7 +149,7 @@ func tagRemoveCmd() *cobra.Command {
 		Aliases: []string{"rm"},
 		Short:   "Remove specified tags from a document",
 		Long:    "Remove specified tags from a document",
-		Args:    cobra.MinimumNArgs(tagRemoveMinArgs),
+		Args:    cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 

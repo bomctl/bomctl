@@ -28,15 +28,13 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const fetchMinArgs int = 1
-
 func fetchCmd() *cobra.Command {
 	opts := &options.FetchOptions{}
 	outputFileName := outputFileValue("")
 
 	fetchCmd := &cobra.Command{
 		Use:   "fetch [flags] SBOM_URL...",
-		Args:  cobra.MinimumNArgs(fetchMinArgs),
+		Args:  cobra.MinimumNArgs(1),
 		Short: "Fetch SBOM file(s) from HTTP(S), OCI, Git, or GitHub URLs",
 		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, Git, or GitHub URLs",
 		Run: func(cmd *cobra.Command, args []string) {

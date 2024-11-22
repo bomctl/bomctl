@@ -149,7 +149,9 @@ func saveDocument(data []byte, backend *db.Backend, opts *options.FetchOptions) 
 		}
 	}
 
-	if err := backend.AddDocumentAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+	if err := backend.AddDocumentAnnotations(
+		document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...,
+	); err != nil {
 		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
