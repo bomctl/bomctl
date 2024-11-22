@@ -37,8 +37,8 @@ func fetchCmd() *cobra.Command {
 	fetchCmd := &cobra.Command{
 		Use:   "fetch [flags] SBOM_URL...",
 		Args:  cobra.MinimumNArgs(fetchMinArgs),
-		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
+		Short: "Fetch SBOM file(s) from HTTP(S), OCI, Git, or GitHub URLs",
+		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, Git, or GitHub URLs",
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
