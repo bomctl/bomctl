@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package options //nolint:revive
+package options //revive:disable:max-public-structs
 
 import (
 	"context"

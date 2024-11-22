@@ -34,7 +34,7 @@ import (
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
 		if err := auth.UseNetRC(url.Hostname); err != nil {
@@ -94,12 +94,10 @@ func (client *Client) getSBOMDescriptor(manifest *ocispec.Descriptor) (ocispec.D
 
 	// Error if more than one SBOM identified
 	if len(sbomDigests) > 1 {
-		digestString := strings.Join(
+		return ocispec.DescriptorEmptyJSON, fmt.Errorf("%w.\n\t%s", ErrMultipleSBOMs, strings.Join(
 			append([]string{"Specify one of the following digests in the fetch URL:"}, sbomDigests...),
 			"\n\t\t",
-		)
-
-		return ocispec.DescriptorEmptyJSON, fmt.Errorf("%w.\n\t%s", errMultipleSBOMs, digestString)
+		))
 	}
 
 	return sbomDescriptor, nil

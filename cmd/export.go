@@ -32,6 +32,7 @@ import (
 	"github.com/protobom/protobom/pkg/writer"
 	"github.com/spf13/cobra"
 
+	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
@@ -98,7 +99,7 @@ func exportCmd() *cobra.Command { //nolint:funlen
 	}
 
 	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "path to output file")
-	exportCmd.Flags().StringP("format", "f", formats.CDXFORMAT, formatHelp())
+	exportCmd.Flags().StringP("format", "f", db.OriginalFormat, formatHelp())
 	exportCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
 
 	return exportCmd
@@ -115,6 +116,7 @@ func encodingOptions() map[string][]string {
 	return map[string][]string{
 		formats.CDXFORMAT:  {formats.JSON, formats.XML},
 		formats.SPDXFORMAT: {formats.JSON},
+		db.OriginalFormat:  {formats.JSON, formats.XML},
 	}
 }
 
@@ -123,6 +125,10 @@ func formatHelp() string {
 }
 
 func formatOptions() []string {
+	specialFormats := []string{
+		db.OriginalFormat,
+	}
+
 	spdxFormats := []string{
 		formats.SPDXFORMAT,
 		formats.SPDXFORMAT + "-2.3",
@@ -139,10 +145,17 @@ func formatOptions() []string {
 		formats.CDXFORMAT + "-1.6",
 	}
 
-	return append(spdxFormats, cdxFormats...)
+	bomctlFormats := specialFormats
+	bomctlFormats = append(bomctlFormats, spdxFormats...)
+
+	return append(bomctlFormats, cdxFormats...)
 }
 
 func parseFormat(formatStr, encoding string) (formats.Format, error) {
+	if formatStr == "original" {
+		return db.OriginalFormat, nil
+	}
+
 	results := map[string]string{}
 	pattern := regexp.MustCompile("^(?P<name>[^-]+)(?:-(?P<version>.*))?")
 	match := pattern.FindStringSubmatch(formatStr)

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/netutil/auth.go
+// SPDX-FileName: internal/pkg/client/github/push.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,41 +17,18 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package netutil
+package github
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
+import "github.com/bomctl/bomctl/internal/pkg/options"
 
-	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/jdx/go-netrc"
-)
-
-type BasicAuth struct {
-	githttp.BasicAuth
-}
-
-func (auth *BasicAuth) UseNetRC(hostname string) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	authFile, err := netrc.Parse(filepath.Join(home, ".netrc"))
-	if err != nil {
-		return fmt.Errorf("failed to parse .netrc file: %w", err)
-	}
-
-	// Use credentials in .netrc if entry for the hostname is found
-	if machine := authFile.Machine(hostname); machine != nil {
-		auth.Username = machine.Get("login")
-		auth.Password = machine.Get("password")
-	}
-
+func (*Client) AddFile(_pushURL, _id string, _opts *options.PushOptions) error {
 	return nil
 }
 
-func NewBasicAuth(username, password string) *BasicAuth {
-	return &BasicAuth{githttp.BasicAuth{Username: username, Password: password}}
+func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
+	return nil
+}
+
+func (*Client) Push(_sbomID string, _opts *options.PushOptions) error {
+	return nil
 }

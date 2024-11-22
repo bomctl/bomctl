@@ -21,21 +21,28 @@ package e2eutil
 
 import (
 	"bytes"
-	"errors"
-	"io"
-	"io/fs"
-	"os"
 	"path"
+	"reflect"
+	"slices"
+	"sort"
+	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/rogpeppe/go-internal/testscript"
+	"google.golang.org/protobuf/proto"
 )
 
 const compareDocsRequiredArgNum = 3
 
+// **** Currently does a soft comparison, checks no nodes are lost and pkg names are the same
+// Cannot compare content since cdx properties are wiped out. *********
+
 // compareDocuments is a testscript command that compares the
 // two given protobom documents and checks for equality.
+// **** Currently does a soft comparison, checks no nodes are lost and pkg names are the same
+// Cannot compare content since cdx properties are wiped out. *********.
 func compareDocuments(script *testscript.TestScript, neg bool, args []string) {
 	if len(args) != compareDocsRequiredArgNum {
 		script.Fatalf("syntax: compare_docs directory_name file_name1 file_name2")
@@ -48,69 +55,114 @@ func compareDocuments(script *testscript.TestScript, neg bool, args []string) {
 	for i := 1; i < len(args); i++ {
 		fileString := path.Join(dir, args[i])
 
-		file := getFile(script, fileString)
+		file := script.ReadFile(fileString)
 
-		data, err := io.ReadAll(file)
-		if err != nil {
-			script.Fatalf("failed to read from input file: %s", file.Name())
-		}
-
-		document, err := sbomReader.ParseStream(bytes.NewReader(data))
-		if err != nil {
-			script.Fatalf("failed to parse SBOM data from file: %s", file.Name())
-		}
+		document, err := sbomReader.ParseStream(strings.NewReader(file))
+		script.Check(err)
 
 		documents = append(documents, document)
 	}
 
 	metaMatches := compareMetaData(script, documents[0].GetMetadata(), documents[1].GetMetadata())
-	nodeListMatches := documents[0].GetNodeList().Equal(documents[1].GetNodeList())
+	if !metaMatches {
+		script.Logf("metadata does not match")
+	}
 
-	reportResult(script, metaMatches, nodeListMatches, neg)
+	nodeListMatches := Equal(documents[0].GetNodeList(), documents[1].GetNodeList(), script)
+	if !nodeListMatches {
+		script.Logf("nodelist does not match")
+	}
+
+	reportResult(script, (metaMatches && nodeListMatches), neg)
 }
 
-func reportResult(script *testscript.TestScript, metaMatches, nodeListMatches, neg bool) { //nolint:revive
-	docsMatch := metaMatches && nodeListMatches
+func reportResult(script *testscript.TestScript, docsMatch, neg bool) { //revive:disable:flag-parameter
 	if !docsMatch && !neg {
-		if !metaMatches {
-			script.Logf("MetaData does not match")
-		} else {
-			script.Logf("node list does not match")
-		}
-
 		script.Fatalf("documents do not match")
 	}
 
 	if docsMatch && neg {
-		script.Fatalf("documents Match")
+		script.Fatalf("documents match")
 	}
+
+	script.Logf("document comparison passed")
 }
 
-func getFile(script *testscript.TestScript, filePath string) *os.File {
-	if !fileExists(filePath) {
-		script.Fatalf("file not found %s", filePath)
+// checks for metadata equality, taking expected diffs into account.
+func compareMetaData(script *testscript.TestScript, have, want *sbom.Metadata) bool {
+	// append protobom tool entry to match expected value
+	if format := want.GetSourceData().GetFormat(); strings.Contains(format, "spdx") {
+		want.Tools = append(want.GetTools(), &sbom.Tool{Name: "protobom-devel"})
+		slices.SortFunc(want.GetTools(), func(i, j *sbom.Tool) int {
+			return strings.Compare(i.GetName(), j.GetName())
+		})
 	}
 
-	file, err := os.Open(filePath)
+	// Remove SourceData to avoid hash mismatches due to format specific losses.
+	have.SourceData = nil
+	want.SourceData = nil
+
+	// Remove Date to ignore time created mismatch.
+	have.Date = nil
+	want.Date = nil
+
+	haveBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(have)
 	if err != nil {
-		script.Fatalf("failed to open input file: %s", file.Name())
+		script.Fatalf("failed to marshal metadata: %v", err)
 	}
 
-	return file
+	wantBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(want)
+	if err != nil {
+		script.Fatalf("failed to marshal metadata: %v", err)
+	}
+
+	return bytes.Equal(haveBytes, wantBytes)
 }
 
-func compareMetaData(script *testscript.TestScript, first, second *sbom.Metadata) bool {
-	firstStr := first.String()
-	secondStr := second.String()
+// Performs soft comparison of two nodelists.
+func Equal(nl1, nl2 *sbom.NodeList, script *testscript.TestScript) bool {
+	if nl2 == nil {
+		return false
+	}
 
-	script.Logf(firstStr)
-	script.Logf(secondStr)
+	// First, quick one: Compare the lengths of the internals:
+	if len(nl1.GetEdges()) != len(nl2.GetEdges()) ||
+		len(nl1.GetNodes()) != len(nl2.GetNodes()) ||
+		len(nl1.GetRootElements()) != len(nl2.GetRootElements()) {
+		script.Logf("lengths differ")
 
-	return firstStr == secondStr
-}
+		return false
+	}
 
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
+	// Compare the flattened GetRootElements() list
+	rel1 := nl1.GetRootElements()
+	rel2 := nl2.GetRootElements()
 
-	return !errors.Is(err, fs.ErrNotExist)
+	sort.Strings(rel1)
+	sort.Strings(rel2)
+
+	if !reflect.DeepEqual(rel1, rel2) {
+		script.Logf("root elements differ")
+
+		return false
+	}
+
+	// Compare the GetNodes()
+	nlNodes := []string{}
+	nl2Nodes := []string{}
+
+	for _, n := range nl1.GetNodes() {
+		nlNodes = append(nlNodes, n.GetName())
+	}
+
+	for _, n := range nl2.GetNodes() {
+		nl2Nodes = append(nl2Nodes, n.GetName())
+	}
+
+	sort.Strings(nlNodes)
+	sort.Strings(nl2Nodes)
+
+	// If no logging output is seen, but equality fails
+	// this means the nodes are not equal
+	return cmp.Equal(nlNodes, nl2Nodes)
 }

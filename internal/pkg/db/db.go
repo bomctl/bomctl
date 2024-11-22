@@ -49,6 +49,8 @@ const (
 	DatabaseFile string = "bomctl.db"
 
 	EntDebugLevel int = 2
+
+	OriginalFormat = "original"
 )
 
 type (
@@ -123,11 +125,6 @@ func (backend *Backend) AddDocument(sbomData []byte) (*sbom.Document, error) {
 				{
 					Name:     SourceHashAnnotation,
 					Value:    string(hash[:]),
-					IsUnique: true,
-				},
-				{
-					Name:     SourceFormatAnnotation,
-					Value:    sbomReader.Options.Format.Type(),
 					IsUnique: true,
 				},
 			},
@@ -238,7 +235,7 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 	return documents, nil
 }
 
-func (backend *Backend) SetAlias(documentID, alias string, force bool) (err error) { //nolint:revive
+func (backend *Backend) SetAlias(documentID, alias string, force bool) (err error) { //revive:disable:flag-parameter
 	if err := backend.validateNewAlias(alias); err != nil {
 		return fmt.Errorf("failed to set alias: %w", err)
 	}

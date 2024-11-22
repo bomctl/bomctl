@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/http/fetch.go
+// SPDX-FileName: internal/pkg/client/github/fetch.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,13 +17,17 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package http
+package github
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
+	"strings"
+
+	"github.com/google/go-github/v66/github"
+	"golang.org/x/oauth2"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -31,6 +35,7 @@ import (
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
+	ctx := context.Background()
 	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
@@ -39,27 +44,43 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 		}
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET", url.String(), nil)
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: auth.Password})
+	tokenClient := oauth2.NewClient(ctx, tokenSource)
+	client.ghClient = *github.NewClient(tokenClient)
+
+	repoURL := strings.Split(url.Path, "/")
+	owner := repoURL[0]
+	repo := repoURL[1] + "/dependency-graph/sbom"
+	urlStr := fmt.Sprintf("repos/%s/%s", owner, repo)
+
+	req, err := client.ghClient.NewRequest("GET", urlStr, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating request to %s: %w", url.String(), err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	auth.SetAuth(req)
+	req.Header.Add("Authorization", "Bearer "+auth.Password)
 
-	if client.httpClient == nil {
-		client.httpClient = http.DefaultClient
-	}
-
-	resp, err := client.httpClient.Do(req)
+	resp, err := client.ghClient.BareDo(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed request to %s: %w", url.String(), err)
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 
 	defer resp.Body.Close()
 
-	sbomData, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading response: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var data map[string]map[string]any
+	if err := json.Unmarshal(body, &data); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON: %w", err)
+	}
+
+	// Github API returns the sbom inside of an object named sbom, so need to drill down one layer
+	sbomData, err := json.Marshal(data["sbom"])
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract SBOM from response: %w", err)
 	}
 
 	return sbomData, nil

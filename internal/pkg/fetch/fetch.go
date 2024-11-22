@@ -92,7 +92,7 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 			}
 
 			extRefOpts.OutputFile = out
-			defer extRefOpts.OutputFile.Close() //nolint:revive
+			defer extRefOpts.OutputFile.Close() //revive:disable:defer
 		}
 
 		if _, err := Fetch(ref.GetUrl(), &extRefOpts); err != nil {
