@@ -85,7 +85,7 @@ func (fs *fileSuite) TestCheckIfModified() {
 			docNum: 1,
 			prepare: func() {
 				docID := tempdocs[1].Document.GetMetadata().GetId()
-				err := tempbe.ClearAnnotations(docID)
+				err := tempbe.ClearDocumentAnnotations(docID)
 				fs.Require().NoError(err)
 			},
 			expectedValue: true,
@@ -95,7 +95,7 @@ func (fs *fileSuite) TestCheckIfModified() {
 			docNum: 0,
 			prepare: func() {
 				docID := tempdocs[0].Document.GetMetadata().GetId()
-				err := tempbe.SetUniqueAnnotation(docID, db.SourceDataAnnotation, "")
+				err := tempbe.SetDocumentUniqueAnnotation(docID, db.SourceDataAnnotation, "")
 				fs.Require().NoError(err)
 			},
 			expectedValue: true,

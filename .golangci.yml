@@ -192,7 +192,7 @@ linters-settings:
 
   mnd:
     ignored-functions:
-      - cobra.*Args
+      - ^cobra\.[A-Za-z]+Args$
 
   nolintlint:
     allow-unused: false
