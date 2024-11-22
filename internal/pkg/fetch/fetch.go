@@ -65,7 +65,7 @@ func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 		return nil, fmt.Errorf("failed to save document: %w", err)
 	}
 
-	if err := backend.SetUniqueAnnotation(
+	if err := backend.SetDocumentUniqueAnnotation(
 		document.GetMetadata().GetId(), db.SourceURLAnnotation, sbomURL,
 	); err != nil {
 		return nil, fmt.Errorf("applying unique annotation %s to %s: %w",
@@ -149,7 +149,7 @@ func saveDocument(data []byte, backend *db.Backend, opts *options.FetchOptions) 
 		}
 	}
 
-	if err := backend.AddAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
+	if err := backend.AddDocumentAnnotations(document.GetMetadata().GetId(), db.TagAnnotation, opts.Tags...); err != nil {
 		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 

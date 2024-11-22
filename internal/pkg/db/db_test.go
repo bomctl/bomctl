@@ -202,12 +202,12 @@ func (dbs *dbSuite) TestSetAlias() {
 		},
 	} {
 		dbs.Run(data.name, func() {
-			err := dbs.Backend.RemoveAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
+			err := dbs.Backend.RemoveDocumentAnnotations(docs[0].GetMetadata().GetId(), db.AliasAnnotation, "cdx")
 			dbs.Require().NoError(err)
 
 			if data.doc0Alias != "" {
 				dbs.Require().NoError(
-					dbs.Backend.SetUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation, data.doc0Alias),
+					dbs.Backend.SetDocumentUniqueAnnotation(docs[0].GetMetadata().GetId(), db.AliasAnnotation, data.doc0Alias),
 					"failed to set alias", "err", err,
 				)
 			}
