@@ -25,53 +25,33 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
-	"github.com/charmbracelet/log"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 const cyan = lipgloss.ANSIColor(38)
 
-type FromType interface {
-	*sbom.Document | *sbom.Node
-}
-
-func AddLink[T FromType](from T, documentID string, backend *db.Backend) error {
-	document, err := backend.GetDocumentByIDOrAlias(documentID)
+func AddLink(backend *db.Backend, opts *options.LinkOptions) error {
+	document, err := backend.GetDocumentByIDOrAlias(opts.ToIDs[0])
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	documentUUID, err := ent.GenerateUUID(document)
-	if err != nil {
-		return fmt.Errorf("%w", err)
+	if document == nil {
+		opts.Logger.Warn("Document not found", "id", opts.ToIDs[0])
+
+		return nil
 	}
 
-	switch from := any(from).(type) {
-	case *sbom.Document:
-		err = backend.AddDocumentAnnotations(from.GetMetadata().GetId(), db.LinkToAnnotation, documentUUID.String())
-	case *sbom.Node:
-		err = backend.AddNodeAnnotations(from.GetId(), db.LinkToAnnotation, documentUUID.String())
-	}
-
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	return nil
-}
-
-func ClearLinks[T FromType](from T, backend *db.Backend) error {
-	var err error
-
-	switch from := any(from).(type) {
-	case *sbom.Document:
-		err = backend.RemoveDocumentAnnotations(from.GetMetadata().GetId(), db.LinkToAnnotation)
-	case *sbom.Node:
-		err = backend.RemoveNodeAnnotations(from.GetId(), db.LinkToAnnotation)
+	switch {
+	case len(opts.DocumentIDs) > 0:
+		err = backend.AddDocumentAnnotations(opts.DocumentIDs[0], db.LinkToAnnotation, opts.ToIDs[0])
+	case len(opts.NodeIDs) > 0:
+		err = backend.AddNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, opts.ToIDs[0])
 	}
 
 	if err != nil {
@@ -81,21 +61,37 @@ func ClearLinks[T FromType](from T, backend *db.Backend) error {
 	return nil
 }
 
-func ListLinks[T FromType](from T, backend *db.Backend) error {
+func ClearLinks(backend *db.Backend, opts *options.LinkOptions) error {
+	for _, from := range opts.DocumentIDs {
+		if err := backend.RemoveDocumentAnnotations(from, db.LinkToAnnotation); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
+	for _, from := range opts.NodeIDs {
+		if err := backend.RemoveNodeAnnotations(from, db.LinkToAnnotation); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
+	return nil
+}
+
+func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 	var (
 		annotations  ent.Annotations
 		id, fromType string
 		err          error
 	)
 
-	switch from := any(from).(type) {
-	case *sbom.Document:
+	switch {
+	case len(opts.DocumentIDs) > 0:
 		fromType = "document"
-		id = from.GetMetadata().GetId()
+		id = opts.DocumentIDs[0]
 		annotations, err = backend.GetDocumentAnnotations(id, db.LinkToAnnotation)
-	case *sbom.Node:
+	case len(opts.NodeIDs) > 0:
 		fromType = "node"
-		id = from.GetId()
+		id = opts.NodeIDs[0]
 		annotations, err = backend.GetNodeAnnotations(id, db.LinkToAnnotation)
 	}
 
@@ -104,17 +100,17 @@ func ListLinks[T FromType](from T, backend *db.Backend) error {
 	}
 
 	if len(annotations) == 0 {
-		log.Warnf("No links found for %s: %s", fromType, id)
+		opts.Logger.Warn("No links found for "+fromType, "id", id)
 
 		return nil
 	}
 
 	children := sliceutil.Extract(annotations, func(annotation *ent.Annotation) string {
-		return annotation.DocumentID.String()
+		return annotation.Value
 	})
 
 	style := lipgloss.NewStyle().Foreground(cyan)
-	links := tree.Root(fmt.Sprintf("Links for %s:", style.Render(id))).
+	links := tree.Root(fmt.Sprintf("Links for %s %s:", fromType, style.Render(id))).
 		Child(children).
 		EnumeratorStyle(style)
 
@@ -123,24 +119,28 @@ func ListLinks[T FromType](from T, backend *db.Backend) error {
 	return nil
 }
 
-func RemoveLink[T FromType](from T, documentID string, backend *db.Backend) error {
-	document, err := backend.GetDocumentByIDOrAlias(documentID)
+func RemoveLink(backend *db.Backend, opts *options.LinkOptions) error {
+	documents, err := backend.GetDocumentsByIDOrAlias(opts.ToIDs...)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	documentUUID, err := ent.GenerateUUID(document)
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
+	documentUUIDs := sliceutil.Extract(documents, func(d *sbom.Document) string {
+		documentUUID, err := ent.GenerateUUID(d)
+		if err != nil {
+			opts.Logger.Warn("Error generating UUID for document", "id", d.GetMetadata().GetId(), "error", err)
 
-	switch from := any(from).(type) {
-	case *sbom.Document:
-		id := from.GetMetadata().GetId()
-		err = backend.RemoveDocumentAnnotations(id, db.LinkToAnnotation, documentUUID.String())
-	case *sbom.Node:
-		id := from.GetId()
-		err = backend.RemoveNodeAnnotations(id, db.LinkToAnnotation, documentUUID.String())
+			return ""
+		}
+
+		return documentUUID.String()
+	})
+
+	switch {
+	case len(opts.DocumentIDs) > 0:
+		err = backend.RemoveDocumentAnnotations(opts.DocumentIDs[0], db.LinkToAnnotation, documentUUIDs...)
+	case len(opts.NodeIDs) > 0:
+		err = backend.RemoveNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, documentUUIDs...)
 	}
 
 	if err != nil {

@@ -23,10 +23,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/link"
+	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 func linkCmd() *cobra.Command {
@@ -42,31 +43,26 @@ func linkCmd() *cobra.Command {
 }
 
 func linkAddCmd() *cobra.Command {
+	opts := &options.LinkOptions{}
+
 	addCmd := &cobra.Command{
 		Use:   "add [flags] {node:NODE_ID | document:SBOM_ID} [document:]SBOM_ID",
 		Short: "Add a link from a document or node to a document",
 		Long:  "Add a link from a document or node to a document",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			opts := optionsFromContext(cmd)
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
 
-			linkFrom, linkTo := args[0], args[1]
-
-			document, err := validateLinkArg(linkFrom)
-			if err != nil {
+			if err := validateLinkArgs(args[:1], opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 
-			if document.GetMetadata() != nil {
-				err = link.AddLink(document, linkTo, backend)
-			} else {
-				err = link.AddLink(document.GetNodeList().GetNodes()[0], linkTo, backend)
-			}
+			opts.ToIDs = append(opts.ToIDs, strings.TrimPrefix(args[1], "document:"))
 
-			if err != nil {
+			if err := link.AddLink(backend, opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 		},
@@ -76,26 +72,25 @@ func linkAddCmd() *cobra.Command {
 }
 
 func linkClearCmd() *cobra.Command {
+	opts := &options.LinkOptions{}
+
 	clearCmd := &cobra.Command{
 		Use:   "clear [flags] {node:NODE_ID | document:SBOM_ID}...",
 		Short: "Remove all links from specified documents and nodes",
 		Long:  "Remove all links from specified documents and nodes",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			opts := optionsFromContext(cmd)
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
 
-			for _, arg := range args {
-				document, err := validateLinkArg(arg)
-				if err != nil {
-					opts.Logger.Fatal(err)
-				}
+			if err := validateLinkArgs(args, opts); err != nil {
+				opts.Logger.Fatal(err)
+			}
 
-				if err := link.ClearLinks(document, backend); err != nil {
-					opts.Logger.Fatal(err)
-				}
+			if err := link.ClearLinks(backend, opts); err != nil {
+				opts.Logger.Fatal(err)
 			}
 		},
 	}
@@ -104,6 +99,8 @@ func linkClearCmd() *cobra.Command {
 }
 
 func linkListCmd() *cobra.Command {
+	opts := &options.LinkOptions{}
+
 	listCmd := &cobra.Command{
 		Use:     "list [flags] {node:NODE_ID | document:SBOM_ID}",
 		Aliases: []string{"ls"},
@@ -111,23 +108,16 @@ func linkListCmd() *cobra.Command {
 		Long:    "List the links of a document or node",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			opts := optionsFromContext(cmd)
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
 
-			document, err := validateLinkArg(args[0])
-			if err != nil {
+			if err := validateLinkArgs(args, opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 
-			if document.GetMetadata() != nil {
-				err = link.ListLinks(document, backend)
-			} else {
-				err = link.ListLinks(document.GetNodeList().GetNodes()[0], backend)
-			}
-
-			if err != nil {
+			if err := link.ListLinks(backend, opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 		},
@@ -137,6 +127,8 @@ func linkListCmd() *cobra.Command {
 }
 
 func linkRemoveCmd() *cobra.Command {
+	opts := &options.LinkOptions{}
+
 	removeCmd := &cobra.Command{
 		Use:     "remove [flags] {node:NODE_ID | document:SBOM_ID} [document:]SBOM_ID...",
 		Aliases: []string{"rm"},
@@ -144,30 +136,21 @@ func linkRemoveCmd() *cobra.Command {
 		Long:    "Remove specified links from a document or node",
 		Args:    cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			opts := optionsFromContext(cmd)
+			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)
 
 			defer backend.CloseClient()
 
-			linkFrom, linkTo := args[0], args[1:]
-
-			document, err := validateLinkArg(linkFrom)
-			if err != nil {
+			if err := validateLinkArgs(args[:1], opts); err != nil {
 				opts.Logger.Fatal(err)
 			}
 
-			isDocument := document.GetMetadata() != nil
+			opts.ToIDs = sliceutil.Map(args[1:], func(s string) string {
+				return strings.TrimPrefix(s, "document:")
+			})
 
-			for idx := range linkTo {
-				if isDocument {
-					err = link.RemoveLink(document, linkTo[idx], backend)
-				} else {
-					err = link.RemoveLink(document.GetNodeList().GetNodes()[0], linkTo[idx], backend)
-				}
-
-				if err != nil {
-					opts.Logger.Fatal(err)
-				}
+			if err := link.RemoveLink(backend, opts); err != nil {
+				opts.Logger.Fatal(err)
 			}
 		},
 	}
@@ -175,19 +158,19 @@ func linkRemoveCmd() *cobra.Command {
 	return removeCmd
 }
 
-func validateLinkArg(arg string) (*sbom.Document, error) {
-	document := &sbom.Document{}
+func validateLinkArgs(args []string, opts *options.LinkOptions) error {
+	for _, arg := range args {
+		linkType, id, _ := strings.Cut(arg, ":")
 
-	linkType, id, _ := strings.Cut(arg, ":")
-
-	switch linkType {
-	case "document":
-		document.Metadata = &sbom.Metadata{Id: id}
-	case "node":
-		document.NodeList = &sbom.NodeList{Nodes: []*sbom.Node{{Id: id}}}
-	default:
-		return nil, fmt.Errorf("%w: %s", errInvalidLinkPrefix, arg)
+		switch linkType {
+		case "document":
+			opts.DocumentIDs = append(opts.DocumentIDs, id)
+		case "node":
+			opts.NodeIDs = append(opts.NodeIDs, id)
+		default:
+			return fmt.Errorf("%w: %s", errInvalidLinkPrefix, arg)
+		}
 	}
 
-	return document, nil
+	return nil
 }

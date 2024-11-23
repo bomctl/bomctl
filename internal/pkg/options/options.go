@@ -66,6 +66,13 @@ type (
 		Tags       []string
 	}
 
+	LinkOptions struct {
+		*Options
+		ToIDs       []string
+		DocumentIDs []string
+		NodeIDs     []string
+	}
+
 	MergeOptions struct {
 		*Options
 		DocumentName string
