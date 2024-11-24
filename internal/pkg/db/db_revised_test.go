@@ -68,7 +68,7 @@ func (dbrs *dbrSuite) TestBackend_AddDocumentRevision() {
 
 			docContent := dbrs.documentInfo[1].Content
 
-			newDoc, err := dbrs.Backend.AddRevisedDocument(docContent, dbrs.documentInfo[0].Document)
+			newDoc, err := dbrs.Backend.AddRevisedDocument(dbrs.documentInfo[0].Document, docContent)
 
 			if data.errorMsg == "" {
 				dbrs.Require().NoError(err)

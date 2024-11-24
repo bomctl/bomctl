@@ -129,7 +129,7 @@ func (backend *Backend) AddDocument(sbomData []byte, annotations ...*ent.Annotat
 }
 
 // AddRevisedDocument adds the protobom Document to the database and annotates with its base document ID and hash.
-func (backend *Backend) AddRevisedDocument(revisedBytes []byte, base *sbom.Document) (*sbom.Document, error) {
+func (backend *Backend) AddRevisedDocument(base *sbom.Document, revisedBytes []byte) (*sbom.Document, error) {
 	baseUUID, err := ent.GenerateUUID(base)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
