@@ -148,7 +148,7 @@ func (backend *Backend) AddRevisedDocument(revisedBytes []byte, base *sbom.Docum
 		return nil, fmt.Errorf("storing document %s: %w", revised.GetMetadata().GetId(), err)
 	}
 
-	if err := backend.UpdateAliasReference(revised, base); err != nil {
+	if err := backend.UpdateAliasReference(base, revised); err != nil {
 		return nil, fmt.Errorf("updating alias for document %s: %w", revised.GetMetadata().GetId(), err)
 	}
 
@@ -298,7 +298,7 @@ func (backend *Backend) SetAlias(documentID, alias string, force bool) (err erro
 	return nil
 }
 
-func (backend *Backend) UpdateAliasReference(revised, base *sbom.Document) error {
+func (backend *Backend) UpdateAliasReference(base, revised *sbom.Document) error {
 	baseID := base.GetMetadata().GetId()
 
 	docAlias, err := backend.GetDocumentUniqueAnnotation(baseID, AliasAnnotation)

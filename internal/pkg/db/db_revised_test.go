@@ -140,7 +140,7 @@ func (dbrs *dbrSuite) TestBackend_UpdateAliasReference() {
 		dbrs.Run(data.name, func() {
 			data.prep()
 
-			err := dbrs.Backend.UpdateAliasReference(dbrs.documentInfo[0].Document, dbrs.documentInfo[1].Document)
+			err := dbrs.Backend.UpdateAliasReference(dbrs.documentInfo[1].Document, dbrs.documentInfo[0].Document)
 			if data.errorMsg == "" {
 				dbrs.Require().NoError(err)
 				docAlias, err := dbrs.Backend.GetDocumentUniqueAnnotation(revisedID, db.AliasAnnotation)
