@@ -21,12 +21,6 @@
 
 version: "3"
 
-env:
-  BOLD: \033[1m
-  CYAN: \033[36m
-  YELLOW: \033[33m
-  RESET: \033[0m
-
 tasks:
   run:
     silent: true
@@ -36,10 +30,10 @@ tasks:
     cmd: >
       export PATH="{{shellQuote .TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}{{env "PATH"}}";
       if command -v {{.CLI_NAME}} > /dev/null; then
-        printf "Running ${CYAN}{{.CLI_NAME}} {{.CLI_ARGS}}${RESET}\n";
+        printf "Running {{.CYAN}}{{.CLI_NAME}} {{.CLI_ARGS}}{{.RESET}}\n";
         {{.CLI_NAME}} {{.CLI_ARGS}};
       else
-        printf "${YELLOW}{{.CLI_NAME}} not found, please install and run the command again.${RESET}\n";
+        printf "{{.YELLOW}}{{.CLI_NAME}} not found, please install and run the command again.{{.RESET}}\n";
       fi
 
   go:

@@ -155,7 +155,7 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 }
 
 func (dbs *dbSuite) TestBackend_SetAlias() {
-	bomID := dbs.documents[0].GetMetadata().GetId()
+	id := dbs.documents[0].GetMetadata().GetId()
 
 	for _, data := range []struct {
 		name      string
@@ -201,20 +201,20 @@ func (dbs *dbSuite) TestBackend_SetAlias() {
 		},
 	} {
 		dbs.Run(data.name, func() {
-			err := dbs.Backend.RemoveDocumentAnnotations(bomID, db.AliasAnnotation, "cdx")
+			err := dbs.Backend.RemoveDocumentAnnotations(id, db.AliasAnnotation, "cdx")
 			dbs.Require().NoError(err)
 
 			if data.doc0Alias != "" {
 				dbs.Require().NoError(
-					dbs.Backend.SetDocumentUniqueAnnotation(bomID, db.AliasAnnotation, data.doc0Alias),
+					dbs.Backend.SetDocumentUniqueAnnotation(id, db.AliasAnnotation, data.doc0Alias),
 					"failed to set alias", "err", err,
 				)
 			}
 
-			err = dbs.Backend.SetAlias(bomID, data.alias, data.force)
+			err = dbs.Backend.SetAlias(id, data.alias, data.force)
 			if data.errorMsg == "" {
 				dbs.Require().NoError(err)
-				docAlias, err := dbs.Backend.GetDocumentUniqueAnnotation(bomID, db.AliasAnnotation)
+				docAlias, err := dbs.Backend.GetDocumentUniqueAnnotation(id, db.AliasAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.alias, docAlias)
 			} else {
