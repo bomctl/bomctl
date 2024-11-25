@@ -27,6 +27,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/cmd"
+	"github.com/bomctl/bomctl/internal/pkg/db"
 )
 
 type fetchCmdSuite struct {
@@ -64,6 +65,13 @@ func (fcs *fetchCmdSuite) TestParseFormat_Specific() {
 		expected  formats.Format
 		shouldErr bool
 	}{
+		{
+			name:      "Origin Format",
+			format:    "original",
+			encoding:  formats.JSON,
+			expected:  db.OriginalFormat,
+			shouldErr: false,
+		},
 		{
 			name:      "Default spdx",
 			format:    formats.SPDXFORMAT,

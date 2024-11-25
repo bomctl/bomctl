@@ -27,14 +27,12 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/push"
 )
 
-const pushArgNum = 2
-
 func pushCmd() *cobra.Command {
 	opts := &options.PushOptions{}
 
 	pushCmd := &cobra.Command{
 		Use:   "push [flags] SBOM_ID DEST_PATH",
-		Args:  cobra.MinimumNArgs(pushArgNum),
+		Args:  cobra.MinimumNArgs(2),
 		Short: "Push stored SBOM file to remote URL or filesystem",
 		Long:  "Push stored SBOM file to remote URL or filesystem",
 		Run: func(cmd *cobra.Command, args []string) {

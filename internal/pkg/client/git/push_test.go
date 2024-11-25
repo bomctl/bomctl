@@ -39,7 +39,7 @@ func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
 	pushOpts := &options.PushOptions{Options: gps.Options}
 	gps.Require().NoError(
 		gps.Client.PreparePush(
-			gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx",
+			gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx.json",
 			pushOpts,
 		),
 	)
@@ -60,7 +60,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 	}
 
 	if err := gps.Client.AddFile(
-		gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx.json",
+		gps.Server.URL+"/test/repo.git@main#path/to/testbom.cdx.json",
 		gps.documents[0].GetMetadata().GetId(),
 		opts,
 	); err != nil {
@@ -72,7 +72,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 	gps.Require().NoError(err)
 
 	// File must be staged with a status of "A" (added).
-	gps.Require().Equal("M", string(status.File("path/to/sbom.cdx.json").Staging))
+	gps.Require().Equal("A", string(status.File("path/to/testbom.cdx.json").Staging))
 }
 
 func (gps *gitPushSuite) TestClient_Push() {

@@ -26,13 +26,11 @@ import (
 
 	"github.com/google/go-github/v66/github"
 
-	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
 type Client struct {
-	ghClient  github.Client
-	gitClient git.Client
+	ghClient github.Client
 }
 
 func (*Client) Name() string {
@@ -41,12 +39,11 @@ func (*Client) Name() string {
 
 func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(
-		fmt.Sprintf("^%s%s%s%s%s$",
-			`(?P<scheme>https?|git|ssh):\/\/?`,
+		fmt.Sprintf("^%s%s%s%s$",
+			`((?P<scheme>https?|git|ssh):\/\/)?`,
 			`((?P<username>[^:]+)(?::(?P<password>[^@]+))?(?:@))?`,
 			`(?P<hostname>github(\.[A-Za-z0-9_-]+)*\.com+)(?::(?P<port>\d+))?`,
-			`(?:[\/:](?P<path>[^@#]+)?)`,
-			`((?:@(?P<gitRef>[^#]+))(?:#(?P<fragment>.*)))?`,
+			`(?:[\/:](?P<path>.+))`,
 		),
 	)
 }
@@ -84,9 +81,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		Username: results["username"],
 		Password: results["password"],
 		Hostname: results["hostname"],
-		Port:     results["port"],
 		Path:     results["path"],
-		GitRef:   results["gitRef"],
-		Fragment: results["fragment"],
+		Port:     results["port"],
 	}
 }

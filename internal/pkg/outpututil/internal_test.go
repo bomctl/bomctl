@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/client/github/push.go
+// SPDX-FileName: internal/pkg/outpututil/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,18 +17,10 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package github
+package outpututil
 
-import "github.com/bomctl/bomctl/internal/pkg/options"
-
-func (*Client) AddFile(_pushURL, _id string, _opts *options.PushOptions) error {
-	return nil
-}
-
-func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
-	return nil
-}
-
-func (*Client) Push(_sbomID string, _opts *options.PushOptions) error {
-	return nil
-}
+var (
+	MatchesOriginFormat = matchesOriginFormat
+	CheckIfModified     = checkIfModified
+	WriteOriginStream   = writeOriginStream
+)

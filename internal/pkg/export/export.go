@@ -25,10 +25,10 @@ import (
 	"slices"
 
 	"github.com/protobom/protobom/pkg/sbom"
-	protowriter "github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
 func Export(sbomID string, opts *options.ExportOptions) error {
@@ -39,8 +39,6 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 
 	opts.Logger.Info("Exporting document", "sbomID", sbomID)
 
-	writer := protowriter.New(protowriter.WithFormat(opts.Format))
-
 	document, err := backend.GetDocumentByIDOrAlias(sbomID)
 	if err != nil {
 		return fmt.Errorf("%w", err)
@@ -50,12 +48,12 @@ func Export(sbomID string, opts *options.ExportOptions) error {
 
 	if opts.OutputFile != nil {
 		// Write the SBOM document bytes to file.
-		if err := writer.WriteFile(document, opts.OutputFile.Name()); err != nil {
+		if err := outpututil.WriteFile(document, opts.Format, opts.Options, opts.OutputFile.Name()); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	} else {
 		// Write the SBOM document bytes to stdout.
-		if err := writer.WriteStream(document, os.Stdout); err != nil {
+		if err := outpututil.WriteStream(document, opts.Format, opts.Options, os.Stdout); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

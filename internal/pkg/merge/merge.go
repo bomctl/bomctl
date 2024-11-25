@@ -73,7 +73,7 @@ func Merge(documentIDs []string, opts *options.MergeOptions) (string, error) {
 		}
 	}
 
-	if err := backend.AddAnnotations(merged.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
+	if err := backend.AddDocumentAnnotations(merged.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
 		opts.Logger.Warn("Tag(s) could not be set.", "err", err)
 	}
 
