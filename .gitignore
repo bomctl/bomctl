@@ -4,6 +4,8 @@
 # Whitelist patterns anchored to project root
 !/.adr-dir
 !/.commitlint.yaml
+!/.clusterfuzzlite/build.sh
+!/.clusterfuzzlite/project.yaml
 !/.editorconfig
 !/.gitattributes
 !/.github/dependabot.yml
