@@ -29,6 +29,7 @@ import (
 	"slices"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/storage"
@@ -63,7 +64,8 @@ type (
 
 	BackendKey struct{}
 
-	Option func(*Backend)
+	Option           func(*Backend)
+	AnnotationOption func() ent.Annotations
 )
 
 var (
@@ -106,18 +108,24 @@ func NewBackend(opts ...Option) (*Backend, error) {
 }
 
 // AddDocument adds the protobom Document to the database and annotates with given annotations.
-func (backend *Backend) AddDocument(sbomData []byte, annotations ...*ent.Annotation) (*sbom.Document, error) {
+func (backend *Backend) AddDocument(sbomData []byte, annotations ...AnnotationOption) (*sbom.Document, error) {
 	sbomReader := reader.New()
+	antns := ent.Annotations{}
 
 	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
 	if err != nil {
 		return nil, fmt.Errorf("parsing SBOM data: %w", err)
 	}
 
+	// Loop over the `annotations` slice and call each one
+	for _, fn := range annotations {
+		antns = append(antns, fn()...)
+	}
+
 	// Create ent.BackendOptions with the annotations slice.
 	opts := &storage.StoreOptions{
 		BackendOptions: &ent.BackendOptions{
-			Annotations: annotations,
+			Annotations: antns,
 		},
 	}
 
@@ -135,15 +143,7 @@ func (backend *Backend) AddRevisedDocument(base *sbom.Document, revisedBytes []b
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	annotations := ent.Annotations{
-		{
-			Name:     BaseDocumentAnnotation,
-			Value:    baseUUID.String(),
-			IsUnique: true,
-		},
-	}
-
-	revised, err := backend.AddDocument(revisedBytes, annotations...)
+	revised, err := backend.AddDocument(revisedBytes, WithRevisedDocumentAnnotations(baseUUID))
 	if err != nil {
 		return nil, fmt.Errorf("storing document %s: %w", revised.GetMetadata().GetId(), err)
 	}
@@ -157,21 +157,7 @@ func (backend *Backend) AddRevisedDocument(base *sbom.Document, revisedBytes []b
 
 // AddSourceDocument adds the protobom Document to the database and annotates with its source data, and hash.
 func (backend *Backend) AddSourceDocument(sbomData []byte) (*sbom.Document, error) {
-	hash := sha256.Sum256(sbomData)
-	annotations := ent.Annotations{
-		{
-			Name:     SourceDataAnnotation,
-			Value:    string(sbomData),
-			IsUnique: true,
-		},
-		{
-			Name:     SourceHashAnnotation,
-			Value:    string(hash[:]),
-			IsUnique: true,
-		},
-	}
-
-	return backend.AddDocument(sbomData, annotations...)
+	return backend.AddDocument(sbomData, WithSourceDocumentAnnotations(sbomData))
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
@@ -337,6 +323,37 @@ func (backend *Backend) validateNewAlias(alias string) (err error) {
 	}
 
 	return err
+}
+
+func WithSourceDocumentAnnotations(sbomData []byte) AnnotationOption {
+	return func() ent.Annotations {
+		hash := sha256.Sum256(sbomData)
+
+		return ent.Annotations{
+			{
+				Name:     SourceDataAnnotation,
+				Value:    string(sbomData),
+				IsUnique: true,
+			},
+			{
+				Name:     SourceHashAnnotation,
+				Value:    string(hash[:]),
+				IsUnique: true,
+			},
+		}
+	}
+}
+
+func WithRevisedDocumentAnnotations(baseUUID uuid.UUID) AnnotationOption {
+	return func() ent.Annotations {
+		return ent.Annotations{
+			{
+				Name:     BaseDocumentAnnotation,
+				Value:    baseUUID.String(),
+				IsUnique: true,
+			},
+		}
+	}
 }
 
 // WithDatabaseFile sets the database file for the backend.
