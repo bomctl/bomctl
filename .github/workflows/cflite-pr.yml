@@ -16,7 +16,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------
-
 ---
 name: ClusterFuzzLite PR fuzzing
 on:
@@ -45,12 +44,6 @@ jobs:
           language: go
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sanitizer: ${{ matrix.sanitizer }}
-          # Optional but recommended: used to only run fuzzers that are affected
-          # by the PR.
-          # See later section on "Git repo for storage".
-          # storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/OWNER/STORAGE-REPO-NAME.git
-          # storage-repo-branch: main   # Optional. Defaults to "main"
-          # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
       - name: Run Fuzzers (${{ matrix.sanitizer }})
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
@@ -62,9 +55,3 @@ jobs:
           output-sarif: true
           parallel-fuzzing: true
           dry-run: true
-          # Optional but recommended: used to download the corpus produced by
-          # batch fuzzing.
-          # See later section on "Git repo for storage".
-          # storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/OWNER/STORAGE-REPO-NAME.git
-          # storage-repo-branch: main   # Optional. Defaults to "main"
-          # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
