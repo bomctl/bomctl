@@ -25,6 +25,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -69,9 +70,10 @@ func ClearLinks(backend *db.Backend, opts *options.LinkOptions) error {
 
 func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 	var (
-		annotations  ent.Annotations
-		id, fromType string
-		err          error
+		annotations   ent.Annotations
+		incomingLinks []string
+		id, fromType  string
+		err           error
 	)
 
 	switch {
@@ -79,6 +81,16 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 		fromType = "document"
 		id = opts.DocumentIDs[0]
 		annotations, err = backend.GetDocumentAnnotations(id, db.LinkToAnnotation)
+
+		// Get incoming links for the docucment.
+		documents, err := backend.GetDocumentsByAnnotation(db.LinkToAnnotation, opts.DocumentIDs...)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		incomingLinks = sliceutil.Extract(documents, func(d *sbom.Document) string {
+			return d.GetMetadata().GetId()
+		})
 	case len(opts.NodeIDs) > 0:
 		fromType = "node"
 		id = opts.NodeIDs[0]
@@ -105,6 +117,14 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 		EnumeratorStyle(style)
 
 	fmt.Fprintln(os.Stdout, links)
+
+	if len(incomingLinks) > 0 {
+		fmt.Fprintln(os.Stdout, "")
+		fmt.Fprintln(os.Stdout, tree.Root("Incoming links:").
+			Child(incomingLinks).
+			EnumeratorStyle(style),
+		)
+	}
 
 	return nil
 }
