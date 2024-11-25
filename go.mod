@@ -14,7 +14,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/protobom/protobom v0.5.0
-	github.com/protobom/storage v0.1.6-0.20241114015657-685d55dfe2f3
+	github.com/protobom/storage v0.1.6-0.20241119201645-3bdeec73f95d
 	github.com/rogpeppe/go-internal v1.13.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5

@@ -32,12 +32,6 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const (
-	aliasRemoveMinArgNum = 1
-	aliasRemoveMaxArgNum = 2
-	aliasSetExactArgNum  = 2
-)
-
 func aliasCmd() *cobra.Command {
 	aliasCmd := &cobra.Command{
 		Use:   "alias",
@@ -97,7 +91,7 @@ func aliasRemoveCmd() *cobra.Command {
 		Aliases: []string{"rm"},
 		Short:   "Remove the alias for a specific document",
 		Long:    "Remove the alias for a specific document",
-		Args:    cobra.RangeArgs(aliasRemoveMinArgNum, aliasRemoveMaxArgNum),
+		Args:    cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
 			backend := backendFromContext(cmd)
 
@@ -117,7 +111,7 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(err, "documentID", args[0])
 			}
 
-			if err := backend.RemoveAnnotations(document.GetMetadata().GetId(),
+			if err := backend.RemoveDocumentAnnotations(document.GetMetadata().GetId(),
 				db.AliasAnnotation, docAlias); err != nil {
 				backend.Logger.Fatal(err, "name", db.AliasAnnotation, "value", docAlias)
 			}
@@ -134,7 +128,7 @@ func aliasSetCmd() *cobra.Command {
 		Use:   "set [flags] SBOM_ID NEW_ALIAS",
 		Short: "Set the alias for a specific document",
 		Long:  "Set the alias for a specific document",
-		Args:  cobra.ExactArgs(aliasSetExactArgNum),
+		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Options = optionsFromContext(cmd)
 			backend := backendFromContext(cmd)

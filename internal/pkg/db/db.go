@@ -250,12 +250,12 @@ func (backend *Backend) SetAlias(documentID, alias string, force bool) (err erro
 			return ErrDocumentAliasExists
 		}
 
-		if err := backend.RemoveAnnotations(documentID, AliasAnnotation, docAlias); err != nil {
+		if err := backend.RemoveDocumentAnnotations(documentID, AliasAnnotation, docAlias); err != nil {
 			return fmt.Errorf("failed to remove previous alias: %w", err)
 		}
 	}
 
-	if err := backend.SetUniqueAnnotation(documentID, AliasAnnotation, alias); err != nil {
+	if err := backend.SetDocumentUniqueAnnotation(documentID, AliasAnnotation, alias); err != nil {
 		return fmt.Errorf("failed to set alias: %w", err)
 	}
 

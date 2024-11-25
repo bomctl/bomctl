@@ -74,13 +74,13 @@ func AddTestDocuments(backend *db.Backend) ([]DocumentInfo, error) {
 
 		name := strings.Split(sboms[idx].Name(), ".")[1]
 
-		if err := backend.SetUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation, name); err != nil {
+		if err := backend.SetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation, name); err != nil {
 			return nil, fmt.Errorf("setting alias: %w", err)
 		}
 
 		tags := []string{"tag" + strconv.Itoa(idx+1), "tag" + strconv.Itoa(idx+2)} //nolint:mnd
 
-		if err := backend.AddAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
+		if err := backend.AddDocumentAnnotations(doc.GetMetadata().GetId(), db.TagAnnotation, tags...); err != nil {
 			return nil, fmt.Errorf("adding tags: %w", err)
 		}
 
