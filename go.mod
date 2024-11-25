@@ -20,17 +20,13 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/oauth2 v0.24.0
 	golang.org/x/term v0.26.0
 	google.golang.org/protobuf v1.35.2
 	oras.land/oras-go/v2 v2.5.0
 )
 
-require (
-	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
-)
+require github.com/google/go-querystring v1.1.0 // indirect
 
 require (
 	ariga.io/atlas v0.28.1 // indirect
