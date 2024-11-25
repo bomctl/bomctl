@@ -109,45 +109,47 @@ func optionsFromContext(cmd *cobra.Command) *options.Options {
 	return opts
 }
 
+func preRun(cmd *cobra.Command, _ []string) {
+	verbosity, err := cmd.Flags().GetCount("verbose")
+	cobra.CheckErr(err)
+
+	if verbosity > 0 {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	cacheDir := viper.GetString("cache_dir")
+
+	// Get first top-level subcommand.
+	subcmd := cmd
+	for subcmd.HasParent() && subcmd.Parent() != subcmd.Root() {
+		subcmd = subcmd.Parent()
+	}
+
+	opts := options.New().
+		WithCacheDir(cacheDir).
+		WithConfigFile(viper.ConfigFileUsed()).
+		WithVerbosity(verbosity).
+		WithLogger(logger.New(subcmd.Name()))
+
+	backend, err := db.NewBackend(
+		db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)),
+		db.WithVerbosity(verbosity),
+	)
+	if err != nil {
+		opts.Logger.Fatalf("%v", err)
+	}
+
+	cmd.SetContext(context.WithValue(cmd.Context(), optionsKey{}, opts))
+	cmd.SetContext(context.WithValue(cmd.Context(), db.BackendKey{}, backend))
+	opts.WithContext(cmd.Context())
+}
+
 func rootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:     "bomctl",
-		Long:    "Simpler Software Bill of Materials management",
-		Version: VersionString,
-		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			if verbosity > 0 {
-				log.SetLevel(log.DebugLevel)
-			}
-
-			cacheDir := viper.GetString("cache_dir")
-
-			// Get first top-level subcommand.
-			subcmd := cmd
-			for subcmd.HasParent() && subcmd.Parent() != subcmd.Root() {
-				subcmd = subcmd.Parent()
-			}
-
-			opts := options.New().
-				WithCacheDir(cacheDir).
-				WithConfigFile(viper.ConfigFileUsed()).
-				WithVerbosity(verbosity).
-				WithLogger(logger.New(subcmd.Name()))
-
-			backend, err := db.NewBackend(
-				db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)),
-				db.WithVerbosity(verbosity),
-			)
-			if err != nil {
-				opts.Logger.Fatalf("%v", err)
-			}
-
-			cmd.SetContext(context.WithValue(cmd.Context(), optionsKey{}, opts))
-			cmd.SetContext(context.WithValue(cmd.Context(), db.BackendKey{}, backend))
-			opts.WithContext(cmd.Context())
-		},
+		Use:              "bomctl",
+		Long:             "Simpler Software Bill of Materials management",
+		Version:          VersionString,
+		PersistentPreRun: preRun,
 	}
 
 	rootCmd.PersistentFlags().String("cache-dir", defaultCacheDir(), "cache directory")
@@ -159,15 +161,18 @@ func rootCmd() *cobra.Command {
 	// Bind flags to their associated viper configurations.
 	cobra.CheckErr(viper.BindPFlag("cache_dir", rootCmd.PersistentFlags().Lookup("cache-dir")))
 
-	rootCmd.AddCommand(aliasCmd())
-	rootCmd.AddCommand(exportCmd())
-	rootCmd.AddCommand(fetchCmd())
-	rootCmd.AddCommand(importCmd())
-	rootCmd.AddCommand(listCmd())
-	rootCmd.AddCommand(mergeCmd())
-	rootCmd.AddCommand(pushCmd())
-	rootCmd.AddCommand(tagCmd())
-	rootCmd.AddCommand(versionCmd())
+	rootCmd.AddCommand(
+		aliasCmd(),
+		exportCmd(),
+		fetchCmd(),
+		importCmd(),
+		linkCmd(),
+		listCmd(),
+		mergeCmd(),
+		pushCmd(),
+		tagCmd(),
+		versionCmd(),
+	)
 
 	return rootCmd
 }
