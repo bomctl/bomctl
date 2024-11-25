@@ -1,5 +1,5 @@
 # -------------------------------------------------------
-# SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 # SPDX-FileName: Makefile
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
@@ -8,8 +8,11 @@ MAKEFILE ?= ${abspath ${firstword ${MAKEFILE_LIST}}}
 
 # ANSI color escape codes
 BOLD   := \033[1m
-CYAN   := \033[36m
-YELLOW := \033[33m
+CYAN   := \033[38;5;51m
+GREEN  := \033[38;5;46m
+ORANGE := \033[38;5;214m
+YELLOW := \033[38;5;226m
+RED    := \033[38;5;196m
 RESET  := \033[0m
 
 # Default system architecture
@@ -176,6 +179,7 @@ endef
 .PHONY: lint-go
 lint-go: # Lint Golang code files
 	${call run-lint,golangci-lint,run --verbose}
+	${call run-lint,.github/scripts/check-go-headers.sh}
 
 .PHONY: lint-go-fix
 lint-go-fix: # Fix golangci-lint findings
@@ -201,10 +205,50 @@ lint-yaml: # Lint YAML files
 .PHONY: lint
 lint: lint-go lint-markdown lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files
 
+.PHONY: lint-fix
+lint-fix: lint-go-fix lint-markdown-fix lint-shell lint-yaml # Lint Golang code, markdown, shell script, and YAML files, apply fixes where possible
+
 #@ Test
+define coverage-report
+	@printf "${CYAN}"; \
+	echo "+----------------------------------------------------------------------------------------+"; \
+	echo "|    COVERAGE REPORT                                                                     |"; \
+	echo "+----------------------------------------------------------------------------------------+"; \
+	printf "${RESET}\n"
+
+	@go tool cover -func=coverage.out | \
+	  awk -- '{ \
+	    sub("github.com/bomctl/bomctl/", "", $$1); \
+	    percent = +$$3; sub("%", "", percent); \
+	    if (percent < 50.00) color = "${RED}"; \
+	    else if (percent < 80.00) color = "${ORANGE}"; \
+	    else if (percent < 100.00) color = "${YELLOW}"; \
+	    else color = "${GREEN}"; \
+	    fmtstr = $$1 == "total:" ? "\n%s%s\t%s\t%s%s\n" : "%s%-48s %-32s %.1f%%%s\n"; \
+	    printf fmtstr, color, $$1, $$2, $$3, "${RESET}" \
+	  }'
+endef
+
 .PHONY: test-unit
 test-unit: # Run unit tests
-	go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
+	@printf "Running unit tests for ${BOLD}${CYAN}bomctl${RESET}..."
+	@go test -failfast -v -coverprofile=coverage.out -covermode=atomic -short ./...
+	@printf "${BOLD}${GREEN}DONE${RESET}\n\n"
+
+	${call coverage-report}
+
+.PHONY: test-e2e
+test-e2e: # Run unit tests
+	@printf "Running end-to-end tests for ${BOLD}${CYAN}bomctl${RESET}..."
+	@go test -failfast -v ./internal/e2e/...
+	@printf "${BOLD}${GREEN}DONE${RESET}\n\n"
+
+	${call coverage-report}
 
 .PHONY: test
-test: test-unit # Run all tests
+test: # Run all tests
+	@printf "Running all tests for ${BOLD}${CYAN}bomctl${RESET}..."
+	@go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
+	@printf "${BOLD}${GREEN}DONE${RESET}\n\n"
+
+	${call coverage-report}

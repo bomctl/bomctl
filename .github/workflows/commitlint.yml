@@ -1,0 +1,54 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
+# SPDX-FileName: .github/workflows/commitlint.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+name: Check Pull Request Title
+
+on:
+  pull_request:
+    branches: main
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  check-title:
+    if: ${{ !startsWith(github.event.pull_request.title, ':dependabot:') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Install commitlint
+        run: go install github.com/conventionalcommit/commitlint@e9a606ce7074ac884ea091765be1651be18356d4 # v0.10.1
+
+      - name: Run commitlint against title of pull request
+        env:
+          PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
+        run: commitlint lint <<< "${PULL_REQUEST_TITLE}"

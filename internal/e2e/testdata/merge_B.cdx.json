@@ -1,0 +1,59 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-04-19T18:53:18Z",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "author": "anchore",
+          "name": "syft",
+          "version": "0.103.1"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "802d09e3787af8a4",
+      "type": "file",
+      "name": "bomctl_0.1.1_darwin_arm64.tar.gz",
+      "version": "sha256:07aca4c7d757b18118b407733d90e8ae21fe8e95d191005451bb7a64a713fddc"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:golang/dario.cat/mergo@v0.9.0?package-id=f1f49cb0aea87079",
+      "type": "library",
+      "name": "dario.cat/mergo",
+      "version": "v0.9.0",
+      "purl": "pkg:golang/dario.cat/mergo@v0.9.0"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/cyclonedx/cyclonedx-go@v0.8.1?package-id=5d5b0319526af89b",
+      "type": "library",
+      "name": "github.com/CycloneDX/cyclonedx-go",
+      "version": "v0.8.1",
+      "cpe": "cpe:2.3:a:CycloneDX:cyclonedx-go:v0.8.1:*:*:*:*:*:*:*",
+      "purl": "pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.8.1"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/pelletier/go-toml@v2?package-id=45e331af0112fd98#v2",
+      "type": "library",
+      "name": "github.com/pelletier/go-toml/v2",
+      "version": "v2",
+      "cpe": "cpe:2.3:a:pelletier:go-toml\\/v2:v2:*:*:*:*:*:*:*",
+      "purl": "pkg:golang/github.com/pelletier/go-toml@v2"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/opencontainers/image-spec@v1.1.7?package-id=48f29ee7ac2ab2c0",
+      "type": "library",
+      "name": "github.com/opencontainers/image-spec",
+      "version": "v1.1.7",
+      "cpe": "cpe:2.3:a:opencontainers:image-spec:v1.1.7:*:*:*:*:*:*:*",
+      "purl": "pkg:golang/github.com/opencontainers/image-spec@v1.1.7"
+    }
+  ]
+}

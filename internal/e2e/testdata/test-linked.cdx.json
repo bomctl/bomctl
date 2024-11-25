@@ -1,0 +1,266 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-08-15T05:07:00+00:00",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "aquasecurity",
+          "name": "trivy",
+          "version": "0.53.0"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "pkg:oci/bomctl@sha256%3A85884f2c22637cfd2e1d22027bc02cb21d4b5e5f28af296f074dfe6edfc19fc8?arch=amd64&repository_url=index.docker.io%2Fbomctl%2Fbomctl",
+      "type": "container",
+      "name": "bomctl/bomctl:v0.3.0",
+      "purl": "pkg:oci/bomctl@sha256%3A85884f2c22637cfd2e1d22027bc02cb21d4b5e5f28af296f074dfe6edfc19fc8?arch=amd64&repository_url=index.docker.io%2Fbomctl%2Fbomctl",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:DiffID",
+          "value": "sha256:935a6850a620375f3439a00600cc3ba57f61b59e0b0c57bca2aaacc4e612a1bd"
+        },
+        {
+          "name": "aquasecurity:trivy:DiffID",
+          "value": "sha256:e0b9f25bcdf403217f9cd207e572f3164807e2a1c6316aabb72f3a6540df619c"
+        },
+        {
+          "name": "aquasecurity:trivy:ImageID",
+          "value": "sha256:4a4989c4d869daf60a5a99c5bb6c02749aa00d2c1a3c7d99ede41d529987ffcd"
+        },
+        {
+          "name": "aquasecurity:trivy:RepoDigest",
+          "value": "bomctl/bomctl@sha256:85884f2c22637cfd2e1d22027bc02cb21d4b5e5f28af296f074dfe6edfc19fc8"
+        },
+        {
+          "name": "aquasecurity:trivy:RepoTag",
+          "value": "bomctl/bomctl:v0.3.0"
+        },
+        {
+          "name": "aquasecurity:trivy:SchemaVersion",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "251dc7ad-9530-4426-bd9c-67ce08e0635b",
+      "type": "operating-system",
+      "name": "wolfi",
+      "version": "20230201",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "os-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "wolfi"
+        }
+      ]
+    },
+    {
+      "bom-ref": "90885f97-c899-4fbb-acb7-3daf4c4e83df",
+      "type": "application",
+      "name": "bomctl",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "gobinary"
+        }
+      ],
+      "externalReferences": [
+        {
+            "url" : "https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json",
+            "type" : "bom"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:apk/wolfi/ca-certificates-bundle@20240705-r0?arch=x86_64&distro=20230201",
+      "type": "library",
+      "name": "ca-certificates-bundle",
+      "version": "20240705-r0",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "591f4c18a53e70987a7491445e7af7cd4d6ab0c3"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:apk/wolfi/ca-certificates-bundle@20240705-r0?arch=x86_64&distro=20230201",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:935a6850a620375f3439a00600cc3ba57f61b59e0b0c57bca2aaacc4e612a1bd"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:02f9d1d53c1868f51ac3a8b5318fccdd79af5991e3b29dace09af5966fb6444e"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgID",
+          "value": "ca-certificates-bundle@20240705-r0"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "wolfi"
+        },
+        {
+          "name": "aquasecurity:trivy:SrcName",
+          "value": "ca-certificates"
+        },
+        {
+          "name": "aquasecurity:trivy:SrcVersion",
+          "value": "20240705-r0"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:apk/wolfi/tzdata@2024a-r3?arch=x86_64&distro=20230201",
+      "type": "library",
+      "name": "tzdata",
+      "version": "2024a-r3",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "9939b2eb880a622e131c1a9ec2ebd82f6b94c877"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "CC-PDDC"
+          }
+        }
+      ],
+      "purl": "pkg:apk/wolfi/tzdata@2024a-r3?arch=x86_64&distro=20230201",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:935a6850a620375f3439a00600cc3ba57f61b59e0b0c57bca2aaacc4e612a1bd"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:02f9d1d53c1868f51ac3a8b5318fccdd79af5991e3b29dace09af5966fb6444e"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgID",
+          "value": "tzdata@2024a-r3"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "wolfi"
+        },
+        {
+          "name": "aquasecurity:trivy:SrcName",
+          "value": "tzdata"
+        },
+        {
+          "name": "aquasecurity:trivy:SrcVersion",
+          "value": "2024a-r3"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:apk/wolfi/wolfi-baselayout@20230201-r15?arch=x86_64&distro=20230201",
+      "type": "library",
+      "name": "wolfi-baselayout",
+      "version": "20230201-r15",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "ce6913c8ad1d386be155755aeb7b01d11bff6ad6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:apk/wolfi/wolfi-baselayout@20230201-r15?arch=x86_64&distro=20230201",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:935a6850a620375f3439a00600cc3ba57f61b59e0b0c57bca2aaacc4e612a1bd"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:02f9d1d53c1868f51ac3a8b5318fccdd79af5991e3b29dace09af5966fb6444e"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgID",
+          "value": "wolfi-baselayout@20230201-r15"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "wolfi"
+        },
+        {
+          "name": "aquasecurity:trivy:SrcName",
+          "value": "wolfi-baselayout"
+        },
+        {
+          "name": "aquasecurity:trivy:SrcVersion",
+          "value": "20230201-r15"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "251dc7ad-9530-4426-bd9c-67ce08e0635b",
+      "dependsOn": [
+        "pkg:apk/wolfi/ca-certificates-bundle@20240705-r0?arch=x86_64&distro=20230201",
+        "pkg:apk/wolfi/tzdata@2024a-r3?arch=x86_64&distro=20230201",
+        "pkg:apk/wolfi/wolfi-baselayout@20230201-r15?arch=x86_64&distro=20230201"
+      ]
+    },
+    {
+      "ref": "pkg:apk/wolfi/ca-certificates-bundle@20240705-r0?arch=x86_64&distro=20230201",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:apk/wolfi/tzdata@2024a-r3?arch=x86_64&distro=20230201",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:apk/wolfi/wolfi-baselayout@20230201-r15?arch=x86_64&distro=20230201",
+      "dependsOn": [
+        "pkg:apk/wolfi/ca-certificates-bundle@20240705-r0?arch=x86_64&distro=20230201"
+      ]
+    },
+    {
+      "ref": "pkg:oci/bomctl@sha256%3A85884f2c22637cfd2e1d22027bc02cb21d4b5e5f28af296f074dfe6edfc19fc8?arch=amd64&repository_url=index.docker.io%2Fbomctl%2Fbomctl",
+      "dependsOn": [
+        "251dc7ad-9530-4426-bd9c-67ce08e0635b",
+        "90885f97-c899-4fbb-acb7-3daf4c4e83df"
+      ]
+    }
+  ],
+  "vulnerabilities": []
+}

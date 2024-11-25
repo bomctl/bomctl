@@ -1,9 +1,9 @@
-// ------------------------------------------------------------------------
-// SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+// -----------------------------------------------------------------------------
+// SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: cmd/fetch.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,56 +15,42 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
 package cmd
 
 import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
-	"github.com/bomctl/bomctl/internal/pkg/utils"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 func fetchCmd() *cobra.Command {
-	opts := &fetch.FetchOptions{
-		Logger:   utils.NewLogger("fetch"),
-		UseNetRC: false,
-	}
-
-	outputFile := OutputFileValue("")
-	sbomURLs := URLSliceValue{}
+	opts := &options.FetchOptions{}
+	outputFileName := outputFileValue("")
 
 	fetchCmd := &cobra.Command{
 		Use:   "fetch [flags] SBOM_URL...",
 		Args:  cobra.MinimumNArgs(1),
-		Short: "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, or Git URLs",
-		PreRun: func(_ *cobra.Command, args []string) {
-			sbomURLs = append(sbomURLs, args...)
-		},
-		Run: func(cmd *cobra.Command, _ []string) {
-			cfgFile, err := cmd.Flags().GetString("config")
-			cobra.CheckErr(err)
+		Short: "Fetch SBOM file(s) from HTTP(S), OCI, Git, or GitHub URLs",
+		Long:  "Fetch SBOM file(s) from HTTP(S), OCI, Git, or GitHub URLs",
+		Run: func(cmd *cobra.Command, args []string) {
+			opts.Options = optionsFromContext(cmd)
+			backend := backendFromContext(cmd)
 
-			opts.CacheDir = viper.GetString("cache_dir")
-			opts.ConfigFile = cfgFile
+			defer backend.CloseClient()
 
-			verbosity, err := cmd.Flags().GetCount("verbose")
-			cobra.CheckErr(err)
-
-			opts.Debug = verbosity >= minDebugLevel
-
-			if string(outputFile) != "" {
-				if len(sbomURLs) > 1 {
+			if outputFileName != "" {
+				if len(args) > 1 {
 					opts.Logger.Fatal("The --output-file option cannot be used when more than one URL is provided.")
 				}
 
-				out, err := os.Create(string(outputFile))
+				out, err := os.Create(string(outputFileName))
 				if err != nil {
-					opts.Logger.Fatal("error creating output file", "outputFile", outputFile)
+					opts.Logger.Fatal("error creating output file", "outputFileName", outputFileName)
 				}
 
 				opts.OutputFile = out
@@ -72,16 +58,19 @@ func fetchCmd() *cobra.Command {
 				defer opts.OutputFile.Close()
 			}
 
-			for _, url := range sbomURLs {
-				if err := fetch.Fetch(url, opts); err != nil {
+			for _, url := range args {
+				if _, err := fetch.Fetch(url, opts); err != nil {
 					opts.Logger.Fatal(err)
 				}
 			}
 		},
 	}
 
-	fetchCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
+	fetchCmd.Flags().VarP(&outputFileName, "output-file", "o", "Path to output file")
 	fetchCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
+	fetchCmd.Flags().StringVar(&opts.Alias, "alias", "", "Readable identifier to apply to document")
+	fetchCmd.Flags().StringArrayVar(&opts.Tags, "tag", []string{},
+		"Tag(s) to apply to document (can be specified multiple times)")
 
 	return fetchCmd
 }

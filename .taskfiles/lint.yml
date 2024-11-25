@@ -1,0 +1,78 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
+# SPDX-FileName: .taskfiles/lint.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  run:
+    silent: true
+    dir: "{{.ROOT_DIR}}"
+    vars:
+      CLI_ARGS: '{{.CLI_ARGS | join " "}}'
+    cmd: >
+      export PATH="{{shellQuote .TOOLS_DIR}}{{eq OS "windows" | ternary ";" ":"}}{{env "PATH"}}";
+      if command -v {{.CLI_NAME}} > /dev/null; then
+        printf "Running {{.CYAN}}{{.CLI_NAME}} {{.CLI_ARGS}}{{.RESET}}\n";
+        {{.CLI_NAME}} {{.CLI_ARGS}};
+      else
+        printf "{{.YELLOW}}{{.CLI_NAME}} not found, please install and run the command again.{{.RESET}}\n";
+      fi
+
+  go:
+    desc: Lint Golang code files
+    cmds:
+      - task: run
+        vars:
+          CLI_NAME: golangci-lint{{exeExt}}
+          CLI_ARGS: [run, --verbose]
+
+      - task: run
+        vars:
+          CLI_NAME: .github/scripts/check-go-headers.sh
+
+  markdown:
+    desc: Lint markdown files
+    cmd:
+      task: run
+      vars:
+        CLI_NAME: markdownlint-cli2
+        CLI_ARGS: "{{catLines .MARKDOWN_FILES}}"
+
+  shell:
+    desc: Lint shell scripts
+    cmds:
+      - task: run
+        vars:
+          CLI_NAME: shellcheck{{exeExt}}
+          CLI_ARGS: ["{{catLines .SHELL_FILES}}"]
+
+      - task: run
+        vars:
+          CLI_NAME: shfmt{{exeExt}}
+          CLI_ARGS: [--diff, --simplify, "{{catLines .SHELL_FILES}}"]
+
+  yaml:
+    desc: Lint YAML files
+    cmd:
+      task: run
+      vars:
+        CLI_NAME: yamllint
+        CLI_ARGS: ["{{catLines .YAML_FILES}}"]

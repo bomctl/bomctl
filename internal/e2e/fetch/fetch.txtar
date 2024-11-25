@@ -1,0 +1,92 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+
+# fetch help
+exec bomctl fetch -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# fetch help
+exec bomctl fetch --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help fetch
+exec bomctl help fetch --cache-dir $WORK
+! stderr .
+stdout .
+
+# fetch no input (FAILURE EXPECTED)
+! exec bomctl fetch --cache-dir $WORK
+stderr -count=1 '^(Error: requires at least 1 arg\(s\), only received 0).*'
+! stdout .
+
+# fetch not valid --output-file (FAILURE EXPECTED)
+! exec bomctl fetch --cache-dir $WORK  -o . https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+stderr -count=1 '^(FATAL fetch: error creating output file outputFileName=\.)$'
+! stdout .
+
+# fetch --output-file
+[net] exec bomctl fetch --cache-dir $WORK -o first.cdx.json https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+cmp stderr fetch_linked.txt
+! stdout .
+exists first.cdx.json
+exists first-1.json
+
+# fetch -o
+[net] exec bomctl fetch --cache-dir $WORK --output-file second.cdx.json https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+cmp stderr fetch_linked.txt
+! stdout .
+exists second.cdx.json
+exists second-1.json
+
+# fetch --alias
+[net] exec bomctl fetch --cache-dir $WORK --alias third https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl_0.1.3_darwin_amd64.tar.gz.cdx.json
+cmp stderr fetch_alias.txt
+! stdout .
+
+exec bomctl list --cache-dir $WORK
+cmp stdout fetch_alias_list.txt
+! stderr .
+
+# fetch --tag
+[net] exec bomctl fetch --cache-dir $WORK --tag fourth https://raw.githubusercontent.com/bomctl/bomctl/main/internal/e2e/testdata/merge_A.cdx.json
+cmp stderr fetch_tag.txt
+! stdout .
+
+exec bomctl list --cache-dir $WORK --tag fourth
+cmp stdout fetch_tag_list.txt
+! stderr .
+
+-- fetch_linked.txt --
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0.3.0_linux_amd64.tar.gz.spdx.json
+-- fetch_alias.txt --
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl_0.1.3_darwin_amd64.tar.gz.cdx.json
+-- fetch_alias_list.txt --
+
+ID      : urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
+Alias   : 
+Version : 1
+# Nodes : 6
+
+ID      : https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44-9d3c-47d0-9f7f-846397e701fa#DOCUMENT
+Alias   : 
+Version : 0
+# Nodes : 81
+
+ID      : urn:uuid:22ff1e59-cd6e-485a-83d1-24e64f87c5db
+Alias   : third
+Version : 1
+# Nodes : 81
+
+-- fetch_tag.txt --
+INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl/main/internal/e2e/testdata/merge_A.cdx.json
+-- fetch_tag_list.txt --
+
+ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+Alias   : 
+Version : 1
+# Nodes : 5
+

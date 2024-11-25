@@ -1,0 +1,167 @@
+# ------------------------------------------------------------------------
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
+# SPDX-FileName: Taskfile.yml
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+# ------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+includes:
+  build:
+    taskfile: .taskfiles/build.yml
+
+  fix:
+    taskfile: .taskfiles/fix.yml
+    vars:
+      MARKDOWN_FILES: "{{.MARKDOWN_FILES}}"
+      SHELL_FILES: "{{.SHELL_FILES}}"
+
+  install:
+    taskfile: .taskfiles/install.yml
+    vars:
+      RM: "{{.RM}}"
+      TOOLS_DIR: "{{.TOOLS_DIR}}"
+
+  lint:
+    taskfile: .taskfiles/lint.yml
+    vars:
+      MARKDOWN_FILES: "{{.MARKDOWN_FILES}}"
+      SHELL_FILES: "{{.SHELL_FILES}}"
+      TOOLS_DIR: "{{.TOOLS_DIR}}"
+      YAML_FILES: "{{.YAML_FILES}}"
+
+env:
+  GO111MODULE: "on"
+  GOPATH:
+    sh: go env GOPATH
+  GOPROXY: https://proxy.golang.org,direct
+
+vars:
+  RM: '{{if eq OS "windows"}}powershell -Command "Remove-Item -Recurse -Force -Path"{{else}}rm -rf{{end}}'
+  MARKDOWN_FILES:
+    sh: git ls-files '*.md'
+  SHELL_FILES:
+    sh: git ls-files '*.sh'
+  TOOLS_DIR: '{{shellQuote (joinPath .ROOT_DIR ".bin")}}'
+  YAML_FILES:
+    sh: git ls-files '*.yml' '*.yaml'
+
+  # ANSI color escape codes
+  BOLD: \033[1m
+  CYAN: \033[38;5;51m
+  GREEN: \033[38;5;46m
+  ORANGE: \033[38;5;214m
+  YELLOW: \033[38;5;226m
+  RED: \033[38;5;196m
+  RESET: \033[0m
+
+tasks:
+  default:
+    silent: true
+    cmd: task --list
+
+  build:
+    desc: Build binaries for all platforms and CPU architectures
+    cmds:
+      - task: build:linux:amd
+      - task: build:linux:arm
+      - task: build:macos:intel
+      - task: build:macos:apple
+      - task: build:windows:amd
+      - task: build:windows:arm
+
+  clean:
+    desc: Clean the working directory
+    cmd: "{{.RM}} dist"
+
+  fix:
+    desc: Apply fixes to Golang code, markdown, and shell scripts where possible
+    cmds:
+      - task: fix:go
+      - task: fix:markdown
+      - task: fix:shell
+
+  install:
+    desc: Install dev tools
+    cmds:
+      - task: install:golangci-lint
+      - task: install:shellcheck
+      - task: install:shfmt
+
+  lint:
+    desc: Lint Golang code, markdown, shell scripts, and YAML files
+    cmds:
+      - task: lint:go
+      - task: lint:markdown
+      - task: lint:shell
+      - task: lint:yaml
+
+  report-coverage:
+    silent: true
+    cmd: |
+      printf "{{.CYAN}}"
+      echo "+----------------------------------------------------------------------------------------+"
+      echo "|    COVERAGE REPORT                                                                     |"
+      echo "+----------------------------------------------------------------------------------------+"
+      printf "{{.RESET}}\n"
+
+      go tool cover -func=coverage.out |
+        awk -- '{
+          sub("github.com/bomctl/bomctl/", "", $1);
+          percent = +$3; sub("%", "", percent);
+          if (percent < 50.00) color = "{{.RED}}";
+          else if (percent < 80.00) color = "{{.ORANGE}}";
+          else if (percent < 100.00) color = "{{.YELLOW}}";
+          else color = "{{.GREEN}}";
+          fmtstr = $1 == "total:" ? "\n%s%s\t%s\t%s%s\n" : "%s%-48s %-32s %.1f%%%s\n";
+          printf fmtstr, color, $1, $2, $3, "{{.RESET}}"
+        }'
+
+  run-test:
+    silent: true
+    vars:
+      TEST_ARGS: '{{.TEST_ARGS | default list | join " "}}'
+      TEST_PATH: '{{.TEST_PATH | default "./..."}}'
+    cmds:
+      - cmd: printf "Running {{.CYAN}}go test -failfast -v {{.TEST_ARGS}} {{.TEST_PATH}}{{.RESET}}\n"
+      - cmd: go test -failfast -v {{.TEST_ARGS}} {{.TEST_PATH}}
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task: run-test
+        vars:
+          TEST_ARGS: [-coverprofile=coverage.out, -covermode=atomic]
+
+      - task: report-coverage
+
+  test:unit:
+    desc: Run unit tests
+    cmds:
+      - task: run-test
+        vars:
+          TEST_ARGS: [-coverprofile=coverage.out, -covermode=atomic, -short]
+
+      - task: report-coverage
+
+  test:e2e:
+    desc: Run end-to-end tests
+    cmd:
+      task: run-test
+      vars:
+        TEST_PATH: ./internal/e2e/...

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# SPDX-FileCopyrightText: Copyright © 2024 bomctl authors
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 # SPDX-FileName: .golangci.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
@@ -21,7 +21,6 @@
 
 run:
   concurrency: 6
-  go: 1.22.0
   timeout: 5m
 
 issues:
@@ -51,6 +50,7 @@ linters:
   enable:
     - asciicheck
     - bodyclose
+    - copyloopvar
     - cyclop
     - dogsled
     - dupl
@@ -59,7 +59,6 @@ linters:
     - errcheck
     - errorlint
     - exhaustive
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
@@ -95,13 +94,16 @@ linters:
     - noctx
     - nolintlint
     - paralleltest
+    - perfsprint
     - prealloc
     - predeclared
     - promlinter
+    - protogetter
     - revive
     - staticcheck
     - stylecheck
     - tagliatelle
+    - testifylint
     - testpackage
     - thelper
     - tparallel
@@ -109,6 +111,7 @@ linters:
     - unconvert
     - unparam
     - unused
+    - varnamelen
     - wastedassign
     - whitespace
     - wrapcheck
@@ -123,15 +126,8 @@ linters-settings:
     # https://golangci-lint.run/usage/linters/#exhaustive
     default-signifies-exhaustive: true
 
-  govet:
-    enable:
-      - fieldalignment
-
-  godox:
-    keywords:
-      - BUG
-      - FIXME
-      - HACK
+  funlen:
+    ignore-comments: true
 
   gci:
     sections:
@@ -180,16 +176,73 @@ linters-settings:
       - unnamedResult
       - unnecessaryBlock
 
+  godox:
+    keywords:
+      - BUG
+      - FIXME
+      - HACK
+
+  gosec:
+    excludes:
+      - G504 # Blocklisted import net/http/cgi: Go versions < 1.6.3 are vulnerable to Httpoxy attack: (CVE-2016-5386)
+
+  govet:
+    enable:
+      - fieldalignment
+
+  mnd:
+    ignored-functions:
+      - ^cobra\.[A-Za-z]+Args$
+
   nolintlint:
     allow-unused: false
     require-specific: true
 
   revive:
+    enable-all-rules: true
+
     rules:
+      - name: add-constant
+        exclude: [TEST]
+        arguments:
+          - maxLitCount: "5"
+            allowStrs: '""'
+            allowInts: 0,1,2
+            allowFloats: 0.0,0.,1.0,1.,2.0,2.
+            ignoreFuncs: os\.*,fmt\.*,make,viper\.*
+
+      # Handled by `gocognit` linter
+      - name: cognitive-complexity
+        disabled: true
+
+      - name: confusing-naming
+        exclude: [TEST]
+
+      # Handled by `cyclop` linter
+      - name: cyclomatic
+        disabled: true
+
+      - name: exported
+        arguments: [checkPrivateReceivers, sayRepetitiveInsteadOfStutters]
+
+      # Handled by `funlen` linter
+      - name: function-length
+        disabled: true
+
+      - name: line-length-limit
+        arguments: [120]
+
+      # Handled by `errcheck` linter
+      - name: unhandled-error
+        disabled: true
+
       - name: unused-parameter
-        severity: warning
-        disabled: false
-        exclude: [""]
         arguments:
           # Ignore all parameters beginning with "_"
           - allowRegex: ^_
+
+  testifylint:
+    enable-all: true
+
+  varnamelen:
+    ignore-names: [id]
