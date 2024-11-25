@@ -21,6 +21,7 @@ package git
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -28,7 +29,7 @@ import (
 
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
-	auth := &netutil.BasicAuth{Username: url.Username, Password: url.Password}
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
 
 	if opts.UseNetRC {
 		if err := auth.UseNetRC(url.Hostname); err != nil {
@@ -38,7 +39,7 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 
 	// Clone the repository into the temp directory
 	if err := client.cloneRepo(url, auth, opts.Options); err != nil {
-		return nil, fmt.Errorf("cloning Git repository: %w", err)
+		return nil, err
 	}
 
 	// Read the file specified in the URL fragment.
@@ -49,8 +50,8 @@ func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte
 
 	defer file.Close()
 
-	sbomData := []byte{}
-	if _, err := file.Read(sbomData); err != nil {
+	sbomData, err := io.ReadAll(file)
+	if err != nil {
 		return nil, fmt.Errorf("reading file %s: %w", url.Fragment, err)
 	}
 

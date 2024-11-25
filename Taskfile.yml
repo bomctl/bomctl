@@ -61,6 +61,15 @@ vars:
   YAML_FILES:
     sh: git ls-files '*.yml' '*.yaml'
 
+  # ANSI color escape codes
+  BOLD: \033[1m
+  CYAN: \033[38;5;51m
+  GREEN: \033[38;5;46m
+  ORANGE: \033[38;5;214m
+  YELLOW: \033[38;5;226m
+  RED: \033[38;5;196m
+  RESET: \033[0m
+
 tasks:
   default:
     silent: true
@@ -102,14 +111,57 @@ tasks:
       - task: lint:shell
       - task: lint:yaml
 
+  report-coverage:
+    silent: true
+    cmd: |
+      printf "{{.CYAN}}"
+      echo "+----------------------------------------------------------------------------------------+"
+      echo "|    COVERAGE REPORT                                                                     |"
+      echo "+----------------------------------------------------------------------------------------+"
+      printf "{{.RESET}}\n"
+
+      go tool cover -func=coverage.out |
+        awk -- '{
+          sub("github.com/bomctl/bomctl/", "", $1);
+          percent = +$3; sub("%", "", percent);
+          if (percent < 50.00) color = "{{.RED}}";
+          else if (percent < 80.00) color = "{{.ORANGE}}";
+          else if (percent < 100.00) color = "{{.YELLOW}}";
+          else color = "{{.GREEN}}";
+          fmtstr = $1 == "total:" ? "\n%s%s\t%s\t%s%s\n" : "%s%-48s %-32s %.1f%%%s\n";
+          printf fmtstr, color, $1, $2, $3, "{{.RESET}}"
+        }'
+
+  run-test:
+    silent: true
+    vars:
+      TEST_ARGS: '{{.TEST_ARGS | default list | join " "}}'
+      TEST_PATH: '{{.TEST_PATH | default "./..."}}'
+    cmds:
+      - cmd: printf "Running {{.CYAN}}go test -failfast -v {{.TEST_ARGS}} {{.TEST_PATH}}{{.RESET}}\n"
+      - cmd: go test -failfast -v {{.TEST_ARGS}} {{.TEST_PATH}}
+
   test:
     desc: Run all tests
-    cmd: go test -failfast -v -coverprofile=coverage.out -covermode=atomic ./...
+    cmds:
+      - task: run-test
+        vars:
+          TEST_ARGS: [-coverprofile=coverage.out, -covermode=atomic]
+
+      - task: report-coverage
 
   test:unit:
     desc: Run unit tests
-    cmd: go test -failfast -v -coverprofile=coverage.out -covermode=atomic -short ./...
+    cmds:
+      - task: run-test
+        vars:
+          TEST_ARGS: [-coverprofile=coverage.out, -covermode=atomic, -short]
+
+      - task: report-coverage
 
   test:e2e:
-    desc: Run unit tests
-    cmd: go test -failfast -v ./internal/e2e/...
+    desc: Run end-to-end tests
+    cmd:
+      task: run-test
+      vars:
+        TEST_PATH: ./internal/e2e/...

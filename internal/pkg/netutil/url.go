@@ -55,10 +55,10 @@ func (url *URL) String() string {
 
 	switch url.Scheme {
 	case "http", "https", "oci":
-		urlString += fmt.Sprintf("%s://", url.Scheme)
+		urlString += url.Scheme + "://"
 		pathSep = "/"
 	case "git", "ssh":
-		urlString += fmt.Sprintf("%s@", url.Scheme)
+		urlString += url.Scheme + "@"
 		pathSep = ":"
 	default:
 		pathSep = "/"

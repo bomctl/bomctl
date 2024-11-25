@@ -22,6 +22,7 @@ package outpututil
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -244,7 +245,7 @@ func newRow(doc *sbom.Document, backend *db.Backend) rowData {
 		id:       id,
 		alias:    alias,
 		version:  doc.GetMetadata().GetVersion(),
-		numNodes: fmt.Sprint(len(doc.GetNodeList().GetNodes())),
+		numNodes: strconv.Itoa(len(doc.GetNodeList().GetNodes())),
 	}
 }
 

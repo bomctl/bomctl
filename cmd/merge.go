@@ -28,14 +28,12 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const mergeMinArgs int = 2
-
 func mergeCmd() *cobra.Command {
 	opts := &options.MergeOptions{}
 
 	mergeCmd := &cobra.Command{
 		Use:   "merge [flags] DOCUMENT_ID...",
-		Args:  cobra.MinimumNArgs(mergeMinArgs),
+		Args:  cobra.MinimumNArgs(2),
 		Short: "Merge SBOM documents in local storage",
 		Long: fmt.Sprintf("%s%s%s",
 			"Merge SBOM documents in local storage. The leftmost specified document ID takes priority with the ",

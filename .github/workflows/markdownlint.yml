@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------
-# SPDX-FileCopyrightText: Copyright © 2024 The Protobom Authors
+# SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 # SPDX-FileName: .github/workflows/markdownlint.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
@@ -36,10 +36,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Run markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@db43aef879112c3119a410d69f66701e0d530809 # v17.0.0
+        uses: DavidAnson/markdownlint-cli2-action@eb5ca3ab411449c66620fe7f1b3c9e10547144b0 # v18.0.0
         with:
           config: .markdownlint.yml
           globs: "**/*.md"
