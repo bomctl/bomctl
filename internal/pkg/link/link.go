@@ -25,7 +25,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
-	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -36,16 +35,7 @@ import (
 const cyan = lipgloss.ANSIColor(38)
 
 func AddLink(backend *db.Backend, opts *options.LinkOptions) error {
-	document, err := backend.GetDocumentByIDOrAlias(opts.ToIDs[0])
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	if document == nil {
-		opts.Logger.Warn("Document not found", "id", opts.ToIDs[0])
-
-		return nil
-	}
+	var err error
 
 	switch {
 	case len(opts.DocumentIDs) > 0:
@@ -120,27 +110,13 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 }
 
 func RemoveLink(backend *db.Backend, opts *options.LinkOptions) error {
-	documents, err := backend.GetDocumentsByIDOrAlias(opts.ToIDs...)
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	documentUUIDs := sliceutil.Extract(documents, func(d *sbom.Document) string {
-		documentUUID, err := ent.GenerateUUID(d)
-		if err != nil {
-			opts.Logger.Warn("Error generating UUID for document", "id", d.GetMetadata().GetId(), "error", err)
-
-			return ""
-		}
-
-		return documentUUID.String()
-	})
+	var err error
 
 	switch {
 	case len(opts.DocumentIDs) > 0:
-		err = backend.RemoveDocumentAnnotations(opts.DocumentIDs[0], db.LinkToAnnotation, documentUUIDs...)
+		err = backend.RemoveDocumentAnnotations(opts.DocumentIDs[0], db.LinkToAnnotation, opts.ToIDs...)
 	case len(opts.NodeIDs) > 0:
-		err = backend.RemoveNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, documentUUIDs...)
+		err = backend.RemoveNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, opts.ToIDs...)
 	}
 
 	if err != nil {
