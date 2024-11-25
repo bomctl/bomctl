@@ -58,7 +58,7 @@ func importCmd() *cobra.Command {
 
 					opts.InputFiles = append(opts.InputFiles, file)
 
-					defer file.Close() //nolint:revive
+					defer file.Close() //revive:disable:defer
 				}
 			}
 

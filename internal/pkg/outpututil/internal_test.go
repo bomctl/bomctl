@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/netutil/auth.go
+// SPDX-FileName: internal/pkg/outpututil/internal_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,41 +17,10 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package netutil
+package outpututil
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-
-	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/jdx/go-netrc"
+var (
+	MatchesOriginFormat = matchesOriginFormat
+	CheckIfModified     = checkIfModified
+	WriteOriginStream   = writeOriginStream
 )
-
-type BasicAuth struct {
-	githttp.BasicAuth
-}
-
-func (auth *BasicAuth) UseNetRC(hostname string) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	authFile, err := netrc.Parse(filepath.Join(home, ".netrc"))
-	if err != nil {
-		return fmt.Errorf("failed to parse .netrc file: %w", err)
-	}
-
-	// Use credentials in .netrc if entry for the hostname is found
-	if machine := authFile.Machine(hostname); machine != nil {
-		auth.Username = machine.Get("login")
-		auth.Password = machine.Get("password")
-	}
-
-	return nil
-}
-
-func NewBasicAuth(username, password string) *BasicAuth {
-	return &BasicAuth{githttp.BasicAuth{Username: username, Password: password}}
-}
