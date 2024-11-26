@@ -21,9 +21,7 @@
 set -euo pipefail
 
 # go get github.com/bomctl/bomctl/internal/pkg
-go build -o bomctl .
+go build
 go mod tidy
 
-mkdir internal/pkg/fetch/fetch_test
-mv internal/pkg/fetch/fuzz.go internal/pkg/fetch/fetch_test/
-compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch/fetch_test/fetch_test FuzzFetch Fuzz
+compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch FuzzFetch FuzzFetch
