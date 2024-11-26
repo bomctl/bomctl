@@ -21,8 +21,6 @@ package fetch
 
 import (
 	"testing"
-
-	"github.com/bomctl/bomctl/internal/pkg/fetch"
 )
 
 func FuzzFetch(f *testing.F) {
