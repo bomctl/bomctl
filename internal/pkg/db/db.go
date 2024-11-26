@@ -65,7 +65,7 @@ type (
 	BackendKey struct{}
 
 	Option           func(*Backend)
-	AnnotationOption func() ent.Annotations
+	AnnotationOption func(*ent.BackendOptions)
 )
 
 var (
@@ -110,7 +110,9 @@ func NewBackend(opts ...Option) (*Backend, error) {
 // AddDocument adds the protobom Document to the database and annotates with given annotations.
 func (backend *Backend) AddDocument(sbomData []byte, annotations ...AnnotationOption) (*sbom.Document, error) {
 	sbomReader := reader.New()
-	antns := ent.Annotations{}
+	backendOpts := &ent.BackendOptions{
+		Annotations: ent.Annotations{},
+	}
 
 	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
 	if err != nil {
@@ -119,14 +121,12 @@ func (backend *Backend) AddDocument(sbomData []byte, annotations ...AnnotationOp
 
 	// Loop over the `annotations` slice and call each one
 	for _, fn := range annotations {
-		antns = append(antns, fn()...)
+		fn(backendOpts)
 	}
 
 	// Create ent.BackendOptions with the annotations slice.
 	opts := &storage.StoreOptions{
-		BackendOptions: &ent.BackendOptions{
-			Annotations: antns,
-		},
+		BackendOptions: backendOpts,
 	}
 
 	if err := backend.Store(document, opts); err != nil {
@@ -326,33 +326,33 @@ func (backend *Backend) validateNewAlias(alias string) (err error) {
 }
 
 func WithSourceDocumentAnnotations(sbomData []byte) AnnotationOption {
-	return func() ent.Annotations {
+	return func(backendOpts *ent.BackendOptions) {
 		hash := sha256.Sum256(sbomData)
 
-		return ent.Annotations{
-			{
+		backendOpts.Annotations = append(backendOpts.Annotations,
+			&ent.Annotation{
 				Name:     SourceDataAnnotation,
 				Value:    string(sbomData),
 				IsUnique: true,
 			},
-			{
+			&ent.Annotation{
 				Name:     SourceHashAnnotation,
 				Value:    string(hash[:]),
 				IsUnique: true,
 			},
-		}
+		)
 	}
 }
 
 func WithRevisedDocumentAnnotations(baseUUID uuid.UUID) AnnotationOption {
-	return func() ent.Annotations {
-		return ent.Annotations{
-			{
+	return func(backendOpts *ent.BackendOptions) {
+		backendOpts.Annotations = append(backendOpts.Annotations,
+			&ent.Annotation{
 				Name:     BaseDocumentAnnotation,
 				Value:    baseUUID.String(),
 				IsUnique: true,
 			},
-		}
+		)
 	}
 }
 
