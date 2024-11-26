@@ -21,7 +21,7 @@
 name: ClusterFuzzLite cron tasks
 on:
   schedule:
-    - cron: "0 0 * * *" # Once a day at midnight.
+    - cron: 0 0 * * * # Once a day at midnight.
 permissions: read-all
 jobs:
   Pruning:
@@ -38,7 +38,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fuzz-seconds: 600
-          mode: "prune"
+          mode: prune
           output-sarif: true
   Coverage:
     runs-on: ubuntu-latest
@@ -55,5 +55,5 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fuzz-seconds: 600
-          mode: "coverage"
-          sanitizer: "coverage"
+          mode: coverage
+          sanitizer: coverage

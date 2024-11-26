@@ -16,12 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------------
-
 ---
 name: ClusterFuzzLite batch fuzzing
 on:
   schedule:
-    - cron: "0 0/6 * * *"
+    - cron: 0 0/6 * * *
 permissions: read-all
 jobs:
   BatchFuzzing:
@@ -44,6 +43,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fuzz-seconds: 3600
-          mode: "batch"
+          mode: batch
           sanitizer: ${{ matrix.sanitizer }}
           output-sarif: true
