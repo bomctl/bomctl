@@ -17,18 +17,16 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package fetch_test
+package fetch
 
 import (
 	"testing"
-
-	"github.com/bomctl/bomctl/internal/pkg/fetch"
 )
 
 func FuzzFetch(f *testing.F) {
 	f.Add([]byte("https://raw.githubusercontent.com/bomctl/bomctl-playground/main/bomctl_bomctl_v0.3.0.cdx.json"))
 	f.Fuzz(func(t *testing.T, data []byte) {
-		_, err := fetch.Fetch(string(data), nil)
+		_, err := Fetch(string(data), nil)
 		if err == nil {
 			t.Errorf("ERROR:")
 		}
