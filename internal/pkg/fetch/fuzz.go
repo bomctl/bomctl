@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package cmd_test
+package fetch
 
 import (
 	"testing"
