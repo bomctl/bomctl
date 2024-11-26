@@ -25,7 +25,8 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
 )
 
-func FuzzMyAPI(f *testing.F) {
+func FuzzFetch(f *testing.F) {
+	f.Add([]byte("https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json"))
 	f.Fuzz(func(t *testing.T, data []byte) {
 		_, err := fetch.Fetch(string(data), nil)
 		if err == nil {
