@@ -32,6 +32,9 @@ issues:
         - gochecknoglobals
         - goconst
         - gocyclo
+    - path: fuzz_test\.go
+      linters:
+        - testpackage
 
   # Maximum issues count per one linter.
   # Set to 0 to disable.
