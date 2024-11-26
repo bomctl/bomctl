@@ -17,10 +17,12 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package fetch
+package fetch_test
 
 import (
 	"testing"
+
+	"github.com/bomctl/bomctl/internal/pkg/fetch"
 )
 
 func FuzzFetch(f *testing.F) {
