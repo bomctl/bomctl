@@ -23,4 +23,4 @@ set -euo pipefail
 # go get github.com/bomctl/bomctl/internal/pkg
 go build -o bomctl .
 
-compile_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch_test FuzzFetch Fuzz
+compile_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch/fetch_test FuzzFetch Fuzz
