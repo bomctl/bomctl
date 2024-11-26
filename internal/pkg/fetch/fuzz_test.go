@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: cmd/fuzz.go
+// SPDX-FileName: internal/pkg/fetch/fuzz_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,16 +17,18 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package fetch
+package fetch_test
 
 import (
 	"testing"
+
+	"github.com/bomctl/bomctl/internal/pkg/fetch"
 )
 
 func FuzzFetch(f *testing.F) {
-	f.Add([]byte("https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/bomctl_bomctl_v0.3.0.cdx.json"))
+	f.Add([]byte("https://raw.githubusercontent.com/bomctl/bomctl-playground/main/bomctl_bomctl_v0.3.0.cdx.json"))
 	f.Fuzz(func(t *testing.T, data []byte) {
-		_, err := Fetch(string(data), nil)
+		_, err := fetch.Fetch(string(data), nil)
 		if err == nil {
 			t.Errorf("ERROR:")
 		}
