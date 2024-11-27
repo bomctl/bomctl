@@ -29,11 +29,11 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/protobom/protobom/pkg/writer"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
 func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) error {
@@ -62,7 +62,7 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 	opts.Logger.Info("Writing document", "name", name)
 
 	// Write the file specified in the URL fragment.
-	if err := writer.New(writer.WithFormat(opts.Format)).WriteStream(document, file); err != nil {
+	if err := outpututil.WriteStream(document, opts.Format, opts.Options, file); err != nil {
 		return fmt.Errorf("failed to write file %s: %w", name, err)
 	}
 
