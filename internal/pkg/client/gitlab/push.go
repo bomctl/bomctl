@@ -31,6 +31,6 @@ func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
 	return nil
 }
 
-func (client *Client) Push(_pushURL string, _opts *options.PushOptions) error {
+func (*Client) Push(_pushURL string, _opts *options.PushOptions) error {
 	return nil
 }
