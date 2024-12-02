@@ -30,8 +30,9 @@ const testURL = "https://raw.githubusercontent.com/bomctl/bomctl-playground/main
 func FuzzFetch(f *testing.F) {
 	f.Add([]byte(testURL))
 
-	f.Fuzz(func(t *testing.T, data []byte, opts *options.FetchOptions) {
-		_, err := Fetch(string(data), opts)
+	f.Fuzz(func(t *testing.T, data []byte) {
+		opts := options.FetchOptions{}
+		_, err := Fetch(string(data), &opts)
 		if err == nil {
 			t.Errorf("%s", err)
 		}

@@ -26,7 +26,8 @@ import (
 )
 
 func FuzzImport(f *testing.F) {
-	f.Fuzz(func(t *testing.T, opts options.ImportOptions) {
+	f.Fuzz(func(t *testing.T) {
+		opts := options.ImportOptions{}
 		err := Import(&opts)
 
 		if err == nil {

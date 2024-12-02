@@ -30,8 +30,9 @@ const testID = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
 func FuzzExport(f *testing.F) {
 	f.Add([]byte(testID))
 
-	f.Fuzz(func(t *testing.T, id string, opts *options.ExportOptions) {
-		err := Export(id, opts)
+	f.Fuzz(func(t *testing.T, id string) {
+		opts := options.ExportOptions{}
+		err := Export(id, &opts)
 		if err == nil {
 			t.Errorf("%s", err)
 		}
