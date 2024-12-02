@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Build Fuzzers (${{ matrix.sanitizer }})
         id: build
-        uses: google/clusterfuzzlite/actions/build_fuzzers@v4
+        uses: google/clusterfuzzlite/actions/build_fuzzers@v3
         with:
           language: go
           github-token: ${{ secrets.GITHUB_TOKEN }}
