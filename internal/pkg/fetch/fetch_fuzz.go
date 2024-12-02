@@ -21,6 +21,8 @@ package fetch
 
 import (
 	"testing"
+
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const testURL = "https://raw.githubusercontent.com/bomctl/bomctl-playground/main/bomctl_bomctl_v0.3.0.cdx.json"
@@ -29,7 +31,8 @@ func FuzzFetch(f *testing.F) {
 	f.Add([]byte(testURL))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		_, err := Fetch(string(data), nil)
+		opts := options.FetchOptions{}
+		_, err := Fetch(string(data), &opts)
 
 		if err == nil {
 			t.Errorf("%s", err)
