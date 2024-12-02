@@ -20,6 +20,7 @@
 package fetch
 
 import (
+	"context"
 	"testing"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -31,8 +32,9 @@ func FuzzFetch(f *testing.F) {
 	f.Add([]byte(testURL))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		// ctx := context.Context{}
+		ctx := context.Background()
 		opts := options.Options{}
+		opts.WithContext(ctx)
 		fOpts := options.FetchOptions{Options: &opts}
 		_, err := Fetch(string(data), &fOpts)
 
