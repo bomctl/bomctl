@@ -33,7 +33,7 @@ jobs:
       fail-fast: false
       matrix:
         sanitizer:
-          - undefined
+          - address
     steps:
       - name: Build Fuzzers (${{ matrix.sanitizer }})
         id: build
@@ -41,7 +41,7 @@ jobs:
         with:
           language: go
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          sanitizer: undefined
+          sanitizer: ${{ matrix.sanitizer }}
       - name: Run Fuzzers (${{ matrix.sanitizer }})
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
@@ -49,7 +49,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fuzz-seconds: 100
           mode: code-change
-          sanitizer: undefined
+          sanitizer: ${{ matrix.sanitizer }}
           output-sarif: true
           parallel-fuzzing: true
           dry-run: true
