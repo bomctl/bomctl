@@ -64,8 +64,7 @@ type (
 
 	BackendKey struct{}
 
-	Option           func(*Backend)
-	AnnotationOption func(*ent.BackendOptions)
+	Option func(*Backend) error
 )
 
 var (
@@ -89,7 +88,10 @@ func NewBackend(opts ...Option) (*Backend, error) {
 	backend := &Backend{Backend: ent.NewBackend(), Logger: logger.New("db")}
 
 	for _, opt := range opts {
-		opt(backend)
+		err := opt(backend)
+		if err != nil {
+			return nil, fmt.Errorf("failed to process backend options: %w", err)
+		}
 	}
 
 	if backend.Verbosity >= EntDebugLevel {
@@ -108,11 +110,8 @@ func NewBackend(opts ...Option) (*Backend, error) {
 }
 
 // AddDocument adds the protobom Document to the database and annotates with given annotations.
-func (backend *Backend) AddDocument(sbomData []byte, annotations ...AnnotationOption) (*sbom.Document, error) {
+func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sbom.Document, error) {
 	sbomReader := reader.New()
-	backendOpts := &ent.BackendOptions{
-		Annotations: ent.Annotations{},
-	}
 
 	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
 	if err != nil {
@@ -121,43 +120,25 @@ func (backend *Backend) AddDocument(sbomData []byte, annotations ...AnnotationOp
 
 	// Loop over the `annotations` slice and call each one
 	for _, fn := range annotations {
-		fn(backendOpts)
+		err := fn(backend)
+		if err != nil {
+			return nil, fmt.Errorf("handling annotations: %w", err)
+		}
 	}
 
 	// Create ent.BackendOptions with the annotations slice.
 	opts := &storage.StoreOptions{
-		BackendOptions: backendOpts,
+		BackendOptions: backend.Options,
 	}
 
 	if err := backend.Store(document, opts); err != nil {
 		return nil, fmt.Errorf("storing document %s: %w", document.GetMetadata().GetId(), err)
 	}
 
+	// clear out Annotations for next run
+	backend.Options.Annotations = nil
+
 	return document, nil
-}
-
-// AddRevisedDocument adds the protobom Document to the database and annotates with its base document ID and hash.
-func (backend *Backend) AddRevisedDocument(base *sbom.Document, revisedBytes []byte) (*sbom.Document, error) {
-	baseUUID, err := ent.GenerateUUID(base)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-
-	revised, err := backend.AddDocument(revisedBytes, WithRevisedDocumentAnnotations(baseUUID))
-	if err != nil {
-		return nil, fmt.Errorf("storing document %s: %w", revised.GetMetadata().GetId(), err)
-	}
-
-	if err := backend.UpdateAliasReference(base, revised); err != nil {
-		return nil, fmt.Errorf("updating alias for document %s: %w", revised.GetMetadata().GetId(), err)
-	}
-
-	return revised, nil
-}
-
-// AddSourceDocument adds the protobom Document to the database and annotates with its source data, and hash.
-func (backend *Backend) AddSourceDocument(sbomData []byte) (*sbom.Document, error) {
-	return backend.AddDocument(sbomData, WithSourceDocumentAnnotations(sbomData))
 }
 
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
@@ -284,30 +265,6 @@ func (backend *Backend) SetAlias(documentID, alias string, force bool) (err erro
 	return nil
 }
 
-func (backend *Backend) UpdateAliasReference(base, revised *sbom.Document) error {
-	baseID := base.GetMetadata().GetId()
-
-	docAlias, err := backend.GetDocumentUniqueAnnotation(baseID, AliasAnnotation)
-	if err != nil {
-		return fmt.Errorf("failed checking for existing alias: %w", err)
-	}
-
-	// If parent has existing alias, move to child.
-	if docAlias != "" {
-		// Remove alias from parent document.
-		if err := backend.RemoveDocumentAnnotations(baseID, AliasAnnotation, docAlias); err != nil {
-			return fmt.Errorf("failed to remove existing alias: %w", err)
-		}
-
-		// Set alias on child document.
-		if err := backend.SetAlias(revised.GetMetadata().GetId(), docAlias, false); err != nil {
-			return fmt.Errorf("failed to set alias: %w", err)
-		}
-	}
-
-	return nil
-}
-
 func (backend *Backend) validateNewAlias(alias string) (err error) {
 	if isEmptyOrWhitespace := regexp.MustCompile(`^\s*$`).MatchString(alias); isEmptyOrWhitespace {
 		return errInvalidAlias
@@ -325,47 +282,88 @@ func (backend *Backend) validateNewAlias(alias string) (err error) {
 	return err
 }
 
-func WithSourceDocumentAnnotations(sbomData []byte) AnnotationOption {
-	return func(backendOpts *ent.BackendOptions) {
+func WithSourceDocumentAnnotations(sbomData []byte) Option {
+	return func(backend *Backend) error {
 		hash := sha256.Sum256(sbomData)
 
-		backendOpts.Annotations = append(backendOpts.Annotations,
+		backend.Options.Annotations = append(backend.Options.Annotations,
 			&ent.Annotation{
-				Name:     SourceDataAnnotation,
-				Value:    string(sbomData),
-				IsUnique: true,
+				DocumentID: uuid.Nil,
+				Name:       SourceDataAnnotation,
+				Value:      string(sbomData),
+				IsUnique:   true,
 			},
 			&ent.Annotation{
-				Name:     SourceHashAnnotation,
-				Value:    string(hash[:]),
-				IsUnique: true,
+				DocumentID: uuid.Nil,
+				Name:       SourceHashAnnotation,
+				Value:      string(hash[:]),
+				IsUnique:   true,
 			},
 		)
+
+		return nil
 	}
 }
 
-func WithRevisedDocumentAnnotations(baseUUID uuid.UUID) AnnotationOption {
-	return func(backendOpts *ent.BackendOptions) {
-		backendOpts.Annotations = append(backendOpts.Annotations,
+func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
+	return func(backend *Backend) error {
+		baseID := base.GetMetadata().GetId()
+
+		baseUUID, err := ent.GenerateUUID(base)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		backend.Options.Annotations = append(backend.Options.Annotations,
 			&ent.Annotation{
-				Name:     BaseDocumentAnnotation,
-				Value:    baseUUID.String(),
-				IsUnique: true,
+				DocumentID: uuid.Nil,
+				Name:       BaseDocumentAnnotation,
+				Value:      baseUUID.String(),
+				IsUnique:   true,
 			},
 		)
+
+		docAlias, err := backend.GetDocumentUniqueAnnotation(baseID, AliasAnnotation)
+		if err != nil {
+			return fmt.Errorf("failed checking for existing alias: %w", err)
+		}
+
+		// If parent has existing alias, move to child.
+		if docAlias != "" {
+			// Remove alias from parent document.
+			if err := backend.RemoveDocumentAnnotations(baseID, AliasAnnotation, docAlias); err != nil {
+				return fmt.Errorf("failed to remove existing alias: %w", err)
+			}
+
+			// Add Alias Annotation to new document
+			backend.Options.Annotations = append(backend.Options.Annotations,
+				&ent.Annotation{
+					DocumentID: uuid.Nil,
+					Name:       AliasAnnotation,
+					Value:      docAlias,
+					IsUnique:   true,
+				},
+			)
+		}
+
+		return nil
 	}
 }
 
 // WithDatabaseFile sets the database file for the backend.
 func WithDatabaseFile(file string) Option {
-	return func(backend *Backend) {
+	return func(backend *Backend) error {
 		backend.Backend.Options.DatabaseFile = file
+
+		return nil
 	}
 }
 
 // WithVerbosity sets the SQL debugging level for the backend.
 func WithVerbosity(verbosity int) Option {
-	return func(backend *Backend) {
+	return func(backend *Backend) error {
 		backend.Verbosity = verbosity
+
+		return nil
 	}
 }

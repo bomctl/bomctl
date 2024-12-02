@@ -54,7 +54,7 @@ func saveDocument(backend *db.Backend, documentFile *os.File, alias string, opts
 		return fmt.Errorf("failed to read from %s: %w", documentFile.Name(), err)
 	}
 
-	document, err := backend.AddSourceDocument(data)
+	document, err := backend.AddDocument(data, db.WithSourceDocumentAnnotations(data))
 	if err != nil {
 		return fmt.Errorf("failed to store document: %w", err)
 	}

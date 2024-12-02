@@ -138,7 +138,7 @@ func getRefFile(parentFile *os.File) (*os.File, error) {
 
 func saveDocument(data []byte, backend *db.Backend, opts *options.FetchOptions) (*sbom.Document, error) {
 	// Insert fetched document data into database.
-	document, err := backend.AddSourceDocument(data)
+	document, err := backend.AddDocument(data, db.WithSourceDocumentAnnotations(data))
 	if err != nil {
 		return nil, fmt.Errorf("adding document: %w", err)
 	}

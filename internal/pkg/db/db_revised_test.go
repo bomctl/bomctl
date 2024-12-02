@@ -50,6 +50,7 @@ func (dbrs *dbrSuite) TearDownSubTest() {
 
 func (dbrs *dbrSuite) TestBackend_AddDocumentRevision() {
 	for _, data := range []struct {
+		prep     func()
 		name     string
 		baseID   string
 		alias    string
@@ -57,18 +58,34 @@ func (dbrs *dbrSuite) TestBackend_AddDocumentRevision() {
 	}{
 		{
 			name:     "existing alias on base doc",
+			prep:     func() {},
 			baseID:   "8daeb29e-8655-fae1-b792-78b998823fc6",
 			alias:    "cdx",
 			errorMsg: "",
 		},
+		{
+			name: "no alias on base doc",
+			prep: func() {
+				err := dbrs.Backend.RemoveDocumentAnnotations(
+					dbrs.documentInfo[0].Document.GetMetadata().GetId(),
+					db.AliasAnnotation)
+				dbrs.Require().NoError(err)
+			},
+			baseID:   "8daeb29e-8655-fae1-b792-78b998823fc6",
+			alias:    "",
+			errorMsg: "",
+		},
 	} {
 		dbrs.Run(data.name, func() {
+			docContent := dbrs.documentInfo[1].Content
+			baseDoc := dbrs.documentInfo[0].Document
+
+			data.prep()
+
 			err := dbrs.Backend.ClearDocumentAnnotations(dbrs.documentInfo[1].Document.GetMetadata().GetId())
 			dbrs.Require().NoError(err)
 
-			docContent := dbrs.documentInfo[1].Content
-
-			newDoc, err := dbrs.Backend.AddRevisedDocument(dbrs.documentInfo[0].Document, docContent)
+			newDoc, err := dbrs.Backend.AddDocument(docContent, db.WithRevisedDocumentAnnotations(baseDoc))
 
 			if data.errorMsg == "" {
 				dbrs.Require().NoError(err)
@@ -91,61 +108,6 @@ func (dbrs *dbrSuite) TestBackend_AddDocumentRevision() {
 				soureData, err := dbrs.Backend.GetDocumentUniqueAnnotation(newID, db.SourceDataAnnotation)
 				dbrs.Require().NoError(err)
 				dbrs.Require().Equal("", soureData)
-			} else {
-				dbrs.Require().EqualError(err, data.errorMsg)
-			}
-		})
-	}
-}
-
-func (dbrs *dbrSuite) TestBackend_UpdateAliasReference() {
-	baseID := dbrs.documentInfo[1].Document.GetMetadata().GetId()
-	revisedID := dbrs.documentInfo[0].Document.GetMetadata().GetId()
-
-	for _, data := range []struct {
-		prep     func()
-		cleanup  func()
-		name     string
-		alias    string
-		errorMsg string
-	}{
-		{
-			name: "No existing alias on base doc",
-			prep: func() {
-				err := dbrs.Backend.RemoveDocumentAnnotations(revisedID, db.AliasAnnotation)
-				dbrs.Require().NoError(err)
-
-				err = dbrs.Backend.RemoveDocumentAnnotations(baseID, db.AliasAnnotation)
-				dbrs.Require().NoError(err)
-			},
-			alias:    "",
-			errorMsg: "",
-		},
-		{
-			name: "existing alias on base doc",
-			prep: func() {
-				err := dbrs.Backend.RemoveDocumentAnnotations(revisedID, db.AliasAnnotation)
-				dbrs.Require().NoError(err)
-			},
-			alias:    "spdx",
-			errorMsg: "",
-		},
-		{
-			name: "existing alias on revised doc",
-			prep: func() {
-			},
-			errorMsg: "failed to set alias: the document already has an alias",
-		},
-	} {
-		dbrs.Run(data.name, func() {
-			data.prep()
-
-			err := dbrs.Backend.UpdateAliasReference(dbrs.documentInfo[1].Document, dbrs.documentInfo[0].Document)
-			if data.errorMsg == "" {
-				dbrs.Require().NoError(err)
-				docAlias, err := dbrs.Backend.GetDocumentUniqueAnnotation(revisedID, db.AliasAnnotation)
-				dbrs.Require().NoError(err)
-				dbrs.Require().Equal(data.alias, docAlias)
 			} else {
 				dbrs.Require().EqualError(err, data.errorMsg)
 			}
