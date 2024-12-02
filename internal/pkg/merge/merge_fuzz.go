@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/import/import_fuzz.go
+// SPDX-FileName: internal/pkg/merge/merge_fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package imprt
+package merge
 
 import (
 	"testing"
@@ -25,9 +25,11 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func FuzzImport(f *testing.F) {
-	f.Fuzz(func(t *testing.T, opts options.ImportOptions) {
-		err := Import(&opts)
+func FuzzMerge(f *testing.F) {
+	f.Fuzz(func(t *testing.T, id1, id2 string) {
+		ids := []string{id1, id2}
+		opts := options.MergeOptions{}
+		_, err := Merge(ids, &opts)
 
 		if err == nil {
 			t.Errorf("ERROR:")
