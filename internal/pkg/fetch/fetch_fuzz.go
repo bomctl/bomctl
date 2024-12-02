@@ -31,8 +31,10 @@ func FuzzFetch(f *testing.F) {
 	f.Add([]byte(testURL))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		opts := options.FetchOptions{}
-		_, err := Fetch(string(data), &opts)
+		// ctx := context.Context{}
+		opts := options.Options{}
+		fOpts := options.FetchOptions{Options: &opts}
+		_, err := Fetch(string(data), &fOpts)
 
 		if err == nil {
 			t.Errorf("%s", err)
