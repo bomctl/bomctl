@@ -25,14 +25,20 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
+const (
+	id1 = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
+	id2 = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5dc"
+)
+
 func FuzzMerge(f *testing.F) {
+	f.Add(id1, id2)
 	f.Fuzz(func(t *testing.T, id1, id2 string) {
 		ids := []string{id1, id2}
 		opts := options.MergeOptions{}
 		_, err := Merge(ids, &opts)
 
 		if err == nil {
-			t.Errorf("ERROR:")
+			t.Errorf("%s", err)
 		}
 	})
 }

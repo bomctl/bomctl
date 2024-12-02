@@ -28,3 +28,4 @@ compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch FuzzFetch F
 compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/export FuzzExport FuzzExport
 # compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/import FuzzImport FuzzImport
 compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/merge FuzzMerge FuzzMerge
+compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/push FuzzPush FuzzPush

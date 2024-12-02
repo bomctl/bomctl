@@ -33,7 +33,7 @@ func FuzzExport(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id string, opts *options.ExportOptions) {
 		err := Export(id, opts)
 		if err == nil {
-			t.Errorf("ERROR:")
+			t.Errorf("%s", err)
 		}
 	})
 }

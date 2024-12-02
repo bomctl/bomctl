@@ -33,7 +33,7 @@ func FuzzFetch(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte, opts *options.FetchOptions) {
 		_, err := Fetch(string(data), opts)
 		if err == nil {
-			t.Errorf("ERROR:")
+			t.Errorf("%s", err)
 		}
 	})
 }

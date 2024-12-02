@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/import/import_fuzz.go
+// SPDX-FileName: internal/pkg/push/push_fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package imprt
+package push
 
 import (
 	"testing"
@@ -25,9 +25,17 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func FuzzImport(f *testing.F) {
-	f.Fuzz(func(t *testing.T, opts options.ImportOptions) {
-		err := Import(&opts)
+const (
+	id      = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
+	pushURL = "test.com"
+)
+
+func FuzzPush(f *testing.F) {
+	f.Add(id, pushURL)
+
+	f.Fuzz(func(t *testing.T, id, pushURL string) {
+		opts := options.PushOptions{}
+		err := Push(id, pushURL, &opts)
 
 		if err == nil {
 			t.Errorf("%s", err)
