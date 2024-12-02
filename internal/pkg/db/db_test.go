@@ -38,7 +38,7 @@ type dbSuite struct {
 	documentInfo []testutil.DocumentInfo
 }
 
-func (dbs *dbSuite) SetupSuite() {
+func (dbs *dbSuite) SetupTest() {
 	var err error
 
 	dbs.Backend, err = testutil.NewTestBackend()
@@ -52,8 +52,75 @@ func (dbs *dbSuite) SetupSuite() {
 	}
 }
 
-func (dbs *dbSuite) TearDownSuite() {
+func (dbs *dbSuite) TearDownTest() {
 	dbs.Backend.CloseClient()
+}
+
+func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
+	for _, data := range []struct {
+		prep     func()
+		name     string
+		baseID   string
+		alias    string
+		errorMsg string
+	}{
+		{
+			name:     "existing alias on base doc",
+			prep:     func() {},
+			baseID:   "8daeb29e-8655-fae1-b792-78b998823fc6",
+			alias:    "cdx",
+			errorMsg: "",
+		},
+		{
+			name: "no alias on base doc",
+			prep: func() {
+				err := dbs.Backend.RemoveDocumentAnnotations(
+					dbs.documentInfo[0].Document.GetMetadata().GetId(),
+					db.AliasAnnotation)
+				dbs.Require().NoError(err)
+			},
+			baseID:   "8daeb29e-8655-fae1-b792-78b998823fc6",
+			alias:    "",
+			errorMsg: "",
+		},
+	} {
+		dbs.Run(data.name, func() {
+			docContent := dbs.documentInfo[1].Content
+			baseDoc := dbs.documentInfo[0].Document
+
+			data.prep()
+
+			err := dbs.Backend.ClearDocumentAnnotations(dbs.documentInfo[1].Document.GetMetadata().GetId())
+			dbs.Require().NoError(err)
+
+			newDoc, err := dbs.Backend.AddDocument(docContent, db.WithRevisedDocumentAnnotations(baseDoc))
+
+			if data.errorMsg == "" {
+				dbs.Require().NoError(err)
+
+				newID := newDoc.GetMetadata().GetId()
+				baseDocID := dbs.documentInfo[0].Document.GetMetadata().GetId()
+
+				baseID, err := dbs.Backend.GetDocumentUniqueAnnotation(newID, db.BaseDocumentAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal(data.baseID, baseID)
+
+				alias, err := dbs.Backend.GetDocumentUniqueAnnotation(newID, db.AliasAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal(data.alias, alias)
+
+				alias, err = dbs.Backend.GetDocumentUniqueAnnotation(baseDocID, db.AliasAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal("", alias)
+
+				srcData, err := dbs.Backend.GetDocumentUniqueAnnotation(newID, db.SourceDataAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal("", srcData)
+			} else {
+				dbs.Require().EqualError(err, data.errorMsg)
+			}
+		})
+	}
 }
 
 func (dbs *dbSuite) TestBackend_GetDocumentByID() {
