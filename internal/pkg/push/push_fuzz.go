@@ -20,7 +20,10 @@
 package push
 
 import (
+	"context"
 	"testing"
+
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
@@ -32,7 +35,12 @@ func FuzzPush(f *testing.F) {
 	f.Add(id, pushURL)
 
 	f.Fuzz(func(t *testing.T, id, pushURL string) {
-		err := Push(id, pushURL, nil)
+		ctx := context.Background()
+		opts := options.Options{}
+		opts.WithContext(ctx)
+		pOpts := options.PushOptions{Options: &opts}
+
+		err := Push(id, pushURL, &pOpts)
 
 		if err == nil {
 			t.Errorf("%s", err)

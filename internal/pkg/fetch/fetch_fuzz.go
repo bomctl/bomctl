@@ -36,6 +36,7 @@ func FuzzFetch(f *testing.F) {
 		opts := options.Options{}
 		opts.WithContext(ctx)
 		fOpts := options.FetchOptions{Options: &opts}
+
 		_, err := Fetch(string(data), &fOpts)
 
 		if err == nil {

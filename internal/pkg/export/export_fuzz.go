@@ -36,6 +36,7 @@ func FuzzExport(f *testing.F) {
 		opts := options.Options{}
 		opts.WithContext(ctx)
 		eOpts := options.ExportOptions{Options: &opts}
+
 		err := Export(id, &eOpts)
 
 		if err == nil {

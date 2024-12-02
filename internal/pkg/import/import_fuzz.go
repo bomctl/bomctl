@@ -20,12 +20,20 @@
 package imprt
 
 import (
+	"context"
 	"testing"
+
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 func FuzzImport(f *testing.F) {
 	f.Fuzz(func(t *testing.T) {
-		err := Import(nil)
+		ctx := context.Background()
+		opts := options.Options{}
+		opts.WithContext(ctx)
+		iOpts := options.ImportOptions{Options: &opts}
+
+		err := Import(&iOpts)
 
 		if err == nil {
 			t.Errorf("%s", err)
