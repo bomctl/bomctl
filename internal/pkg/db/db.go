@@ -111,6 +111,11 @@ func NewBackend(opts ...Option) (*Backend, error) {
 
 // AddDocument adds the protobom Document to the database and annotates with given annotations.
 func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sbom.Document, error) {
+	// defer clearing annotations for next run
+	defer func() {
+		backend.Options.Annotations = nil
+	}()
+
 	sbomReader := reader.New()
 
 	document, err := sbomReader.ParseStream(bytes.NewReader(sbomData))
@@ -134,9 +139,6 @@ func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sb
 	if err := backend.Store(document, opts); err != nil {
 		return nil, fmt.Errorf("storing document %s: %w", document.GetMetadata().GetId(), err)
 	}
-
-	// clear out Annotations for next run
-	backend.Options.Annotations = nil
 
 	return document, nil
 }
