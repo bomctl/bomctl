@@ -1,9 +1,9 @@
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-# SPDX-FileName: .github/workflows/cflite-pr.yaml
+# SPDX-FileName: .github/workflows/cflite-batch.yml
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,20 +15,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 ---
-name: ClusterFuzzLite PR fuzzing
+name: ClusterFuzzLite batch fuzzing
 on:
-  pull_request:
-    paths:
-      - "**"
+  schedule:
+    - cron: 0 0/6 * * * # Every 6th hour
 permissions: read-all
 jobs:
-  PR:
+  BatchFuzzing:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}
-      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -40,16 +36,13 @@ jobs:
         uses: google/clusterfuzzlite/actions/build_fuzzers@v1
         with:
           language: go
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           sanitizer: ${{ matrix.sanitizer }}
       - name: Run Fuzzers (${{ matrix.sanitizer }})
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          fuzz-seconds: 300
-          mode: code-change
+          fuzz-seconds: 3600
+          mode: batch
           sanitizer: ${{ matrix.sanitizer }}
           output-sarif: true
-          parallel-fuzzing: true
-          dry-run: true
