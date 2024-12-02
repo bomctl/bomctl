@@ -23,6 +23,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -36,7 +37,8 @@ func FuzzPush(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, id, pushURL string) {
 		ctx := context.Background()
-		opts := options.Options{}
+		log := logger.New("")
+		opts := options.Options{Logger: log}
 		opts.WithContext(ctx)
 		pOpts := options.PushOptions{Options: &opts}
 
