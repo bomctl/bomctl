@@ -109,7 +109,7 @@ func NewBackend(opts ...Option) (*Backend, error) {
 	return backend, nil
 }
 
-// AddDocument adds the protobom Document to the database and annotates with given annotations.
+// AddDocument adds the protobom document to the database and annotates with given annotations.
 func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sbom.Document, error) {
 	// defer clearing annotations for next run
 	defer func() {
@@ -127,11 +127,11 @@ func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sb
 	for _, fn := range annotations {
 		err := fn(backend)
 		if err != nil {
-			return nil, fmt.Errorf("handling annotations: %w", err)
+			return nil, fmt.Errorf("handling document annotations: %w", err)
 		}
 	}
 
-	// Create ent.BackendOptions with the annotations slice.
+	// Create StoreOptions with the populated backend options struct.
 	opts := &storage.StoreOptions{
 		BackendOptions: backend.Options,
 	}
@@ -330,14 +330,14 @@ func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
 			return fmt.Errorf("failed checking for existing alias: %w", err)
 		}
 
-		// If parent has existing alias, move to child.
+		// If base doc has existing alias, move to revised doc.
 		if docAlias != "" {
-			// Remove alias from parent document.
+			// Remove alias from base document.
 			if err := backend.RemoveDocumentAnnotations(baseID, AliasAnnotation, docAlias); err != nil {
 				return fmt.Errorf("failed to remove existing alias: %w", err)
 			}
 
-			// Add Alias Annotation to new document
+			// Add AliasAnnotation to revised document
 			backend.Options.Annotations = append(backend.Options.Annotations,
 				&ent.Annotation{
 					DocumentID: uuid.Nil,
