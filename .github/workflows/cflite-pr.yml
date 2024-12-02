@@ -18,13 +18,17 @@
 # ------------------------------------------------------------------------
 ---
 name: ClusterFuzzLite PR fuzzing
+
 on:
   pull_request:
     paths:
       - "**"
-permissions: read-all
+
+permissions:
+  contents: read
+
 jobs:
-  PR:
+  pr:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}

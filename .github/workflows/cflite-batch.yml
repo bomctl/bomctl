@@ -18,12 +18,16 @@
 # -----------------------------------------------------------------------------
 ---
 name: ClusterFuzzLite batch fuzzing
+
 on:
   schedule:
     - cron: 0 0/6 * * * # Every 6th hour
-permissions: read-all
+
+permissions:
+  contents: read
+
 jobs:
-  BatchFuzzing:
+  batch-fuzzing:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

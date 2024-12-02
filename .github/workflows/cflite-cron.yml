@@ -18,12 +18,16 @@
 # -----------------------------------------------------------------------------
 ---
 name: ClusterFuzzLite cron tasks
+
 on:
   schedule:
     - cron: 0 0 * * * # Once a day at midnight.
-permissions: read-all
+
+permissions:
+  contents: read
+
 jobs:
-  Pruning:
+  pruning:
     runs-on: ubuntu-latest
     steps:
       - name: Build Fuzzers
@@ -39,7 +43,7 @@ jobs:
           fuzz-seconds: 600
           mode: prune
           output-sarif: true
-  Coverage:
+  coverage:
     runs-on: ubuntu-latest
     steps:
       - name: Build Fuzzers
