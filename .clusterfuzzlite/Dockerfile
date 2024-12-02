@@ -26,5 +26,4 @@ COPY . $SRC/bomctl/
 COPY .clusterfuzzlite/build.sh $SRC/build.sh
 
 WORKDIR $SRC/bomctl
-RUN ls -al \
-  && ls -al $SRC/bomctl/
+RUN ls -al $SRC/bomctl/
