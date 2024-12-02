@@ -109,9 +109,9 @@ func NewBackend(opts ...Option) (*Backend, error) {
 	return backend, nil
 }
 
-// AddDocument adds the protobom document to the database and annotates with given annotations.
-func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sbom.Document, error) {
-	// defer clearing annotations for next run
+// AddDocument adds the protobom document to the database and applies given backendOpts.
+func (backend *Backend) AddDocument(sbomData []byte, backendOpts ...Option) (*sbom.Document, error) {
+	// Clear annotations after adding document.
 	defer func() {
 		backend.Options.Annotations = nil
 	}()
@@ -123,8 +123,8 @@ func (backend *Backend) AddDocument(sbomData []byte, annotations ...Option) (*sb
 		return nil, fmt.Errorf("parsing SBOM data: %w", err)
 	}
 
-	// Loop over the `annotations` slice and call each one
-	for _, fn := range annotations {
+	// Collect backend options by calling associated functions.
+	for _, fn := range backendOpts {
 		err := fn(backend)
 		if err != nil {
 			return nil, fmt.Errorf("handling document annotations: %w", err)

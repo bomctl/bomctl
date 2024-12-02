@@ -105,9 +105,9 @@ func (dbrs *dbrSuite) TestBackend_AddDocumentRevision() {
 				dbrs.Require().NoError(err)
 				dbrs.Require().Equal("", alias)
 
-				soureData, err := dbrs.Backend.GetDocumentUniqueAnnotation(newID, db.SourceDataAnnotation)
+				srcData, err := dbrs.Backend.GetDocumentUniqueAnnotation(newID, db.SourceDataAnnotation)
 				dbrs.Require().NoError(err)
-				dbrs.Require().Equal("", soureData)
+				dbrs.Require().Equal("", srcData)
 			} else {
 				dbrs.Require().EqualError(err, data.errorMsg)
 			}
