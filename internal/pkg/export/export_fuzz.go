@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/fetch_fuzz.go
+// SPDX-FileName: internal/pkg/export/export_fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package fetch
+package export
 
 import (
 	"testing"
@@ -25,13 +25,13 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const testURL = "https://raw.githubusercontent.com/bomctl/bomctl-playground/main/bomctl_bomctl_v0.3.0.cdx.json"
+const testID = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
 
-func FuzzFetch(f *testing.F) {
-	f.Add([]byte(testURL))
+func FuzzExport(f *testing.F) {
+	f.Add([]byte(testID))
 
-	f.Fuzz(func(t *testing.T, data []byte, opts *options.FetchOptions) {
-		_, err := Fetch(string(data), opts)
+	f.Fuzz(func(t *testing.T, id string, opts *options.ExportOptions) {
+		err := Export(id, opts)
 		if err == nil {
 			t.Errorf("ERROR:")
 		}
