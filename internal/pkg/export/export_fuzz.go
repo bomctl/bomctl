@@ -21,8 +21,6 @@ package export
 
 import (
 	"testing"
-
-	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const testID = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
@@ -31,8 +29,8 @@ func FuzzExport(f *testing.F) {
 	f.Add([]byte(testID))
 
 	f.Fuzz(func(t *testing.T, id string) {
-		opts := options.ExportOptions{}
-		err := Export(id, &opts)
+		err := Export(id, nil)
+
 		if err == nil {
 			t.Errorf("%s", err)
 		}

@@ -21,8 +21,6 @@ package merge
 
 import (
 	"testing"
-
-	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const (
@@ -34,8 +32,7 @@ func FuzzMerge(f *testing.F) {
 	f.Add(id1, id2)
 	f.Fuzz(func(t *testing.T, id1, id2 string) {
 		ids := []string{id1, id2}
-		opts := options.MergeOptions{}
-		_, err := Merge(ids, &opts)
+		_, err := Merge(ids, nil)
 
 		if err == nil {
 			t.Errorf("%s", err)

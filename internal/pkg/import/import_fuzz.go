@@ -21,14 +21,11 @@ package imprt
 
 import (
 	"testing"
-
-	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 func FuzzImport(f *testing.F) {
 	f.Fuzz(func(t *testing.T) {
-		opts := options.ImportOptions{}
-		err := Import(&opts)
+		err := Import(nil)
 
 		if err == nil {
 			t.Errorf("%s", err)
