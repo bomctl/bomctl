@@ -151,8 +151,8 @@ github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRI
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/protobom/protobom v0.5.0 h1:jJYqGpdHq99zwh0/n1SOPl1aickCBZdA8pHS9V/f+XQ=
 github.com/protobom/protobom v0.5.0/go.mod h1:HL47tggz7SXYXgNm3WjQQrWB6iOirYnrATsXAEyTUkI=
-github.com/protobom/storage v0.1.6-0.20241119201645-3bdeec73f95d h1:hvCfabf4pbbdvCbL+GKxN5PHRS4VKcjfUV2w3iGJSto=
-github.com/protobom/storage v0.1.6-0.20241119201645-3bdeec73f95d/go.mod h1:P5b3FGbQG8loixD6V0IkwBSZGFOwF1OHdPd5YtjlqeY=
+github.com/protobom/storage v0.1.6-0.20241129174503-9c27b6bd9961 h1:yFgJCixC2lQECbqOyOW75AnHjWiPx3TDGGUH+hpmHFc=
+github.com/protobom/storage v0.1.6-0.20241129174503-9c27b6bd9961/go.mod h1:8zTFomDII7fIIqH5WCYjUZz7yQc4VxhiS7MymOkBghw=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
