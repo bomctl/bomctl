@@ -24,6 +24,10 @@ set -euo pipefail
 go build -o bomctl .
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
+go get github.com/bomctl/bomctl/internal/pkg/fetch_test
+go get github.com/bomctl/bomctl/internal/pkg/export_test
+go get github.com/bomctl/bomctl/internal/pkg/merge_test
+go get github.com/bomctl/bomctl/internal/pkg/push_test
 
 compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch_test FuzzFetch FuzzFetch
 compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/export_test FuzzExport FuzzExport
