@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/export/export_fuzz.go
+// SPDX-FileName: internal/pkg/push/fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,10 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package export
+//go:build fuzz
+// +build fuzz
+
+package push
 
 import (
 	"context"
@@ -26,15 +29,12 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const testID = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
-
-func FuzzExport(f *testing.F) {
-	f.Add(testID)
-
-	f.Fuzz(func(t *testing.T, id string) {
-		err := Export(
+func FuzzPush(f *testing.F) {
+	f.Fuzz(func(t *testing.T, id, pushURL string) {
+		err := Push(
 			id,
-			&options.ExportOptions{Options: options.New().WithContext(context.Background())},
+			pushURL,
+			&options.PushOptions{Options: options.New().WithContext(context.Background())},
 		)
 
 		if err == nil {

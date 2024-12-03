@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/merge/merge_fuzz.go
+// SPDX-FileName: internal/pkg/fetch/fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,10 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package merge
+//go:build fuzz
+// +build fuzz
+
+package fetch
 
 import (
 	"context"
@@ -26,17 +29,11 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const (
-	id1 = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
-	id2 = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5dc"
-)
-
-func FuzzMerge(f *testing.F) {
-	f.Add(id1, id2)
-	f.Fuzz(func(t *testing.T, id1, id2 string) {
-		_, err := Merge(
-			[]string{id1, id2},
-			&options.MergeOptions{Options: options.New().WithContext(context.Background())},
+func FuzzFetch(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		_, err := Fetch(
+			string(data),
+			&options.FetchOptions{Options: options.New().WithContext(context.Background())},
 		)
 
 		if err == nil {
