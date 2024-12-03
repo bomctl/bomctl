@@ -33,7 +33,6 @@ func FuzzExport(f *testing.F) {
 	f.Add(testID)
 
 	f.Fuzz(func(t *testing.T, id string) {
-
 		err := export.Export(
 			id,
 			&options.ExportOptions{Options: options.New().WithContext(context.Background())},
