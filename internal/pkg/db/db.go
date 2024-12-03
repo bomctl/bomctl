@@ -29,7 +29,6 @@ import (
 	"slices"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/storage"
@@ -290,16 +289,14 @@ func WithSourceDocumentAnnotations(sbomData []byte) Option {
 
 		backend.Options.Annotations = append(backend.Options.Annotations,
 			&ent.Annotation{
-				DocumentID: uuid.Nil,
-				Name:       SourceDataAnnotation,
-				Value:      string(sbomData),
-				IsUnique:   true,
+				Name:     SourceDataAnnotation,
+				Value:    string(sbomData),
+				IsUnique: true,
 			},
 			&ent.Annotation{
-				DocumentID: uuid.Nil,
-				Name:       SourceHashAnnotation,
-				Value:      string(hash[:]),
-				IsUnique:   true,
+				Name:     SourceHashAnnotation,
+				Value:    string(hash[:]),
+				IsUnique: true,
 			},
 		)
 
@@ -318,10 +315,9 @@ func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
 
 		backend.Options.Annotations = append(backend.Options.Annotations,
 			&ent.Annotation{
-				DocumentID: uuid.Nil,
-				Name:       BaseDocumentAnnotation,
-				Value:      baseUUID.String(),
-				IsUnique:   true,
+				Name:     BaseDocumentAnnotation,
+				Value:    baseUUID.String(),
+				IsUnique: true,
 			},
 		)
 
@@ -340,10 +336,9 @@ func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
 			// Add AliasAnnotation to revised document
 			backend.Options.Annotations = append(backend.Options.Annotations,
 				&ent.Annotation{
-					DocumentID: uuid.Nil,
-					Name:       AliasAnnotation,
-					Value:      docAlias,
-					IsUnique:   true,
+					Name:     AliasAnnotation,
+					Value:    docAlias,
+					IsUnique: true,
 				},
 			)
 		}
