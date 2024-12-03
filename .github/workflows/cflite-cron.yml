@@ -29,12 +29,14 @@ permissions:
 jobs:
   pruning:
     runs-on: ubuntu-latest
+
     steps:
       - name: Build Fuzzers
         id: build
         uses: google/clusterfuzzlite/actions/build_fuzzers@v1
         with:
           language: go
+
       - name: Run Fuzzers
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
@@ -43,8 +45,10 @@ jobs:
           fuzz-seconds: 600
           mode: prune
           output-sarif: true
+
   coverage:
     runs-on: ubuntu-latest
+
     steps:
       - name: Build Fuzzers
         id: build
@@ -52,6 +56,7 @@ jobs:
         with:
           language: go
           sanitizer: coverage
+
       - name: Run Fuzzers
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1

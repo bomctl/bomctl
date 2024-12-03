@@ -21,8 +21,6 @@ name: ClusterFuzzLite PR fuzzing
 
 on:
   pull_request:
-    paths:
-      - "**"
 
 permissions:
   contents: read
@@ -30,14 +28,17 @@ permissions:
 jobs:
   pr:
     runs-on: ubuntu-latest
+
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}
       cancel-in-progress: true
+
     strategy:
       fail-fast: false
       matrix:
         sanitizer:
           - address
+
     steps:
       - name: Build Fuzzers (${{ matrix.sanitizer }})
         id: build
@@ -46,6 +47,7 @@ jobs:
           language: go
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sanitizer: ${{ matrix.sanitizer }}
+
       - name: Run Fuzzers (${{ matrix.sanitizer }})
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1

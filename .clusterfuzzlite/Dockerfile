@@ -19,11 +19,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  && git clone --depth 1 https://github.com/bomctl/bomctl
+ARG APT_PKGS="make autoconf automake libtool"
+
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends ${APT_PKGS} \
+  && git clone --depth 1 https://github.com/bomctl/bomctl.git
 
 COPY . $SRC/bomctl/
 COPY .clusterfuzzlite/build.sh $SRC/build.sh
 
 WORKDIR $SRC/bomctl
-RUN ls -al $SRC/bomctl/

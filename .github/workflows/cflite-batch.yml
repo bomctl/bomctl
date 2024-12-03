@@ -29,11 +29,13 @@ permissions:
 jobs:
   batch-fuzzing:
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
         sanitizer:
           - address
+
     steps:
       - name: Build Fuzzers (${{ matrix.sanitizer }})
         id: build
@@ -41,6 +43,7 @@ jobs:
         with:
           language: go
           sanitizer: ${{ matrix.sanitizer }}
+
       - name: Run Fuzzers (${{ matrix.sanitizer }})
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
