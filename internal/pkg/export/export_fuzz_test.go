@@ -17,27 +17,27 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package export
+package export_test
 
 import (
 	"context"
 	"testing"
 
+	"github.com/bomctl/bomctl/internal/pkg/export"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 const testID = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
 
 func FuzzExport(f *testing.F) {
-	f.Add([]byte(testID))
+	f.Add(testID)
 
 	f.Fuzz(func(t *testing.T, id string) {
-		ctx := context.Background()
-		opts := options.Options{}
-		opts.WithContext(ctx)
-		eOpts := options.ExportOptions{Options: &opts}
 
-		err := Export(id, &eOpts)
+		err := export.Export(
+			id,
+			&options.ExportOptions{Options: options.New().WithContext(context.Background())},
+		)
 
 		if err == nil {
 			t.Errorf("%s", err)

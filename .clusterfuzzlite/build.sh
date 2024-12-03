@@ -25,7 +25,7 @@ go build -o bomctl .
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch FuzzFetch FuzzFetch
-compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/export FuzzExport FuzzExport
-compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/merge FuzzMerge FuzzMerge
-compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/push FuzzPush FuzzPush
+compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch_test FuzzFetch FuzzFetch
+compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/export_test FuzzExport FuzzExport
+compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/merge_test FuzzMerge FuzzMerge
+compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/push_test FuzzPush FuzzPush

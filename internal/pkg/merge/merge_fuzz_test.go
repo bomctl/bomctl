@@ -17,12 +17,13 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package merge
+package merge_test
 
 import (
 	"context"
 	"testing"
 
+	"github.com/bomctl/bomctl/internal/pkg/merge"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
@@ -34,13 +35,10 @@ const (
 func FuzzMerge(f *testing.F) {
 	f.Add(id1, id2)
 	f.Fuzz(func(t *testing.T, id1, id2 string) {
-		ctx := context.Background()
-		opts := options.Options{}
-		opts.WithContext(ctx)
-		mOpts := options.MergeOptions{Options: &opts}
-		ids := []string{id1, id2}
-
-		_, err := Merge(ids, &mOpts)
+		_, err := merge.Merge(
+			[]string{id1, id2},
+			&options.MergeOptions{Options: options.New().WithContext(context.Background())},
+		)
 
 		if err == nil {
 			t.Errorf("%s", err)
