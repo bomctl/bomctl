@@ -1,5 +1,5 @@
-//go:build fuzz
-// +build fuzz
+//go:build gofuzz
+// +build gofuzz
 
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
