@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/push/push_fuzz.go
+// SPDX-FileName: internal/pkg/merge/merge_fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,29 +17,26 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package push_test
+package merge
 
 import (
 	"context"
 	"testing"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/push"
 )
 
 const (
-	id      = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
-	pushURL = "test.com"
+	id1 = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
+	id2 = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5dc"
 )
 
-func FuzzPush(f *testing.F) {
-	f.Add(id, pushURL)
-
-	f.Fuzz(func(t *testing.T, id, pushURL string) {
-		err := push.Push(
-			id,
-			pushURL,
-			&options.PushOptions{Options: options.New().WithContext(context.Background())},
+func FuzzMerge(f *testing.F) {
+	f.Add(id1, id2)
+	f.Fuzz(func(t *testing.T, id1, id2 string) {
+		_, err := Merge(
+			[]string{id1, id2},
+			&options.MergeOptions{Options: options.New().WithContext(context.Background())},
 		)
 
 		if err == nil {

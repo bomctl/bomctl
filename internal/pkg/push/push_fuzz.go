@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/fetch/fetch_fuzz.go
+// SPDX-FileName: internal/pkg/push/push_fuzz.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,25 +17,28 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package fetch_test
+package push
 
 import (
 	"context"
 	"testing"
 
-	"github.com/bomctl/bomctl/internal/pkg/fetch"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-const testURL = "https://raw.githubusercontent.com/bomctl/bomctl-playground/main/bomctl_bomctl_v0.3.0.cdx.json"
+const (
+	id      = "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
+	pushURL = "test.com"
+)
 
-func FuzzFetch(f *testing.F) {
-	f.Add([]byte(testURL))
+func FuzzPush(f *testing.F) {
+	f.Add(id, pushURL)
 
-	f.Fuzz(func(t *testing.T, data []byte) {
-		_, err := fetch.Fetch(
-			string(data),
-			&options.FetchOptions{Options: options.New().WithContext(context.Background())},
+	f.Fuzz(func(t *testing.T, id, pushURL string) {
+		err := Push(
+			id,
+			pushURL,
+			&options.PushOptions{Options: options.New().WithContext(context.Background())},
 		)
 
 		if err == nil {
