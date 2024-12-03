@@ -5,7 +5,6 @@ set -euo pipefail
 # Find all Golang files in project.
 go_files=$(git ls-files '*.go')
 
-# File header pattern lines (contains format specifier for SPDX-FileName value)
 header_template='// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © * bomctl a Series of LF Projects, LLC
 // SPDX-FileName: %s
@@ -34,8 +33,10 @@ for file in $go_files; do
   # shellcheck disable=SC2059
   printf -v header "$header_template" "$file"
 
+  file=$(grep -E -v '(\/\/go:build [\w]*\n|\/\/ +build [\w]*\n)' "$file")
+
   # shellcheck disable=SC2053
-  if [[ $(head --lines=20 "$file") != $header ]]; then
+  if [[ ! $(head --lines=20 "$file") =~ $header ]]; then
     fix_files+=("$file")
   fi
 done
