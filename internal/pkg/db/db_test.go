@@ -65,11 +65,10 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 		errorMsg string
 	}{
 		{
-			name:     "existing alias on base doc",
-			prep:     func() {},
-			baseID:   "8daeb29e-8655-fae1-b792-78b998823fc6",
-			alias:    "cdx",
-			errorMsg: "",
+			name:   "existing alias on base doc",
+			prep:   func() {},
+			baseID: "8daeb29e-8655-fae1-b792-78b998823fc6",
+			alias:  "cdx",
 		},
 		{
 			name: "no alias on base doc",
@@ -79,9 +78,8 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 					db.AliasAnnotation)
 				dbs.Require().NoError(err)
 			},
-			baseID:   "8daeb29e-8655-fae1-b792-78b998823fc6",
-			alias:    "",
-			errorMsg: "",
+			baseID: "8daeb29e-8655-fae1-b792-78b998823fc6",
+			alias:  "",
 		},
 	} {
 		dbs.Run(data.name, func() {
