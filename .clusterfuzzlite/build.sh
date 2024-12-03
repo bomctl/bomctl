@@ -22,7 +22,6 @@ set -euo pipefail
 
 # Prepare executable and dependencies
 go mod tidy
-go install github.com/AdamKorcz/go-118-fuzz-build@latest
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
 compile_native_go_fuzzer github.com/bomctl/bomctl/internal/pkg/fetch FuzzFetch FuzzFetch fuzz

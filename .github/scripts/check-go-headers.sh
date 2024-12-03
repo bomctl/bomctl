@@ -33,10 +33,11 @@ for file in $go_files; do
   # shellcheck disable=SC2059
   printf -v header "$header_template" "$file"
 
-  file=$(grep -E -v '(\/\/go:build [\w]*\n|\/\/ +build [\w]*\n)' "$file")
+  # Strip out any lines with go build tags
+  file_contents=$(grep -E -v '(//go:build \w*|// \+build \w*)' "$file")
 
   # shellcheck disable=SC2053
-  if [[ ! $(head --lines=20 "$file") =~ $header ]]; then
+  if [[ $(echo "$file_contents" | head --lines=20) != $header ]]; then
     fix_files+=("$file")
   fi
 done
