@@ -1,3 +1,6 @@
+//go:build fuzz
+// +build fuzz
+
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: internal/pkg/fetch/fuzz.go

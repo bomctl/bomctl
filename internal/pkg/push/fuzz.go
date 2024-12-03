@@ -1,3 +1,6 @@
+//go:build fuzz
+// +build fuzz
+
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
 // SPDX-FileName: internal/pkg/push/fuzz.go
@@ -16,8 +19,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // -----------------------------------------------------------------------------
-//go:build fuzz
-// +build fuzz
 
 package push
 
