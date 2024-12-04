@@ -54,7 +54,7 @@ const (
 	paddingHorizontal = 1
 	paddingVertical   = 0
 
-	rowHeaderIdx = 0
+	rowHeaderIdx = -1
 	rowMaxHeight = 1
 
 	totalColumnCount = 4
@@ -73,7 +73,10 @@ type (
 	Table struct {
 		columns []columnDefinition
 		rows    []rowData
+		asList  bool
 	}
+
+	TableOption func(*Table)
 )
 
 func (t *Table) AddRow(doc *sbom.Document, backend *db.Backend) {
@@ -81,54 +84,40 @@ func (t *Table) AddRow(doc *sbom.Document, backend *db.Backend) {
 }
 
 func (t *Table) String() string {
-	tooWide := t.determineColumnWidths()
-
-	if tooWide {
+	if t.asList || !t.canFit() {
 		return t.formatList()
 	}
 
 	return t.formatTable()
 }
 
-func (t *Table) determineColumnWidths() bool {
+func (t *Table) canFit() bool {
 	terminalWidth := termInfo()
 	padding := paddingHorizontal * cellSideCount
 
 	for _, row := range t.rows {
-		if idWidth := len(row.id); idWidth >= t.columns[columnIdxID].width {
-			t.columns[columnIdxID].width = idWidth + padding
-		}
-
-		if aliasWidth := len(row.alias); aliasWidth >= t.columns[columnIdxAlias].width {
-			t.columns[columnIdxAlias].width = aliasWidth + padding
-		}
-
-		if versionWidth := len(row.version); versionWidth >= columnIdxVersion {
-			t.columns[columnIdxVersion].width = versionWidth + padding
-		}
-
-		if numNodeWidth := len(row.numNodes); numNodeWidth >= t.columns[columnIdxNumNodes].width {
-			t.columns[columnIdxNumNodes].width = numNodeWidth + padding
-		}
+		t.columns[columnIdxID].width = max(t.columns[columnIdxID].width, len(row.id)+padding)
+		t.columns[columnIdxAlias].width = max(t.columns[columnIdxAlias].width, len(row.alias)+padding)
+		t.columns[columnIdxVersion].width = max(t.columns[columnIdxVersion].width, len(row.version)+padding)
+		t.columns[columnIdxNumNodes].width = max(t.columns[columnIdxNumNodes].width, len(row.numNodes)+padding)
 	}
 
-	return (t.getTableWidth() > terminalWidth)
+	return t.getTableWidth() < terminalWidth
 }
 
 func (t *Table) formatList() string {
-	output := ""
+	renderedRows := []string{}
+
 	for _, row := range t.rows {
-		output = strings.Join([]string{
-			output,
+		renderedRows = append(renderedRows, strings.Join([]string{
 			fmt.Sprintf("%-8s: %s", columnNameID, row.id),
 			fmt.Sprintf("%-8s: %s", columnNameAlias, row.alias),
 			fmt.Sprintf("%-8s: %s", columnNameVersion, row.version),
 			fmt.Sprintf("%-8s: %s", columnNameNumNodes, row.numNodes),
-			"",
-		}, "\n")
+		}, "\n"))
 	}
 
-	return output
+	return strings.Join(renderedRows, "\n\n")
 }
 
 func (t *Table) formatTable() string {
@@ -199,44 +188,37 @@ func (t *Table) getTableWidth() int {
 	return totalWidth
 }
 
-func NewTable() *Table {
-	cols := []columnDefinition{}
+func NewTable(opts ...TableOption) *Table {
+	table := &Table{}
 
-	for c := range totalColumnCount {
-		name := ""
-		width := 0
+	for idx := range totalColumnCount {
+		var column columnDefinition
 
-		switch c {
+		switch idx {
 		case columnIdxID:
-			name = columnNameID
-			width = columnWidthID
+			column.name, column.width = columnNameID, columnWidthID
 		case columnIdxAlias:
-			name = columnNameAlias
-			width = columnWidthAlias
+			column.name, column.width = columnNameAlias, columnWidthAlias
 		case columnIdxVersion:
-			name = columnNameVersion
-			width = columnWidthVersion
+			column.name, column.width = columnNameVersion, columnWidthVersion
 		case columnIdxNumNodes:
-			name = columnNameNumNodes
-			width = columnWidthNumNodes
+			column.name, column.width = columnNameNumNodes, columnWidthNumNodes
 		}
 
-		cols = append(cols, columnDefinition{
-			name:  name,
-			width: width,
-		})
+		table.columns = append(table.columns, column)
 	}
 
-	return &Table{
-		columns: cols,
-		rows:    []rowData{},
+	for _, opt := range opts {
+		opt(table)
 	}
+
+	return table
 }
 
 func newRow(doc *sbom.Document, backend *db.Backend) rowData {
 	id := doc.GetMetadata().GetId()
 
-	alias, err := backend.GetDocumentUniqueAnnotation(doc.GetMetadata().GetId(), db.AliasAnnotation)
+	alias, err := backend.GetDocumentUniqueAnnotation(id, db.AliasAnnotation)
 	if err != nil {
 		backend.Logger.Fatalf("failed to get alias: %v", err)
 	}
@@ -258,4 +240,10 @@ func termInfo() int {
 	}
 
 	return width
+}
+
+func WithListFormat() TableOption {
+	return func(t *Table) {
+		t.asList = true
+	}
 }

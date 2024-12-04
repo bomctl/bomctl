@@ -60,16 +60,12 @@ cmp stdout force_set_list.txt
 ! stderr .
 
 -- force_set_list.txt --
-
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : dr_pepper
 Version : 1
 # Nodes : 3
-
 -- alias_set_list.txt --
-
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : root_beer
 Version : 1
 # Nodes : 3
-
