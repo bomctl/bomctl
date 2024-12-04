@@ -5,6 +5,7 @@ set -euo pipefail
 # Find all Golang files in project.
 go_files=$(git ls-files '*.go')
 
+# File header pattern lines (contains format specifier for SPDX-FileName value)
 header_template='// -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © * bomctl a Series of LF Projects, LLC
 // SPDX-FileName: %s
@@ -33,11 +34,13 @@ for file in $go_files; do
   # shellcheck disable=SC2059
   printf -v header "$header_template" "$file"
 
-  # Strip out any lines with go build tags
-  file_contents=$(grep -E -v '(//go:build \w*|// \+build \w*)' "$file")
+  # Strip go build tags
+  content=$(< "$file")
+  content=$(echo "$content" | sed '/\/\/go:build/,+2d')
 
   # shellcheck disable=SC2053
-  if [[ $(echo "$file_contents" | head --lines=20) != $header ]]; then
+  if [[ $(echo "$content" | head --lines=20) != $header ]]; then
+    echo "$content" | head --lines=20
     fix_files+=("$file")
   fi
 done
