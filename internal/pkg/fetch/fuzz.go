@@ -36,7 +36,7 @@ func FuzzFetch(f *testing.F) {
 			&options.FetchOptions{Options: options.New().WithContext(context.Background())},
 		)
 
-		if err == nil {
+		if err != nil {
 			t.Errorf("%s", err)
 		}
 	})

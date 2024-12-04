@@ -36,7 +36,7 @@ func FuzzMerge(f *testing.F) {
 			&options.MergeOptions{Options: options.New().WithContext(context.Background())},
 		)
 
-		if err == nil {
+		if err != nil {
 			t.Errorf("%s", err)
 		}
 	})

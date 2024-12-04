@@ -37,7 +37,7 @@ func FuzzPush(f *testing.F) {
 			&options.PushOptions{Options: options.New().WithContext(context.Background())},
 		)
 
-		if err == nil {
+		if err != nil {
 			t.Errorf("%s", err)
 		}
 	})

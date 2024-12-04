@@ -36,7 +36,7 @@ func FuzzExport(f *testing.F) {
 			&options.ExportOptions{Options: options.New().WithContext(context.Background())},
 		)
 
-		if err == nil {
+		if err != nil {
 			t.Errorf("%s", err)
 		}
 	})
