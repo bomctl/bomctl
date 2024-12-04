@@ -35,9 +35,5 @@ func FuzzMerge(f *testing.F) {
 			[]string{id1, id2},
 			&options.MergeOptions{Options: options.New().WithContext(context.Background())},
 		)
-
-		// if err != nil {
-		// 	t.Errorf("%s", err)
-		// }
 	})
 }

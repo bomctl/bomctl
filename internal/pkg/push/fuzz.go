@@ -36,9 +36,5 @@ func FuzzPush(f *testing.F) {
 			pushURL,
 			&options.PushOptions{Options: options.New().WithContext(context.Background())},
 		)
-
-		// if err != nil {
-		// 	t.Errorf("%s", err)
-		// }
 	})
 }
