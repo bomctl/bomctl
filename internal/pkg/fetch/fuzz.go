@@ -31,7 +31,7 @@ import (
 
 func FuzzFetch(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
-		_, err := Fetch(
+		Fetch(
 			string(data),
 			&options.FetchOptions{Options: options.New().WithContext(context.Background())},
 		)

@@ -31,7 +31,7 @@ import (
 
 func FuzzPush(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id, pushURL string) {
-		err := Push(
+		Push(
 			id,
 			pushURL,
 			&options.PushOptions{Options: options.New().WithContext(context.Background())},

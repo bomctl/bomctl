@@ -31,7 +31,7 @@ import (
 
 func FuzzMerge(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id1, id2 string) {
-		_, err := Merge(
+		Merge(
 			[]string{id1, id2},
 			&options.MergeOptions{Options: options.New().WithContext(context.Background())},
 		)
