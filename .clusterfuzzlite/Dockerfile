@@ -19,8 +19,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-ARG APT_PKGS="make autoconf automake libtool"
-
 COPY . $SRC/bomctl/
 COPY .clusterfuzzlite/build.sh $SRC/build.sh
 
