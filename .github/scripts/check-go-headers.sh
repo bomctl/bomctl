@@ -35,7 +35,7 @@ for file in $go_files; do
   printf -v header "$header_template" "$file"
 
   # Strip go build tags
-  content=$(sed '/\/\/go:build/,+2d' < "$file")
+  content=$(sed '/\/\/go:build/,+2d' "$file")
 
   # shellcheck disable=SC2053
   if [[ $(echo "$content" | head --lines=20) != $header ]]; then
