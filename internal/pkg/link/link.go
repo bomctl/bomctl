@@ -30,23 +30,36 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 const cyan = lipgloss.ANSIColor(38)
 
 func AddLink(backend *db.Backend, opts *options.LinkOptions) error {
-	var err error
+	toID, err := resolveDocumentID(opts.ToIDs[0], backend)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
 
 	switch {
 	case len(opts.DocumentIDs) > 0:
-		err = backend.AddDocumentAnnotations(opts.DocumentIDs[0], db.LinkToAnnotation, opts.ToIDs[0])
-	case len(opts.NodeIDs) > 0:
-		err = backend.AddNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, opts.ToIDs[0])
-	}
+		opts.Logger.Info("Adding document link", "from", opts.DocumentIDs[0], "to", toID)
 
-	if err != nil {
-		return fmt.Errorf("%w", err)
+		fromID, err := resolveDocumentID(opts.DocumentIDs[0], backend)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		if err := backend.AddDocumentAnnotations(fromID, db.LinkToAnnotation, toID); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	case len(opts.NodeIDs) > 0:
+		opts.Logger.Info("Adding node link", "from", opts.NodeIDs[0], "to", toID)
+
+		if err := backend.AddNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, toID); err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
 
 	return nil
@@ -70,27 +83,34 @@ func ClearLinks(backend *db.Backend, opts *options.LinkOptions) error {
 
 func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 	var (
-		annotations   ent.Annotations
-		incomingLinks []string
-		id, fromType  string
-		err           error
+		annotations  ent.Annotations
+		documents    []*sbom.Document
+		id, fromType string
+		err          error
 	)
 
 	switch {
 	case len(opts.DocumentIDs) > 0:
 		fromType = "document"
 		id = opts.DocumentIDs[0]
-		annotations, err = backend.GetDocumentAnnotations(id, db.LinkToAnnotation)
 
-		// Get incoming links for the docucment.
-		documents, err := backend.GetDocumentsByAnnotation(db.LinkToAnnotation, opts.DocumentIDs...)
+		var nativeID string
+
+		nativeID, err = resolveDocumentID(id, backend)
 		if err != nil {
-			return fmt.Errorf("%w", err)
+			break
 		}
 
-		incomingLinks = sliceutil.Extract(documents, func(d *sbom.Document) string {
-			return d.GetMetadata().GetId()
-		})
+		annotations, err = backend.GetDocumentAnnotations(nativeID, db.LinkToAnnotation)
+		if err != nil {
+			break
+		}
+
+		// Get incoming links for the document.
+		documents, err = backend.GetDocumentsByAnnotation(db.LinkToAnnotation, nativeID)
+		if err != nil {
+			break
+		}
 	case len(opts.NodeIDs) > 0:
 		fromType = "node"
 		id = opts.NodeIDs[0]
@@ -107,24 +127,11 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 		return nil
 	}
 
-	children := sliceutil.Extract(annotations, func(annotation *ent.Annotation) string {
+	linkIDs := sliceutil.Extract(annotations, func(annotation *ent.Annotation) string {
 		return annotation.Value
 	})
 
-	style := lipgloss.NewStyle().Foreground(cyan)
-	links := tree.Root(fmt.Sprintf("Links for %s %s:", fromType, style.Render(id))).
-		Child(children).
-		EnumeratorStyle(style)
-
-	fmt.Fprintln(os.Stdout, links)
-
-	if len(incomingLinks) > 0 {
-		fmt.Fprintln(os.Stdout, "")
-		fmt.Fprintln(os.Stdout, tree.Root("Incoming links:").
-			Child(incomingLinks).
-			EnumeratorStyle(style),
-		)
-	}
+	writeLinksTree(id, fromType, linkIDs, documents, backend)
 
 	return nil
 }
@@ -144,4 +151,41 @@ func RemoveLink(backend *db.Backend, opts *options.LinkOptions) error {
 	}
 
 	return nil
+}
+
+func resolveDocumentID(id string, backend *db.Backend) (string, error) {
+	document, err := backend.GetDocumentByIDOrAlias(id)
+	if err != nil {
+		return "", fmt.Errorf("resolving document ID: %w", err)
+	}
+
+	if document == nil {
+		backend.Logger.Warn("Document not found", "id", id)
+
+		return "", nil
+	}
+
+	return document.GetMetadata().GetId(), nil
+}
+
+func writeLinksTree(id, fromType string, linkIDs []string, documents []*sbom.Document, backend *db.Backend) {
+	style := lipgloss.NewStyle().Foreground(cyan)
+	links := tree.Root(fmt.Sprintf("Links for %s %s:", fromType, style.Render(id))).
+		Child(linkIDs).
+		EnumeratorStyle(style)
+
+	fmt.Fprintln(os.Stdout, links)
+
+	if len(documents) > 0 {
+		incomingLinks := outpututil.NewTable(outpututil.WithListFormat())
+		for _, document := range documents {
+			incomingLinks.AddRow(document, backend)
+		}
+
+		fmt.Fprintln(os.Stdout, "")
+		fmt.Fprintln(os.Stdout, tree.Root("Incoming links:").
+			Child(incomingLinks).
+			Enumerator(func(_ tree.Children, _ int) string { return "\t" }),
+		)
+	}
 }
