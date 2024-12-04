@@ -21,10 +21,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 
 ARG APT_PKGS="make autoconf automake libtool"
 
-RUN apt-get update \
-  && apt-get install --yes --no-install-recommends ${APT_PKGS} \
-  && git clone --depth 1 https://github.com/bomctl/bomctl.git
-
 COPY . $SRC/bomctl/
 COPY .clusterfuzzlite/build.sh $SRC/build.sh
 
