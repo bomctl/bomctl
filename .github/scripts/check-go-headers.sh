@@ -40,7 +40,6 @@ for file in $go_files; do
 
   # shellcheck disable=SC2053
   if [[ $(echo "$content" | head --lines=20) != $header ]]; then
-    echo "$content" | head --lines=20
     fix_files+=("$file")
   fi
 done
