@@ -32,39 +32,43 @@ import (
 	bomctloptions "github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-type ClientWrapperInterface interface {
-	GetProject(
-		any,
-		*gitlab.GetProjectOptions,
-		...gitlab.RequestOptionFunc,
-	) (*gitlab.Project, *gitlab.Response, error)
-	GetBranch(any, string, ...gitlab.RequestOptionFunc) (*gitlab.Branch, *gitlab.Response, error)
-	GetCommit(
-		any,
-		string,
-		*gitlab.GetCommitOptions,
-		...gitlab.RequestOptionFunc,
-	) (*gitlab.Commit, *gitlab.Response, error)
-	CreateDependencyListExport(
-		int,
-		*gitlab.CreateDependencyListExportOptions,
-		...gitlab.RequestOptionFunc,
-	) (*gitlab.DependencyListExport, *gitlab.Response, error)
-	GetDependencyListExport(int, ...gitlab.RequestOptionFunc) (*gitlab.DependencyListExport, *gitlab.Response, error)
-	DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
-}
+type (
+	ClientWrapperInterface interface {
+		GetProject(
+			any,
+			*gitlab.GetProjectOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Project, *gitlab.Response, error)
+		GetBranch(
+			any,
+			string,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Branch, *gitlab.Response, error)
+		GetCommit(
+			any,
+			string,
+			*gitlab.GetCommitOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Commit, *gitlab.Response, error)
+		CreateDependencyListExport(
+			int,
+			*gitlab.CreateDependencyListExportOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.DependencyListExport, *gitlab.Response, error)
+		GetDependencyListExport(
+			int,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.DependencyListExport, *gitlab.Response, error)
+		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
+	}
 
-type clientWrapper struct {
-	gitlab.ProjectsService
-	gitlab.BranchesService
-	gitlab.CommitsService
-	gitlab.DependencyListExportService
-}
-
-type dependencyListExportSession struct {
-	Client ClientWrapperInterface
-	Export *gitlab.DependencyListExport
-}
+	clientWrapper struct {
+		gitlab.ProjectsService
+		gitlab.BranchesService
+		gitlab.CommitsService
+		gitlab.DependencyListExportService
+	}
+)
 
 var (
 	errInvalidGitLabURL = errors.New("invalid URL for GitLab fetching")
@@ -72,23 +76,21 @@ var (
 	errForbiddenAccess  = errors.New("you don't have permission to read the dependency list")
 )
 
-func newDependencyListExportSession(baseURL, gitLabToken string) (*dependencyListExportSession, error) {
+func initClientDependencyListExport(client *Client, baseURL, gitLabToken string) error {
 	gitlabClient, err := gitlab.NewClient(gitLabToken, gitlab.WithBaseURL(baseURL))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client: %w", err)
+		return fmt.Errorf("failed to create client: %w", err)
 	}
 
-	newSession := &dependencyListExportSession{
-		Client: &clientWrapper{
-			ProjectsService:             *gitlabClient.Projects,
-			BranchesService:             *gitlabClient.Branches,
-			CommitsService:              *gitlabClient.Commits,
-			DependencyListExportService: *gitlabClient.DependencyListExport,
-		},
-		Export: nil,
+	client.Client = &clientWrapper{
+		ProjectsService:             *gitlabClient.Projects,
+		BranchesService:             *gitlabClient.Branches,
+		CommitsService:              *gitlabClient.Commits,
+		DependencyListExportService: *gitlabClient.DependencyListExport,
 	}
+	client.Export = nil
 
-	return newSession, nil
+	return nil
 }
 
 func validateHTTPStatusCode(statusCode int) error {
@@ -99,8 +101,8 @@ func validateHTTPStatusCode(statusCode int) error {
 	return nil
 }
 
-func (session *dependencyListExportSession) createExport(projectName, branchName string) error {
-	project, response, err := session.Client.GetProject(projectName, nil)
+func (client *Client) createExport(projectName, branchName string) error {
+	project, response, err := client.Client.GetProject(projectName, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get project info: %w", err)
 	}
@@ -109,7 +111,7 @@ func (session *dependencyListExportSession) createExport(projectName, branchName
 		return err
 	}
 
-	branch, response, err := session.Client.GetBranch(project.ID, branchName)
+	branch, response, err := client.Client.GetBranch(project.ID, branchName)
 	if err != nil {
 		return fmt.Errorf("failed to get branch: %w", err)
 	}
@@ -118,7 +120,7 @@ func (session *dependencyListExportSession) createExport(projectName, branchName
 		return err
 	}
 
-	commit, response, err := session.Client.GetCommit(project.ID, branch.Commit.ID, nil)
+	commit, response, err := client.Client.GetCommit(project.ID, branch.Commit.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get commit info: %w", err)
 	}
@@ -130,7 +132,7 @@ func (session *dependencyListExportSession) createExport(projectName, branchName
 	// NOTE:
 	// If an authenticated user does not have permission to read_dependency,
 	// this request returns a 403 Forbidden status code.
-	export, response, err := session.Client.CreateDependencyListExport(commit.LastPipeline.ID, nil)
+	export, response, err := client.Client.CreateDependencyListExport(commit.LastPipeline.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create dependency list export: %w", err)
 	}
@@ -143,17 +145,17 @@ func (session *dependencyListExportSession) createExport(projectName, branchName
 		return fmt.Errorf("%w", errForbiddenAccess)
 	}
 
-	session.Export = export
+	client.Export = export
 
 	return nil
 }
 
-func (session *dependencyListExportSession) pollExportUntilFinished() error {
+func (client *Client) pollExportUntilFinished() error {
 	const waitSeconds = 2
-	for !session.Export.HasFinished {
+	for !client.Export.HasFinished {
 		time.Sleep(waitSeconds * time.Second)
 
-		updatedExport, response, err := session.Client.GetDependencyListExport(session.Export.ID)
+		updatedExport, response, err := client.Client.GetDependencyListExport(client.Export.ID)
 		if err != nil {
 			return fmt.Errorf("failed to get dependency list export: %w", err)
 		}
@@ -162,14 +164,14 @@ func (session *dependencyListExportSession) pollExportUntilFinished() error {
 			return err
 		}
 
-		session.Export = updatedExport
+		client.Export = updatedExport
 	}
 
 	return nil
 }
 
-func (session *dependencyListExportSession) downloadExport() ([]byte, error) {
-	sbomReader, response, err := session.Client.DownloadDependencyListExport(session.Export.ID)
+func (client *Client) downloadExport() ([]byte, error) {
+	sbomReader, response, err := client.Client.DownloadDependencyListExport(client.Export.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download dependency list: %w", err)
 	}
@@ -205,20 +207,25 @@ func (client *Client) Fetch(fetchURL string, _ *bomctloptions.FetchOptions) ([]b
 
 	gitLabToken := os.Getenv("GITLAB_FETCH_TOKEN")
 
-	session, err := newDependencyListExportSession(baseURL, gitLabToken)
-	if err != nil {
+	if client.InitFetch == nil {
+		client.InitFetch = func(c *Client) error {
+			return initClientDependencyListExport(c, baseURL, gitLabToken)
+		}
+	}
+
+	if err := client.InitFetch(client); err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	if err := session.createExport(projectName, branchName); err != nil {
+	if err := client.createExport(projectName, branchName); err != nil {
 		return nil, err
 	}
 
-	if err := session.pollExportUntilFinished(); err != nil {
+	if err := client.pollExportUntilFinished(); err != nil {
 		return nil, err
 	}
 
-	sbomData, err := session.downloadExport()
+	sbomData, err := client.downloadExport()
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}

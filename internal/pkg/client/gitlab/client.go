@@ -24,10 +24,17 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/xanzy/go-gitlab"
+
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
-type Client struct{}
+type Client struct {
+	Client ClientWrapperInterface
+	Export *gitlab.DependencyListExport
+
+	InitFetch func(*Client) error
+}
 
 func (*Client) Name() string {
 	return "HTTP"

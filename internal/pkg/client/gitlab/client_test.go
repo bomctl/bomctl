@@ -1,12 +1,16 @@
 package gitlab_test
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
 	gogitlab "github.com/xanzy/go-gitlab"
+
+	"github.com/bomctl/bomctl/internal/pkg/client/gitlab"
 )
 
 type mockClient struct {
@@ -20,7 +24,7 @@ func (mc *mockClient) GetProject(
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mc.Called(pid, opt, options)
 
-	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:revive,wrapcheck,lll
+	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
 }
 
 func (mc *mockClient) GetBranch(
@@ -30,7 +34,7 @@ func (mc *mockClient) GetBranch(
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mc.Called(pid, branch, options)
 
-	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:revive,wrapcheck,lll
+	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
 }
 
 func (mc *mockClient) GetCommit(
@@ -41,7 +45,7 @@ func (mc *mockClient) GetCommit(
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mc.Called(pid, sha, opt, options)
 
-	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:revive,wrapcheck,lll
+	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
 }
 
 func (mc *mockClient) CreateDependencyListExport(
@@ -51,7 +55,7 @@ func (mc *mockClient) CreateDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mc.Called(pipelineID, opt, options)
 
-	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:revive,wrapcheck,lll
+	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
 }
 
 func (mc *mockClient) GetDependencyListExport(
@@ -60,7 +64,7 @@ func (mc *mockClient) GetDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mc.Called(id, options)
 
-	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:revive,wrapcheck,lll
+	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
 }
 
 func (mc *mockClient) DownloadDependencyListExport(
@@ -69,7 +73,7 @@ func (mc *mockClient) DownloadDependencyListExport(
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mc.Called(id, options)
 
-	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:revive,wrapcheck
+	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck
 }
 
 var successGitLabResponse = &gogitlab.Response{
@@ -80,21 +84,33 @@ var successGitLabResponse = &gogitlab.Response{
 	},
 }
 
-func TestCreateExport(t *testing.T) { //nolint:paralleltest
-	mockedGoGitLabClient := &mockClient{}
-
+func TestFetch(t *testing.T) { //nolint:paralleltest
 	dummyProjectID := 1234
 	dummyProjectName := "DUMMY_PROJECT"
 	dummyBranchName := "DUMMY_BRANCH"
 	dummyCommitSHA := "ABCD"
 	dummyPipelineID := 2345
+	dummyExportID := 3456
 
-	expectedDependencyListExport := &gogitlab.DependencyListExport{
-		ID:          3456,
+	dummyFetchURL := fmt.Sprintf("https://TEST_GITLAB.test/%s@%s", dummyProjectName, dummyBranchName)
+
+	expectedCreateDependencyListExport := &gogitlab.DependencyListExport{
+		ID:          dummyExportID,
 		HasFinished: false,
 		Self:        "TEST",
 		Download:    "TEST/Download",
 	}
+
+	expectedGetDependencyListExport := &gogitlab.DependencyListExport{
+		ID:          dummyExportID,
+		HasFinished: true,
+		Self:        "TEST",
+		Download:    "TEST/Download",
+	}
+
+	expectedSbomData := []byte("DUMMY SBOM DATA")
+
+	mockedGoGitLabClient := &mockClient{}
 
 	mockedGoGitLabClient.On(
 		"GetProject",
@@ -149,52 +165,33 @@ func TestCreateExport(t *testing.T) { //nolint:paralleltest
 		(*gogitlab.CreateDependencyListExportOptions)(nil),
 		[]gogitlab.RequestOptionFunc(nil),
 	).Return(
-		expectedDependencyListExport, successGitLabResponse, nil,
+		expectedCreateDependencyListExport, successGitLabResponse, nil,
 	)
-
-	session := &dependencyListExportSession{
-		Client: mockedGoGitLabClient,
-	}
-
-	if err := session.createExport("DUMMY_PROJECT", "DUMMY_BRANCH"); err != nil {
-		t.Errorf("failed to create dependency list export: %v", err)
-	}
-
-	mockedGoGitLabClient.AssertExpectations(t)
-}
-
-func TestPollExportUntilFinished(t *testing.T) { //nolint:paralleltest
-	exportID := 3456
-
-	expectedDependencyListExport := &gogitlab.DependencyListExport{
-		ID:          exportID,
-		HasFinished: true,
-		Self:        "TEST",
-		Download:    "TEST/Download",
-	}
-
-	mockedGoGitLabClient := &mockClient{}
 
 	mockedGoGitLabClient.On(
 		"GetDependencyListExport",
-		exportID,
+		dummyExportID,
 		[]gogitlab.RequestOptionFunc(nil),
 	).Return(
-		expectedDependencyListExport, successGitLabResponse, nil,
+		expectedGetDependencyListExport, successGitLabResponse, nil,
 	)
 
-	session := &dependencyListExportSession{
-		Client: mockedGoGitLabClient,
-		Export: &gogitlab.DependencyListExport{
-			ID:          exportID,
-			HasFinished: false,
-			Self:        "TEST",
-			Download:    "TEST/Download",
-		},
-	}
+	mockedGoGitLabClient.On(
+		"DownloadDependencyListExport",
+		dummyExportID,
+		[]gogitlab.RequestOptionFunc(nil),
+	).Return(bytes.NewBuffer(expectedSbomData), successGitLabResponse, nil)
 
-	if err := session.pollExportUntilFinished(); err != nil {
-		t.Errorf("failed to get dependency list export: %v", err)
+	_, err := (&gitlab.Client{
+		InitFetch: func(c *gitlab.Client) error {
+			c.Client = mockedGoGitLabClient
+			c.Export = nil
+
+			return nil
+		},
+	}).Fetch(dummyFetchURL, nil)
+	if err != nil {
+		t.Errorf("failed to create dependency list export: %v", err)
 	}
 
 	mockedGoGitLabClient.AssertExpectations(t)
