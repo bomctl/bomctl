@@ -73,7 +73,7 @@ type (
 var (
 	errInvalidGitLabURL = errors.New("invalid URL for GitLab fetching")
 	errFailedWebRequest = errors.New("web request failed")
-	errForbiddenAccess  = errors.New("you don't have permission to read the dependency list")
+	errForbiddenAccess  = errors.New("the supplied token is missing the read_dependency permission")
 )
 
 func initClientDependencyListExport(client *Client, baseURL, gitLabToken string) error {

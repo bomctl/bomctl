@@ -22,7 +22,6 @@ package gitlab
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/xanzy/go-gitlab"
 
@@ -37,13 +36,13 @@ type Client struct {
 }
 
 func (*Client) Name() string {
-	return "HTTP"
+	return "GitLab"
 }
 
 func (*Client) RegExp() *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^%s%s%s$",
+	return regexp.MustCompile(fmt.Sprintf("(?i)^%s%s%s$",
 		`(?P<scheme>https?|git|ssh):\/\/`,
-		`(?P<hostname>[^@\/?#:]+)(?::(?P<port>\d+))?/`,
+		`(?P<hostname>[^@\/?#:]+gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
 		`(?P<path>[^@#]+)@(?P<branch>\S+)`))
 }
 
@@ -54,10 +53,6 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 
 	for idx, name := range match {
 		results[pattern.SubexpNames()[idx]] = name
-	}
-
-	if !strings.Contains(strings.ToLower(results["hostname"]), "gitlab") {
-		return nil
 	}
 
 	// Ensure required map fields are present.
