@@ -22,7 +22,7 @@
 version: "3"
 
 vars:
-  GOLANGCI_LINT_VERSION: v1.61.0
+  GOLANGCI_LINT_VERSION: v1.62.2
   GOLANGCI_LINT_RELEASE_URL: https://github.com/golangci/golangci-lint/releases/download/{{.GOLANGCI_LINT_VERSION}}
   SHELLCHECK_ARCH: '{{eq ARCH "amd64" | ternary "x86_64" "aarch64"}}'
   SHELLCHECK_VERSION: v0.10.0
