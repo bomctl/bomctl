@@ -101,6 +101,9 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 				newID := newDoc.GetMetadata().GetId()
 				baseDocID := dbs.documentInfo[0].Document.GetMetadata().GetId()
 
+				newUUID, err := ent.GenerateUUID(newDoc)
+				dbs.Require().NoError(err)
+
 				baseID, err := dbs.Backend.GetDocumentUniqueAnnotation(newID, db.BaseDocumentAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.baseID, baseID)
@@ -116,6 +119,10 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 				latest, err = dbs.Backend.GetDocumentAnnotations(baseDocID, db.LatestRevisionAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(ent.Annotations{}, latest)
+
+				revision, err := dbs.Backend.GetDocumentAnnotations(baseDocID, db.RevisedDocumentAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal(newUUID.String(), revision[0].Value)
 
 				alias, err = dbs.Backend.GetDocumentUniqueAnnotation(baseDocID, db.AliasAnnotation)
 				dbs.Require().NoError(err)
