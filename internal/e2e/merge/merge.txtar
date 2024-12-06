@@ -73,7 +73,6 @@ stdout -count=1 '(Version : 1)\n'
 stdout -count=1 '(# Nodes : 9)\n$'
 
 -- pre_merge_list.txt --
-
 ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
 Alias   : 
 Version : 1
@@ -83,4 +82,3 @@ ID      : urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
 Alias   : 
 Version : 1
 # Nodes : 5
-
