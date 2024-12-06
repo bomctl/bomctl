@@ -54,21 +54,6 @@ cmp stdout list_tag.txt
 
 -- list_no_input.txt --
 
-ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
-Alias   : 
-Version : 1
-# Nodes : 5
-
-ID      : urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
-Alias   : 
-Version : 1
-# Nodes : 5
-
-ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
-Alias   : 
-Version : 1
-# Nodes : 3
-
 ID      : urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 Alias   : 
 Version : 1
@@ -78,6 +63,21 @@ ID      : https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44
 Alias   : 
 Version : 0
 # Nodes : 81
+
+ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
+Alias   : 
+Version : 1
+# Nodes : 5
+
+ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
+Alias   : 
+Version : 1
+# Nodes : 3
+
+ID      : urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+Alias   : 
+Version : 1
+# Nodes : 5
 
 -- list_tag.txt --
 
