@@ -13,6 +13,7 @@ Maintainers (in alphabetical order)
 * @eddiezane
 * @idunbarh
 * @jhoward-lm
+* @pkwiatkowski1
 
 Emeritus Maintainers (in alphabetical order)
 
