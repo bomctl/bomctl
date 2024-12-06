@@ -20,11 +20,11 @@
 package db_test
 
 import (
-	"cmp"
-	"slices"
+	"fmt"
 	"testing"
 
 	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/protobom/storage/backends/ent"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -54,6 +54,8 @@ func (dbs *dbSuite) SetupTest() {
 
 func (dbs *dbSuite) TearDownTest() {
 	dbs.Backend.CloseClient()
+	dbs.documents = nil
+	dbs.documentInfo = nil
 }
 
 func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
@@ -107,6 +109,14 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.alias, alias)
 
+				latest, err := dbs.Backend.GetDocumentAnnotations(newID, db.LatestRevisionAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal("true", latest[0].Value)
+
+				latest, err = dbs.Backend.GetDocumentAnnotations(baseDocID, db.LatestRevisionAnnotation)
+				dbs.Require().NoError(err)
+				dbs.Require().Equal(ent.Annotations{}, latest)
+
 				alias, err = dbs.Backend.GetDocumentUniqueAnnotation(baseDocID, db.AliasAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal("", alias)
@@ -121,56 +131,7 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 	}
 }
 
-func (dbs *dbSuite) TestBackend_GetDocumentByID() {
-	for _, document := range dbs.documents {
-		retrieved, err := dbs.Backend.GetDocumentByID(document.GetMetadata().GetId())
-		dbs.Require().NoError(err, "failed retrieving document", "id", document.GetMetadata().GetId())
-
-		expectedEdges := consolidateEdges(document.GetNodeList().GetEdges())
-		actualEdges := consolidateEdges(retrieved.GetNodeList().GetEdges())
-
-		dbs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
-		dbs.Require().Len(retrieved.GetNodeList().GetNodes(), len(document.GetNodeList().GetNodes()))
-		dbs.Require().Equal(expectedEdges, actualEdges)
-		dbs.Require().Equal(document.GetNodeList().GetRootElements(), retrieved.GetNodeList().GetRootElements())
-	}
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentByIDOrAlias() {
-	cdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("cdx")
-	if err != nil {
-		dbs.Fail("failed retrieving document", "alias", "cdx")
-	}
-
-	spdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("spdx")
-	if err != nil {
-		dbs.Fail("failed retrieving document", "alias", "spdx")
-	}
-
-	dbs.Require().Equal(cdxDoc.GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
-	dbs.Require().Equal(spdxDoc.GetMetadata().GetId(), dbs.documents[1].GetMetadata().GetId())
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentsByIDOrAlias() {
-	docs, err := dbs.Backend.GetDocumentsByIDOrAlias("cdx", "spdx")
-	if err != nil {
-		dbs.Fail("failed retrieving document", "aliases", "cdx, spdx")
-	}
-
-	dbs.Require().Equal(docs[0].GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
-	dbs.Require().Equal(docs[1].GetMetadata().GetId(), dbs.documents[1].GetMetadata().GetId())
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentTags() {
-	tags, err := dbs.Backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
-	dbs.Require().NoError(err)
-	dbs.Require().EqualValues([]string{"tag1", "tag2"}, tags)
-}
-
 func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
-	docs, err := dbs.Backend.GetDocumentsByID()
-	dbs.Require().NoError(err)
-
 	for _, data := range []struct {
 		name     string
 		tags     []string
@@ -184,17 +145,17 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		{
 			name:     "Normal (1 tag, 2 docs)",
 			tags:     []string{"tag2"},
-			expected: dbs.documents[0:2],
+			expected: dbs.documents[:2],
 		},
 		{
 			name:     "Normal (another tag, 1 doc)",
-			tags:     []string{"tag3"},
-			expected: []*sbom.Document{dbs.documents[1]},
+			tags:     []string{"tag5"},
+			expected: []*sbom.Document{dbs.documents[3]},
 		},
 		{
 			name:     "Normal (multiple tags)",
 			tags:     []string{"tag1", "tag2", "tag3"},
-			expected: dbs.documents[0:2],
+			expected: dbs.documents[0:3],
 		},
 		{
 			name:     "Unknown tag",
@@ -204,18 +165,85 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		{
 			name:     "No tags",
 			tags:     []string{},
-			expected: dbs.documents[0:2],
+			expected: dbs.documents,
 		},
 	} {
 		dbs.Run(data.name, func() {
-			filteredDocs, err := dbs.Backend.FilterDocumentsByTag(docs, data.tags...)
+			filteredDocs, err := dbs.Backend.FilterDocumentsByTag(dbs.documents, data.tags...)
 			dbs.Require().NoError(err)
-			dbs.Require().Len(filteredDocs, len(data.expected))
+			dbs.Require().Len(
+				filteredDocs,
+				len(data.expected),
+				fmt.Sprintf("expected length: %d does not match actual: %d", len(filteredDocs), len(data.expected)),
+			)
 
 			for idx := range data.expected {
 				dbs.Equal(filteredDocs[idx].GetMetadata().GetId(), data.expected[idx].GetMetadata().GetId())
 			}
 		})
+	}
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentByID() {
+	for _, document := range dbs.documents {
+		retrieved, err := dbs.Backend.GetDocumentByID(document.GetMetadata().GetId())
+		dbs.Require().NoError(err, "failed retrieving document", "id", document.GetMetadata().GetId())
+
+		dbs.Require().True(retrieved.GetNodeList().Equal(document.GetNodeList()))
+		dbs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
+	}
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentByIDOrAlias() {
+	cdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("cdx")
+	dbs.Require().NoError(err, "failed retrieving document with alias: cdx")
+
+	spdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("spdx")
+	dbs.Require().NoError(err, "failed retrieving document with alias: spdx")
+
+	dbs.Require().Equal(dbs.documents[0].GetMetadata().GetId(), cdxDoc.GetMetadata().GetId())
+	dbs.Require().Equal(dbs.documents[2].GetMetadata().GetId(), spdxDoc.GetMetadata().GetId())
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentsByIDOrAlias() {
+	docs, err := dbs.Backend.GetDocumentsByIDOrAlias("cdx", "spdx")
+	dbs.Require().NoError(err, "failed retrieving documents with aliases: cdx, spdx")
+
+	dbs.Require().Equal(docs[0].GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().Equal(docs[1].GetMetadata().GetId(), dbs.documents[2].GetMetadata().GetId())
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentTags() {
+	tags, err := dbs.Backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().NoError(err)
+	dbs.Require().EqualValues([]string{"tag1", "tag2"}, tags)
+}
+
+func (dbs *dbSuite) TestBackend_GetLatestDocument() {
+	tempbe, err := testutil.NewTestBackend()
+	dbs.Require().NoError(err)
+
+	boms, err := createTestDocumentSet(dbs.documentInfo, tempbe)
+	dbs.Require().NoError(err)
+
+	for _, bom := range boms {
+		rootDoc, err := tempbe.GetLatestDocument(bom)
+		dbs.Require().NoError(err)
+		dbs.Require().Equal(rootDoc.GetMetadata().GetId(), boms[3].GetMetadata().GetId())
+	}
+}
+
+func (dbs *dbSuite) TestBackend_GetRootDocument() {
+	tempbe, err := testutil.NewTestBackend()
+	dbs.Require().NoError(err)
+
+	boms, err := createTestDocumentSet(dbs.documentInfo, tempbe)
+	dbs.Require().NoError(err)
+
+	for _, bom := range boms {
+		rootDoc, err := tempbe.GetRootDocument(bom)
+		dbs.Require().NoError(err)
+		dbs.Require().Equal(rootDoc.GetMetadata().GetId(), boms[0].GetMetadata().GetId())
 	}
 }
 
@@ -252,14 +280,14 @@ func (dbs *dbSuite) TestBackend_SetAlias() {
 		},
 		{
 			name:      "Existing alias",
-			alias:     "cdx2",
+			alias:     "cdx16",
 			errorMsg:  "the document already has an alias",
 			doc0Alias: "cdx",
 			force:     false,
 		},
 		{
 			name:      "Existing alias (force)",
-			alias:     "cdx2",
+			alias:     "cdx16",
 			errorMsg:  "",
 			doc0Alias: "cdx",
 			force:     true,
@@ -294,40 +322,22 @@ func TestDBSuite(t *testing.T) {
 	suite.Run(t, new(dbSuite))
 }
 
-func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
-	consolidated := []*sbom.Edge{}
-
-	// Mapping of from ID and edge type to slice of to IDs.
-	edgeMap := make(map[struct {
-		fromID   string
-		edgeType string
-	}][]string)
-
-	for _, edge := range edges {
-		key := struct {
-			fromID   string
-			edgeType string
-		}{edge.GetFrom(), edge.GetType().String()}
-
-		edgeMap[key] = append(edgeMap[key], edge.GetTo()...)
+func createTestDocumentSet(sboms []testutil.DocumentInfo, backend *db.Backend) ([]*sbom.Document, error) {
+	rootDoc, err := backend.AddDocument(sboms[0].Content, db.WithSourceDocumentAnnotations(sboms[0].Content))
+	if err != nil {
+		return nil, fmt.Errorf("creating test document set: %w", err)
 	}
 
-	for typedEdge, toIDs := range edgeMap {
-		slices.Sort(toIDs)
+	docSlice := []*sbom.Document{rootDoc}
 
-		if len(toIDs) > 0 {
-			slices.Sort(toIDs)
-
-			edgeType := sbom.Edge_Type_value[typedEdge.edgeType]
-			consolidated = append(consolidated, &sbom.Edge{
-				Type: sbom.Edge_Type(edgeType),
-				From: typedEdge.fromID,
-				To:   toIDs,
-			})
+	for i, bom := range sboms[1:] {
+		doc, err := backend.AddDocument(bom.Content, db.WithRevisedDocumentAnnotations(sboms[i].Document))
+		if err != nil {
+			return nil, fmt.Errorf("creating test document set: %w", err)
 		}
+
+		docSlice = append(docSlice, doc)
 	}
 
-	slices.SortStableFunc(consolidated, func(a, b *sbom.Edge) int { return cmp.Compare(a.GetFrom(), b.GetFrom()) })
-
-	return consolidated
+	return docSlice, nil
 }
