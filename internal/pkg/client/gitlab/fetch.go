@@ -33,23 +33,29 @@ import (
 )
 
 type (
-	ClientWrapperInterface interface {
+	ProjectProvider interface {
 		GetProject(
 			any,
 			*gitlab.GetProjectOptions,
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.Project, *gitlab.Response, error)
+	}
+	BranchProvider interface {
 		GetBranch(
 			any,
 			string,
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.Branch, *gitlab.Response, error)
+	}
+	CommitProvider interface {
 		GetCommit(
 			any,
 			string,
 			*gitlab.GetCommitOptions,
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.Commit, *gitlab.Response, error)
+	}
+	DependencyListExporter interface {
 		CreateDependencyListExport(
 			int,
 			*gitlab.CreateDependencyListExportOptions,
@@ -62,7 +68,14 @@ type (
 		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
 	}
 
-	clientWrapper struct {
+	GitLabClientWrapper interface {
+		ProjectProvider
+		BranchProvider
+		CommitProvider
+		DependencyListExporter
+	}
+
+	gitLabClient struct {
 		gitlab.ProjectsService
 		gitlab.BranchesService
 		gitlab.CommitsService
@@ -82,7 +95,7 @@ func initClientDependencyListExport(client *Client, baseURL, gitLabToken string)
 		return fmt.Errorf("failed to create client: %w", err)
 	}
 
-	client.Client = &clientWrapper{
+	client.Client = &gitLabClient{
 		ProjectsService:             *gitlabClient.Projects,
 		BranchesService:             *gitlabClient.Branches,
 		CommitsService:              *gitlabClient.Commits,

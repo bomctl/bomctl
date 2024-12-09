@@ -27,14 +27,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	gogitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/gitlab"
 )
 
-type mockClient struct {
-	mock.Mock
-}
+type (
+	gitLabClientSuite struct {
+		suite.Suite
+	}
+
+	mockClient struct {
+		mock.Mock
+	}
+)
 
 func (mc *mockClient) GetProject(
 	pid any,
@@ -103,7 +110,7 @@ var successGitLabResponse = &gogitlab.Response{
 	},
 }
 
-func TestFetch(t *testing.T) { //nolint:paralleltest
+func (glcs *gitLabClientSuite) TestClient_Fetch() {
 	dummyProjectID := 1234
 	dummyProjectName := "DUMMY_PROJECT"
 	dummyBranchName := "DUMMY_BRANCH"
@@ -201,17 +208,22 @@ func TestFetch(t *testing.T) { //nolint:paralleltest
 		[]gogitlab.RequestOptionFunc(nil),
 	).Return(bytes.NewBuffer(expectedSbomData), successGitLabResponse, nil)
 
-	_, err := (&gitlab.Client{
-		InitFetch: func(c *gitlab.Client) error {
-			c.Client = mockedGoGitLabClient
-			c.Export = nil
+	glcs.Run("fetch", func() {
+		_, err := (&gitlab.Client{
+			InitFetch: func(c *gitlab.Client) error {
+				c.Client = mockedGoGitLabClient
+				c.Export = nil
 
-			return nil
-		},
-	}).Fetch(dummyFetchURL, nil)
-	if err != nil {
-		t.Errorf("failed to create dependency list export: %v", err)
-	}
+				return nil
+			},
+		}).Fetch(dummyFetchURL, nil)
+		glcs.Require().NoError(err, "failed to create dependency list export: %v", err)
 
-	mockedGoGitLabClient.AssertExpectations(t)
+		mockedGoGitLabClient.AssertExpectations(glcs.T())
+	})
+}
+
+func TestGithubClientSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(gitLabClientSuite))
 }
