@@ -183,20 +183,20 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 		return nil, fmt.Errorf("document could not be retrieved: %w", err)
 	}
 
-	if document != nil {
-		return document, nil
+	if document == nil {
+		switch documents, getDocErr := backend.GetDocumentsByAnnotation(AliasAnnotation, id); {
+		case getDocErr != nil:
+			err = fmt.Errorf("document could not be retrieved: %w", getDocErr)
+		case len(documents) == 0:
+			document = nil
+		case len(documents) > 1:
+			err = fmt.Errorf("%w %s", errMultipleDocuments, id)
+		default:
+			document = documents[0]
+		}
 	}
 
-	switch documents, err := backend.GetDocumentsByAnnotation(AliasAnnotation, id); {
-	case err != nil:
-		return nil, fmt.Errorf("document could not be retrieved: %w", err)
-	case len(documents) == 0:
-		return nil, nil
-	case len(documents) > 1:
-		return nil, fmt.Errorf("%w %s", errMultipleDocuments, id)
-	default:
-		return documents[0], nil
-	}
+	return document, err
 }
 
 func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document, error) {
