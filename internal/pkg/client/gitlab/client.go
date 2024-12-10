@@ -29,7 +29,10 @@ import (
 )
 
 type Client struct {
-	Client ClientWrapper
+	ProjectProvider
+	BranchProvider
+	CommitProvider
+	DependencyListExporter
 	Export *gitlab.DependencyListExport
 
 	InitFetch func(*Client) error

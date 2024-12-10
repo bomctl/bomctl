@@ -40,6 +40,7 @@ type (
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.Project, *gitlab.Response, error)
 	}
+
 	BranchProvider interface {
 		GetBranch(
 			any,
@@ -47,6 +48,7 @@ type (
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.Branch, *gitlab.Response, error)
 	}
+
 	CommitProvider interface {
 		GetCommit(
 			any,
@@ -55,6 +57,7 @@ type (
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.Commit, *gitlab.Response, error)
 	}
+
 	DependencyListExporter interface {
 		CreateDependencyListExport(
 			int,
@@ -66,20 +69,6 @@ type (
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.DependencyListExport, *gitlab.Response, error)
 		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
-	}
-
-	ClientWrapper interface {
-		ProjectProvider
-		BranchProvider
-		CommitProvider
-		DependencyListExporter
-	}
-
-	gitLabClient struct {
-		gitlab.ProjectsService
-		gitlab.BranchesService
-		gitlab.CommitsService
-		gitlab.DependencyListExportService
 	}
 )
 
@@ -95,12 +84,10 @@ func initClientDependencyListExport(client *Client, baseURL, gitLabToken string)
 		return fmt.Errorf("failed to create client: %w", err)
 	}
 
-	client.Client = &gitLabClient{
-		ProjectsService:             *gitlabClient.Projects,
-		BranchesService:             *gitlabClient.Branches,
-		CommitsService:              *gitlabClient.Commits,
-		DependencyListExportService: *gitlabClient.DependencyListExport,
-	}
+	client.ProjectProvider = gitlabClient.Projects
+	client.BranchProvider = gitlabClient.Branches
+	client.CommitProvider = gitlabClient.Commits
+	client.DependencyListExporter = gitlabClient.DependencyListExport
 	client.Export = nil
 
 	return nil
@@ -115,7 +102,7 @@ func validateHTTPStatusCode(statusCode int) error {
 }
 
 func (client *Client) createExport(projectName, branchName string) error {
-	project, response, err := client.Client.GetProject(projectName, nil)
+	project, response, err := client.GetProject(projectName, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get project info: %w", err)
 	}
@@ -124,7 +111,7 @@ func (client *Client) createExport(projectName, branchName string) error {
 		return err
 	}
 
-	branch, response, err := client.Client.GetBranch(project.ID, branchName)
+	branch, response, err := client.GetBranch(project.ID, branchName)
 	if err != nil {
 		return fmt.Errorf("failed to get branch: %w", err)
 	}
@@ -133,7 +120,7 @@ func (client *Client) createExport(projectName, branchName string) error {
 		return err
 	}
 
-	commit, response, err := client.Client.GetCommit(project.ID, branch.Commit.ID, nil)
+	commit, response, err := client.GetCommit(project.ID, branch.Commit.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get commit info: %w", err)
 	}
@@ -145,7 +132,7 @@ func (client *Client) createExport(projectName, branchName string) error {
 	// NOTE:
 	// If an authenticated user does not have permission to read_dependency,
 	// this request returns a 403 Forbidden status code.
-	export, response, err := client.Client.CreateDependencyListExport(commit.LastPipeline.ID, nil)
+	export, response, err := client.CreateDependencyListExport(commit.LastPipeline.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create dependency list export: %w", err)
 	}
@@ -168,7 +155,7 @@ func (client *Client) pollExportUntilFinished() error {
 	for !client.Export.HasFinished {
 		time.Sleep(waitSeconds * time.Second)
 
-		updatedExport, response, err := client.Client.GetDependencyListExport(client.Export.ID)
+		updatedExport, response, err := client.GetDependencyListExport(client.Export.ID)
 		if err != nil {
 			return fmt.Errorf("failed to get dependency list export: %w", err)
 		}
@@ -184,7 +171,7 @@ func (client *Client) pollExportUntilFinished() error {
 }
 
 func (client *Client) downloadExport() ([]byte, error) {
-	sbomReader, response, err := client.Client.DownloadDependencyListExport(client.Export.ID)
+	sbomReader, response, err := client.DownloadDependencyListExport(client.Export.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download dependency list: %w", err)
 	}
@@ -218,7 +205,7 @@ func (client *Client) Fetch(fetchURL string, _ *bomctloptions.FetchOptions) ([]b
 	projectName := url.Path
 	branchName := url.Fragment
 
-	gitLabToken := os.Getenv("GITLAB_FETCH_TOKEN")
+	gitLabToken := os.Getenv("BOMCTL_GITLAB_TOKEN")
 
 	if client.InitFetch == nil {
 		client.InitFetch = func(c *Client) error {

@@ -38,73 +38,85 @@ type (
 		suite.Suite
 	}
 
-	mockClient struct {
+	mockProjectProvider struct {
+		mock.Mock
+	}
+
+	mockBranchProvider struct {
+		mock.Mock
+	}
+
+	mockCommitProvider struct {
+		mock.Mock
+	}
+
+	mockDependencyListExporter struct {
 		mock.Mock
 	}
 )
 
 //revive:disable:unchecked-type-assertion
 
-func (mc *mockClient) GetProject(
+func (mpp *mockProjectProvider) GetProject(
 	pid any,
 	opt *gogitlab.GetProjectOptions,
 	options ...gogitlab.RequestOptionFunc,
 ) (*gogitlab.Project, *gogitlab.Response, error) {
-	args := mc.Called(pid, opt, options)
+	args := mpp.Called(pid, opt, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
-func (mc *mockClient) GetBranch(
+func (mbp *mockBranchProvider) GetBranch(
 	pid any,
 	branch string,
 	options ...gogitlab.RequestOptionFunc,
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
-	args := mc.Called(pid, branch, options)
+	args := mbp.Called(pid, branch, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
-func (mc *mockClient) GetCommit(
+func (mcp *mockCommitProvider) GetCommit(
 	pid any,
 	sha string,
 	opt *gogitlab.GetCommitOptions,
 	options ...gogitlab.RequestOptionFunc,
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
-	args := mc.Called(pid, sha, opt, options)
+	args := mcp.Called(pid, sha, opt, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
-func (mc *mockClient) CreateDependencyListExport(
+func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 	pipelineID int,
 	opt *gogitlab.CreateDependencyListExportOptions,
 	options ...gogitlab.RequestOptionFunc,
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
-	args := mc.Called(pipelineID, opt, options)
+	args := mdle.Called(pipelineID, opt, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
-func (mc *mockClient) GetDependencyListExport(
+func (mdle *mockDependencyListExporter) GetDependencyListExport(
 	id int,
 	options ...gogitlab.RequestOptionFunc,
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
-	args := mc.Called(id, options)
+	args := mdle.Called(id, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
-func (mc *mockClient) DownloadDependencyListExport(
+func (mdle *mockDependencyListExporter) DownloadDependencyListExport(
 	id int,
 	options ...gogitlab.RequestOptionFunc,
 ) (io.Reader, *gogitlab.Response, error) {
-	args := mc.Called(id, options)
+	args := mdle.Called(id, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
@@ -146,9 +158,12 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 
 	expectedSbomData := []byte("DUMMY SBOM DATA")
 
-	mockedGoGitLabClient := &mockClient{}
+	mockedProjectProvider := &mockProjectProvider{}
+	mockedBranchProvider := &mockBranchProvider{}
+	mockedCommitProvider := &mockCommitProvider{}
+	mockedDependencyListExporter := &mockDependencyListExporter{}
 
-	mockedGoGitLabClient.On(
+	mockedProjectProvider.On(
 		"GetProject",
 		dummyProjectName,
 		(*gogitlab.GetProjectOptions)(nil),
@@ -162,7 +177,7 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		nil,
 	)
 
-	mockedGoGitLabClient.On(
+	mockedBranchProvider.On(
 		"GetBranch",
 		dummyProjectID,
 		dummyBranchName,
@@ -178,7 +193,7 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		nil,
 	)
 
-	mockedGoGitLabClient.On(
+	mockedCommitProvider.On(
 		"GetCommit",
 		dummyProjectID,
 		dummyCommitSHA,
@@ -195,7 +210,7 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		nil,
 	)
 
-	mockedGoGitLabClient.On(
+	mockedDependencyListExporter.On(
 		"CreateDependencyListExport",
 		dummyPipelineID,
 		(*gogitlab.CreateDependencyListExportOptions)(nil),
@@ -204,7 +219,7 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		expectedCreateDependencyListExport, successGitLabResponse, nil,
 	)
 
-	mockedGoGitLabClient.On(
+	mockedDependencyListExporter.On(
 		"GetDependencyListExport",
 		dummyExportID,
 		[]gogitlab.RequestOptionFunc(nil),
@@ -212,7 +227,7 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		expectedGetDependencyListExport, successGitLabResponse, nil,
 	)
 
-	mockedGoGitLabClient.On(
+	mockedDependencyListExporter.On(
 		"DownloadDependencyListExport",
 		dummyExportID,
 		[]gogitlab.RequestOptionFunc(nil),
@@ -221,7 +236,10 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 	glcs.Run("fetch", func() {
 		_, err := (&gitlab.Client{
 			InitFetch: func(c *gitlab.Client) error {
-				c.Client = mockedGoGitLabClient
+				c.ProjectProvider = mockedProjectProvider
+				c.BranchProvider = mockedBranchProvider
+				c.CommitProvider = mockedCommitProvider
+				c.DependencyListExporter = mockedDependencyListExporter
 				c.Export = nil
 
 				return nil
@@ -229,7 +247,10 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		}).Fetch(dummyFetchURL, nil)
 		glcs.Require().NoError(err, "failed to create dependency list export: %v", err)
 
-		mockedGoGitLabClient.AssertExpectations(glcs.T())
+		mockedProjectProvider.AssertExpectations(glcs.T())
+		mockedBranchProvider.AssertExpectations(glcs.T())
+		mockedCommitProvider.AssertExpectations(glcs.T())
+		mockedDependencyListExporter.AssertExpectations(glcs.T())
 	})
 }
 
