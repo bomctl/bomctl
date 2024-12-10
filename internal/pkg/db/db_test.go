@@ -20,7 +20,6 @@
 package db_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/protobom/protobom/pkg/sbom"
@@ -177,7 +176,7 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		{
 			name:     "Normal (1 tag, 2 docs)",
 			tags:     []string{"tag2"},
-			expected: dbs.documents[:2],
+			expected: dbs.documents,
 		},
 		{
 			name:     "Normal (another tag, 1 doc)",
@@ -206,7 +205,7 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 			dbs.Require().Len(
 				filteredDocs,
 				len(data.expected),
-				fmt.Sprintf("expected length: %d does not match actual: %d", len(filteredDocs), len(data.expected)),
+				"expected length: %d does not match actual: %d", len(filteredDocs), len(data.expected),
 			)
 
 			for idx := range data.expected {
