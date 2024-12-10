@@ -49,6 +49,44 @@ type DocumentInfo struct {
 
 var lock = sync.Mutex{} //nolint:gochecknoglobals
 
+// AddChangeSetTestDocuments preloads a Backend with SBOMs from the changesetdata directory.
+// In addition, the stored Documents and corresponding bytes data are captured and returned.
+func AddChangeSetTestDocuments(backend *db.Backend) ([]*sbom.Document, error) {
+	documents := []*sbom.Document{}
+
+	testdataDir := GetTestChangeSetDataDir()
+
+	sboms, err := os.ReadDir(testdataDir)
+	if err != nil {
+		return nil, fmt.Errorf("reading testdata directory: %w", err)
+	}
+
+	for idx := range sboms {
+		var doc *sbom.Document
+
+		var err error
+
+		data, err := os.ReadFile(filepath.Join(testdataDir, sboms[idx].Name()))
+		if err != nil {
+			return nil, fmt.Errorf("reading testdata file %s: %w", sboms[idx].Name(), err)
+		}
+
+		if idx == 0 {
+			doc, err = backend.AddDocument(data, db.WithSourceDocumentAnnotations(data))
+		} else {
+			doc, err = backend.AddDocument(data, db.WithRevisedDocumentAnnotations(documents[len(documents)-1]))
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("storing document: %w", err)
+		}
+
+		documents = append(documents, doc)
+	}
+
+	return documents, nil
+}
+
 // AddTestDocuments preloads a Backend with SBOMs from the testdata directory.
 // In addition, the stored Documents and corresponding bytes data are captured and returned.
 func AddTestDocuments(backend *db.Backend) ([]DocumentInfo, error) {
@@ -107,4 +145,10 @@ func GetTestdataDir() string {
 	_, filename, _, _ := runtime.Caller(0) //nolint:dogsled
 
 	return filepath.Join(filepath.Dir(filename), "testdata")
+}
+
+func GetTestChangeSetDataDir() string {
+	_, filename, _, _ := runtime.Caller(0) //nolint:dogsled
+
+	return filepath.Join(filepath.Dir(filename), "changesetdata")
 }

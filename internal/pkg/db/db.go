@@ -29,7 +29,6 @@ import (
 	"slices"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/protobom/protobom/pkg/reader"
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/protobom/pkg/storage"
@@ -66,7 +65,7 @@ type (
 
 	BackendKey struct{}
 
-	Option func(*Backend, *sbom.Document) error
+	Option func(*Backend) error
 )
 
 var (
@@ -90,7 +89,7 @@ func NewBackend(opts ...Option) (*Backend, error) {
 	backend := &Backend{Backend: ent.NewBackend(), Logger: logger.New("db")}
 
 	for _, opt := range opts {
-		err := opt(backend, nil)
+		err := opt(backend)
 		if err != nil {
 			return nil, fmt.Errorf("failed to process backend options: %w", err)
 		}
@@ -127,7 +126,7 @@ func (backend *Backend) AddDocument(sbomData []byte, backendOpts ...Option) (*sb
 
 	// Collect backend options by calling associated functions.
 	for _, fn := range backendOpts {
-		err := fn(backend, document)
+		err := fn(backend)
 		if err != nil {
 			return nil, fmt.Errorf("handling document annotations: %w", err)
 		}
@@ -242,36 +241,6 @@ func (backend *Backend) GetDocumentTags(id string) ([]string, error) {
 	return tags, nil
 }
 
-func (backend *Backend) GetLatestDocument(document *sbom.Document) (*sbom.Document, error) {
-	docID := document.GetMetadata().GetId()
-
-	latest, err := backend.TraverseDocumentSet(docID, LatestRevisionAnnotation, RevisedDocumentAnnotation)
-	if err != nil {
-		return nil, err
-	}
-
-	if latest == docID {
-		return document, nil
-	}
-
-	return backend.GetDocumentByID(latest)
-}
-
-func (backend *Backend) GetRootDocument(document *sbom.Document) (*sbom.Document, error) {
-	docID := document.GetMetadata().GetId()
-
-	root, err := backend.TraverseDocumentSet(docID, SourceDataAnnotation, BaseDocumentAnnotation)
-	if err != nil {
-		return nil, err
-	}
-
-	if root == docID {
-		return document, nil
-	}
-
-	return backend.GetDocumentByID(root)
-}
-
 func (backend *Backend) SetAlias(documentID, alias string, force bool) error { //revive:disable:flag-parameter
 	if err := backend.validateNewAlias(alias); err != nil {
 		return fmt.Errorf("failed to set alias: %w", err)
@@ -299,59 +268,6 @@ func (backend *Backend) SetAlias(documentID, alias string, force bool) error { /
 	return nil
 }
 
-func (backend *Backend) TraverseDocumentSet(start, target, next string) (string, error) {
-	var found string
-
-	docID := start
-
-Loop:
-	for {
-		docAnnotations, err := backend.GetDocumentAnnotations(docID, target, next)
-		if err != nil {
-			return "", fmt.Errorf("%w", err)
-		}
-
-		annotationValues := sliceutil.Extract(docAnnotations,
-			func(et *ent.Annotation) string {
-				return et.Value
-			})
-
-		if !sliceutil.All(annotationValues, nil) {
-			return "", fmt.Errorf("target document not found: %w", err)
-		}
-
-		for _, annotation := range docAnnotations {
-			value := annotation.Value
-			if value == "" {
-				continue
-			}
-
-			switch annotation.Name {
-			case target:
-				found = docID
-
-				break Loop
-			case next:
-				docUUID, err := uuid.Parse(value)
-				if err != nil {
-					return "", fmt.Errorf("parsing uuid string: %w", err)
-				}
-
-				doc, err := backend.GetDocumentsByUUID(docUUID)
-				if err != nil {
-					return "", fmt.Errorf("retrieving document: %w", err)
-				}
-
-				docID = doc[0].GetMetadata().GetId()
-			default:
-				return "", fmt.Errorf("unhandled annotation name: %w", err)
-			}
-		}
-	}
-
-	return found, nil
-}
-
 func (backend *Backend) validateNewAlias(alias string) (err error) {
 	if isEmptyOrWhitespace := regexp.MustCompile(`^\s*$`).MatchString(alias); isEmptyOrWhitespace {
 		return errInvalidAlias
@@ -370,7 +286,7 @@ func (backend *Backend) validateNewAlias(alias string) (err error) {
 }
 
 func WithSourceDocumentAnnotations(sbomData []byte) Option {
-	return func(backend *Backend, _ *sbom.Document) error {
+	return func(backend *Backend) error {
 		hash := sha256.Sum256(sbomData)
 
 		backend.Options.Annotations = append(backend.Options.Annotations,
@@ -396,15 +312,10 @@ func WithSourceDocumentAnnotations(sbomData []byte) Option {
 }
 
 func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
-	return func(backend *Backend, revision *sbom.Document) error {
+	return func(backend *Backend) error {
 		baseID := base.GetMetadata().GetId()
 
 		baseUUID, err := ent.GenerateUUID(base)
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-
-		revisionUUID, err := ent.GenerateUUID(revision)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -426,7 +337,7 @@ func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
 			return fmt.Errorf("failed to remove latest annotation: %w", err)
 		}
 
-		if err := backend.AddDocumentAnnotations(baseID, RevisedDocumentAnnotation, revisionUUID.String()); err != nil {
+		if err := backend.AddDocumentAnnotations(baseID, RevisedDocumentAnnotation, "true"); err != nil {
 			return fmt.Errorf("failed to add revision annotation: %w", err)
 		}
 
@@ -458,7 +369,7 @@ func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
 
 // WithDatabaseFile sets the database file for the backend.
 func WithDatabaseFile(file string) Option {
-	return func(backend *Backend, _ *sbom.Document) error {
+	return func(backend *Backend) error {
 		backend.Backend.Options.DatabaseFile = file
 
 		return nil
@@ -467,7 +378,7 @@ func WithDatabaseFile(file string) Option {
 
 // WithVerbosity sets the SQL debugging level for the backend.
 func WithVerbosity(verbosity int) Option {
-	return func(backend *Backend, _ *sbom.Document) error {
+	return func(backend *Backend) error {
 		backend.Verbosity = verbosity
 
 		return nil

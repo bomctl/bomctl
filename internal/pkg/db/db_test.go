@@ -24,7 +24,6 @@ import (
 	"testing"
 
 	"github.com/protobom/protobom/pkg/sbom"
-	"github.com/protobom/storage/backends/ent"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -101,9 +100,6 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 				newID := newDoc.GetMetadata().GetId()
 				baseDocID := dbs.documentInfo[0].Document.GetMetadata().GetId()
 
-				newUUID, err := ent.GenerateUUID(newDoc)
-				dbs.Require().NoError(err)
-
 				baseID, err := dbs.Backend.GetDocumentUniqueAnnotation(newID, db.BaseDocumentAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.baseID, baseID)
@@ -111,18 +107,6 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 				alias, err := dbs.Backend.GetDocumentUniqueAnnotation(newID, db.AliasAnnotation)
 				dbs.Require().NoError(err)
 				dbs.Require().Equal(data.alias, alias)
-
-				latest, err := dbs.Backend.GetDocumentAnnotations(newID, db.LatestRevisionAnnotation)
-				dbs.Require().NoError(err)
-				dbs.Require().Equal("true", latest[0].Value)
-
-				latest, err = dbs.Backend.GetDocumentAnnotations(baseDocID, db.LatestRevisionAnnotation)
-				dbs.Require().NoError(err)
-				dbs.Require().Equal(ent.Annotations{}, latest)
-
-				revision, err := dbs.Backend.GetDocumentAnnotations(baseDocID, db.RevisedDocumentAnnotation)
-				dbs.Require().NoError(err)
-				dbs.Require().Equal(newUUID.String(), revision[0].Value)
 
 				alias, err = dbs.Backend.GetDocumentUniqueAnnotation(baseDocID, db.AliasAnnotation)
 				dbs.Require().NoError(err)
@@ -136,6 +120,47 @@ func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
 			}
 		})
 	}
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentByID() {
+	for _, document := range dbs.documents {
+		retrieved, err := dbs.Backend.GetDocumentByID(document.GetMetadata().GetId())
+		dbs.Require().NoError(err, "failed retrieving document", "id", document.GetMetadata().GetId())
+
+		dbs.Require().ElementsMatch(document.GetNodeList().GetRootElements(), retrieved.GetNodeList().GetRootElements())
+		dbs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
+	}
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentByIDOrAlias() {
+	cdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("cdx")
+	if err != nil {
+		dbs.Fail("failed retrieving document", "alias", "cdx")
+	}
+
+	spdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("spdx")
+	if err != nil {
+		dbs.Fail("failed retrieving document", "alias", "spdx")
+	}
+
+	dbs.Require().Equal(cdxDoc.GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().Equal(spdxDoc.GetMetadata().GetId(), dbs.documents[1].GetMetadata().GetId())
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentsByIDOrAlias() {
+	docs, err := dbs.Backend.GetDocumentsByIDOrAlias("cdx", "spdx")
+	if err != nil {
+		dbs.Fail("failed retrieving document", "aliases", "cdx, spdx")
+	}
+
+	dbs.Require().Equal(docs[0].GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().Equal(docs[1].GetMetadata().GetId(), dbs.documents[1].GetMetadata().GetId())
+}
+
+func (dbs *dbSuite) TestBackend_GetDocumentTags() {
+	tags, err := dbs.Backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
+	dbs.Require().NoError(err)
+	dbs.Require().EqualValues([]string{"tag1", "tag2"}, tags)
 }
 
 func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
@@ -156,13 +181,13 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		},
 		{
 			name:     "Normal (another tag, 1 doc)",
-			tags:     []string{"tag5"},
-			expected: []*sbom.Document{dbs.documents[3]},
+			tags:     []string{"tag3"},
+			expected: []*sbom.Document{dbs.documents[1]},
 		},
 		{
 			name:     "Normal (multiple tags)",
 			tags:     []string{"tag1", "tag2", "tag3"},
-			expected: dbs.documents[0:3],
+			expected: dbs.documents,
 		},
 		{
 			name:     "Unknown tag",
@@ -188,69 +213,6 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 				dbs.Equal(filteredDocs[idx].GetMetadata().GetId(), data.expected[idx].GetMetadata().GetId())
 			}
 		})
-	}
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentByID() {
-	for _, document := range dbs.documents {
-		retrieved, err := dbs.Backend.GetDocumentByID(document.GetMetadata().GetId())
-		dbs.Require().NoError(err, "failed retrieving document", "id", document.GetMetadata().GetId())
-
-		dbs.Require().True(retrieved.GetNodeList().Equal(document.GetNodeList()))
-		dbs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
-	}
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentByIDOrAlias() {
-	cdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("cdx")
-	dbs.Require().NoError(err, "failed retrieving document with alias: cdx")
-
-	spdxDoc, err := dbs.Backend.GetDocumentByIDOrAlias("spdx")
-	dbs.Require().NoError(err, "failed retrieving document with alias: spdx")
-
-	dbs.Require().Equal(dbs.documents[0].GetMetadata().GetId(), cdxDoc.GetMetadata().GetId())
-	dbs.Require().Equal(dbs.documents[2].GetMetadata().GetId(), spdxDoc.GetMetadata().GetId())
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentsByIDOrAlias() {
-	docs, err := dbs.Backend.GetDocumentsByIDOrAlias("cdx", "spdx")
-	dbs.Require().NoError(err, "failed retrieving documents with aliases: cdx, spdx")
-
-	dbs.Require().Equal(docs[0].GetMetadata().GetId(), dbs.documents[0].GetMetadata().GetId())
-	dbs.Require().Equal(docs[1].GetMetadata().GetId(), dbs.documents[2].GetMetadata().GetId())
-}
-
-func (dbs *dbSuite) TestBackend_GetDocumentTags() {
-	tags, err := dbs.Backend.GetDocumentTags(dbs.documents[0].GetMetadata().GetId())
-	dbs.Require().NoError(err)
-	dbs.Require().EqualValues([]string{"tag1", "tag2"}, tags)
-}
-
-func (dbs *dbSuite) TestBackend_GetLatestDocument() {
-	tempbe, err := testutil.NewTestBackend()
-	dbs.Require().NoError(err)
-
-	boms, err := createTestDocumentSet(dbs.documentInfo, tempbe)
-	dbs.Require().NoError(err)
-
-	for _, bom := range boms {
-		rootDoc, err := tempbe.GetLatestDocument(bom)
-		dbs.Require().NoError(err)
-		dbs.Require().Equal(rootDoc.GetMetadata().GetId(), boms[3].GetMetadata().GetId())
-	}
-}
-
-func (dbs *dbSuite) TestBackend_GetRootDocument() {
-	tempbe, err := testutil.NewTestBackend()
-	dbs.Require().NoError(err)
-
-	boms, err := createTestDocumentSet(dbs.documentInfo, tempbe)
-	dbs.Require().NoError(err)
-
-	for _, bom := range boms {
-		rootDoc, err := tempbe.GetRootDocument(bom)
-		dbs.Require().NoError(err)
-		dbs.Require().Equal(rootDoc.GetMetadata().GetId(), boms[0].GetMetadata().GetId())
 	}
 }
 
@@ -287,14 +249,14 @@ func (dbs *dbSuite) TestBackend_SetAlias() {
 		},
 		{
 			name:      "Existing alias",
-			alias:     "cdx16",
+			alias:     "cdx2",
 			errorMsg:  "the document already has an alias",
 			doc0Alias: "cdx",
 			force:     false,
 		},
 		{
 			name:      "Existing alias (force)",
-			alias:     "cdx16",
+			alias:     "cdx2",
 			errorMsg:  "",
 			doc0Alias: "cdx",
 			force:     true,
@@ -327,24 +289,4 @@ func (dbs *dbSuite) TestBackend_SetAlias() {
 func TestDBSuite(t *testing.T) {
 	t.Parallel()
 	suite.Run(t, new(dbSuite))
-}
-
-func createTestDocumentSet(sboms []testutil.DocumentInfo, backend *db.Backend) ([]*sbom.Document, error) {
-	rootDoc, err := backend.AddDocument(sboms[0].Content, db.WithSourceDocumentAnnotations(sboms[0].Content))
-	if err != nil {
-		return nil, fmt.Errorf("creating test document set: %w", err)
-	}
-
-	docSlice := []*sbom.Document{rootDoc}
-
-	for i, bom := range sboms[1:] {
-		doc, err := backend.AddDocument(bom.Content, db.WithRevisedDocumentAnnotations(sboms[i].Document))
-		if err != nil {
-			return nil, fmt.Errorf("creating test document set: %w", err)
-		}
-
-		docSlice = append(docSlice, doc)
-	}
-
-	return docSlice, nil
 }
