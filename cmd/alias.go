@@ -116,6 +116,7 @@ func aliasRemoveCmd() *cobra.Command {
 				backend.Logger.Fatal(err, "name", db.AliasAnnotation, "value", docAlias)
 			}
 		},
+		ValidArgsFunction: getDocumentCompletionArgs,
 	}
 
 	return aliasRemoveCmd
@@ -153,6 +154,7 @@ func aliasSetCmd() *cobra.Command {
 				}
 			}
 		},
+		ValidArgsFunction: getDocumentCompletionArgs,
 	}
 
 	aliasSetCmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Force replacing an existing alias, if there is one")

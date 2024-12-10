@@ -56,6 +56,7 @@ func mergeCmd() *cobra.Command {
 				backend.Logger.Fatal(err)
 			}
 		},
+		ValidArgsFunction: getDocumentCompletionArgs,
 	}
 
 	mergeCmd.Flags().StringP("name", "n", "", "Name of merged document")
