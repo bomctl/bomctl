@@ -3,6 +3,7 @@
 
 # Whitelist patterns anchored to project root
 !/.adr-dir
+!/.clusterfuzzlite/build.sh
 !/.commitlint.yaml
 !/.editorconfig
 !/.gitattributes
