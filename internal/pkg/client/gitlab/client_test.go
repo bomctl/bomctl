@@ -43,6 +43,8 @@ type (
 	}
 )
 
+//revive:disable:unchecked-type-assertion
+
 func (mc *mockClient) GetProject(
 	pid any,
 	opt *gogitlab.GetProjectOptions,
@@ -50,7 +52,7 @@ func (mc *mockClient) GetProject(
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mc.Called(pid, opt, options)
 
-	//nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -61,7 +63,7 @@ func (mc *mockClient) GetBranch(
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mc.Called(pid, branch, options)
 
-	//nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -73,7 +75,7 @@ func (mc *mockClient) GetCommit(
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mc.Called(pid, sha, opt, options)
 
-	//nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -84,7 +86,7 @@ func (mc *mockClient) CreateDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mc.Called(pipelineID, opt, options)
 
-	//nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -94,7 +96,7 @@ func (mc *mockClient) GetDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mc.Called(id, options)
 
-	//nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,wrapcheck
 	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -104,9 +106,11 @@ func (mc *mockClient) DownloadDependencyListExport(
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mc.Called(id, options)
 
-	//nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,wrapcheck
 	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
+
+//revive:enable:unchecked-type-assertion
 
 var successGitLabResponse = &gogitlab.Response{
 	Response: &http.Response{
