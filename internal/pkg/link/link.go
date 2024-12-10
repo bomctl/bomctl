@@ -22,6 +22,7 @@ package link
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
@@ -67,15 +68,29 @@ func AddLink(backend *db.Backend, opts *options.LinkOptions) error {
 
 func ClearLinks(backend *db.Backend, opts *options.LinkOptions) error {
 	for _, from := range opts.DocumentIDs {
+		links, err := backend.GetDocumentAnnotations(from, db.LinkToAnnotation)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
 		if err := backend.RemoveDocumentAnnotations(from, db.LinkToAnnotation); err != nil {
 			return fmt.Errorf("%w", err)
 		}
+
+		opts.Logger.Info("Cleared document links", "id", from, "links", links)
 	}
 
 	for _, from := range opts.NodeIDs {
+		links, err := backend.GetNodeAnnotations(from, db.LinkToAnnotation)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
 		if err := backend.RemoveNodeAnnotations(from, db.LinkToAnnotation); err != nil {
 			return fmt.Errorf("%w", err)
 		}
+
+		opts.Logger.Info("Cleared node links", "id", from, "links", links)
 	}
 
 	return nil
@@ -137,18 +152,27 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) error {
 }
 
 func RemoveLink(backend *db.Backend, opts *options.LinkOptions) error {
-	var err error
+	var (
+		err          error
+		id, fromType string
+	)
 
 	switch {
 	case len(opts.DocumentIDs) > 0:
-		err = backend.RemoveDocumentAnnotations(opts.DocumentIDs[0], db.LinkToAnnotation, opts.ToIDs...)
+		fromType = "document"
+		id = opts.DocumentIDs[0]
+		err = backend.RemoveDocumentAnnotations(id, db.LinkToAnnotation, opts.ToIDs...)
 	case len(opts.NodeIDs) > 0:
-		err = backend.RemoveNodeAnnotations(opts.NodeIDs[0], db.LinkToAnnotation, opts.ToIDs...)
+		fromType = "node"
+		id = opts.NodeIDs[0]
+		err = backend.RemoveNodeAnnotations(id, db.LinkToAnnotation, opts.ToIDs...)
 	}
 
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
+
+	opts.Logger.Info("Removed links from "+fromType, "id", id, "links", strings.Join(opts.ToIDs, "\n\t"))
 
 	return nil
 }
