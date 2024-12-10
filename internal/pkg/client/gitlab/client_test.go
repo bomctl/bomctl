@@ -50,7 +50,8 @@ func (mc *mockClient) GetProject(
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mc.Called(pid, opt, options)
 
-	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
+	//nolint:errcheck,revive,wrapcheck
+	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
 func (mc *mockClient) GetBranch(
@@ -60,7 +61,8 @@ func (mc *mockClient) GetBranch(
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mc.Called(pid, branch, options)
 
-	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
+	//nolint:errcheck,revive,wrapcheck
+	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
 func (mc *mockClient) GetCommit(
@@ -71,7 +73,8 @@ func (mc *mockClient) GetCommit(
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mc.Called(pid, sha, opt, options)
 
-	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
+	//nolint:errcheck,revive,wrapcheck
+	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
 func (mc *mockClient) CreateDependencyListExport(
@@ -81,7 +84,8 @@ func (mc *mockClient) CreateDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mc.Called(pipelineID, opt, options)
 
-	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
+	//nolint:errcheck,revive,wrapcheck
+	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
 func (mc *mockClient) GetDependencyListExport(
@@ -90,7 +94,8 @@ func (mc *mockClient) GetDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mc.Called(id, options)
 
-	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck,lll
+	//nolint:errcheck,revive,wrapcheck
+	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
 func (mc *mockClient) DownloadDependencyListExport(
@@ -99,7 +104,8 @@ func (mc *mockClient) DownloadDependencyListExport(
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mc.Called(id, options)
 
-	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2) //nolint:errcheck,revive,wrapcheck
+	//nolint:errcheck,revive,wrapcheck
+	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
 var successGitLabResponse = &gogitlab.Response{

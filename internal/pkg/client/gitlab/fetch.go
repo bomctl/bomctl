@@ -68,7 +68,7 @@ type (
 		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
 	}
 
-	GitLabClientWrapper interface {
+	ClientWrapper interface {
 		ProjectProvider
 		BranchProvider
 		CommitProvider
