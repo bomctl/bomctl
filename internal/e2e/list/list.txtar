@@ -53,7 +53,6 @@ cmp stdout list_tag.txt
 ! stderr .
 
 -- list_no_input.txt --
-
 ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
 Alias   : 
 Version : 1
@@ -78,11 +77,8 @@ ID      : https://anchore.com/syft/file/bomctl_0.3.0_linux_amd64.tar.gz-1b838d44
 Alias   : 
 Version : 0
 # Nodes : 81
-
 -- list_tag.txt --
-
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : 
 Version : 1
 # Nodes : 3
-

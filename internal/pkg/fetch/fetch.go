@@ -33,6 +33,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
@@ -95,8 +96,27 @@ func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts 
 			defer extRefOpts.OutputFile.Close() //revive:disable:defer
 		}
 
-		if _, err := Fetch(ref.GetUrl(), &extRefOpts); err != nil {
+		extRefDoc, err := Fetch(ref.GetUrl(), &extRefOpts)
+		if err != nil {
 			return err
+		}
+
+		// Search through all nodes for the corresponding external reference source.
+		extRefNode, err := sliceutil.Next(document.GetNodeList().GetNodes(), func(n *sbom.Node) bool {
+			return sliceutil.Any(n.GetExternalReferences(), func(er *sbom.ExternalReference) bool {
+				return er.GetUrl() == ref.GetUrl()
+			})
+		})
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		if err := backend.AddNodeAnnotations(
+			extRefNode.GetId(),
+			db.LinkToAnnotation,
+			extRefDoc.GetMetadata().GetId(),
+		); err != nil {
+			return fmt.Errorf("%w", err)
 		}
 	}
 

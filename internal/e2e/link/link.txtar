@@ -1,0 +1,65 @@
+[windows] env TMPDIR=$TMP
+[windows] env LocalAppData=$WORK\tmp"
+[windows] env AppData=$WORK
+setup_cache $WORK
+
+# link -help
+exec bomctl link -h --cache-dir $WORK
+! stderr .
+stdout .
+
+# link --help
+exec bomctl link --help --cache-dir $WORK
+! stderr .
+stdout .
+
+# help link
+exec bomctl help link --cache-dir $WORK
+! stderr .
+stdout .
+
+# link no input
+exec bomctl link --cache-dir $WORK
+! stderr .
+stdout .
+
+# link add no input (FAILURE EXPECTED)
+! exec bomctl link add --cache-dir $WORK
+stderr -count=1 '^Error: accepts 2 arg\(s\), received 0$'
+! stdout .
+
+# link add one arg (FAILURE EXPECTED)
+! exec bomctl link add --cache-dir $WORK document:"urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
+stderr '^Error: accepts 2 arg\(s\), received 1'
+! stdout .
+
+# link remove no input (FAILURE EXPECTED)
+! exec bomctl link remove --cache-dir $WORK
+stderr '^Error: requires at least 2 arg\(s\), only received 0'
+! stdout .
+
+# link list no input (FAILURE EXPECTED)
+! exec bomctl link list --cache-dir $WORK
+stderr '^Error: accepts 1 arg\(s\), received 0'
+! stdout .
+
+# link clear no input (FAILURE EXPECTED)
+! exec bomctl link clear --cache-dir $WORK
+stderr '^Error: requires at least 1 arg\(s\), only received 0'
+! stdout .
+
+# link add two documents
+exec bomctl link add --cache-dir $WORK document:urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5 document:urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+stderr '^INFO  link: Adding document link from=urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5 to=urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d$'
+! stdout .
+
+# link clear documents
+exec bomctl link clear --cache-dir $WORK document:urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db document:urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+stderr '^INFO  link: Cleared document links id=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db links=\[\]$'
+! stdout .
+
+# link remove document
+exec bomctl link add --cache-dir $WORK document:urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5 document:urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+exec bomctl link remove --cache-dir $WORK document:urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5 document:urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d
+stderr '^INFO  link: Removed links from document id=urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5 links=urn:uuid:0cd5c64f-318a-40cd-a2a9-a93301beff5d$'
+! stdout .

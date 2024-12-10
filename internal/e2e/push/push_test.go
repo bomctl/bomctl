@@ -150,8 +150,5 @@ func TestBomctlPush(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	exitCode := testscript.RunMain(m, map[string]func() int{
-		"bomctl": cmd.Execute,
-	})
-	os.Exit(exitCode)
+	os.Exit(testscript.RunMain(m, map[string]func() int{"bomctl": cmd.Execute}))
 }
