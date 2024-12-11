@@ -107,7 +107,7 @@ func getDocumentCompletionArgs(
 		}
 
 		for _, annotation := range annotations {
-			if strings.HasPrefix(annotation.Name, aliasAnnotationName) &&
+			if strings.HasPrefix(annotation.Name, db.AliasAnnotation) &&
 				strings.HasPrefix(annotation.Value, toComplete) {
 				comps = cobra.AppendActiveHelp(comps, documentID+" ("+annotation.Value+")")
 
