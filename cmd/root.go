@@ -71,10 +71,8 @@ func defaultConfig() string {
 func getDocumentCompletionArgs(
 	cmd *cobra.Command,
 	_ []string,
-	toComplete string) (
-	[]string,
-	cobra.ShellCompDirective,
-) {
+	toComplete string,
+) ([]string, cobra.ShellCompDirective) {
 	backend, err := db.BackendFromContext(cmd.Context())
 	if err != nil {
 		logger.New("").Fatal(err)
