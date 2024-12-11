@@ -41,7 +41,6 @@ const (
 	modeUserRead        = 0o400
 	modeUserWrite       = 0o200
 	modeUserExec        = 0o100
-	aliasAnnotationName = "bomctl_annotation_alias"
 )
 
 type optionsKey struct{}
