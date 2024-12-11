@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )

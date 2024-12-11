@@ -28,7 +28,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	gogitlab "github.com/xanzy/go-gitlab"
+	gogitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/gitlab"
 )

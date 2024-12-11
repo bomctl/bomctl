@@ -27,7 +27,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	bomctloptions "github.com/bomctl/bomctl/internal/pkg/options"
 )
@@ -180,9 +180,7 @@ func (client *Client) downloadExport() ([]byte, error) {
 		return nil, err
 	}
 
-	var sbomData []byte
-
-	_, err = sbomReader.Read(sbomData)
+	sbomData, err := io.ReadAll(sbomReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read SBOM data: %w", err)
 	}
