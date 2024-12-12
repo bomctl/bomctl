@@ -27,5 +27,4 @@ var (
 	errEncodingNotSupported = errors.New("encoding not supported for selected format")
 	errFileNotFound         = errors.New("not a file or does not exist")
 	errFormatNotSupported   = errors.New("format not supported")
-	errInvalidLinkPrefix    = errors.New("must be prefixed with either 'document:' or 'node:'")
 )

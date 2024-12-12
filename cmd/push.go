@@ -20,7 +20,6 @@
 package cmd
 
 import (
-	"github.com/protobom/protobom/pkg/formats"
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/options"
@@ -41,11 +40,8 @@ func pushCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			formatString, err := cmd.Flags().GetString("format")
-			cobra.CheckErr(err)
-
-			encoding, err := cmd.Flags().GetString("encoding")
-			cobra.CheckErr(err)
+			formatString := cmd.Flag("format").Value.String()
+			encoding := cmd.Flag("encoding").Value.String()
 
 			format, err := parseFormat(formatString, encoding)
 			if err != nil {
@@ -66,8 +62,10 @@ func pushCmd() *cobra.Command {
 		},
 	}
 
-	pushCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
-	pushCmd.Flags().StringP("format", "f", formats.CDXFORMAT, formatHelp())
+	formatValue, encodingValue := formatChoice(), encodingChoice()
+
+	pushCmd.Flags().VarP(formatValue, "format", "f", formatValue.Usage())
+	pushCmd.Flags().VarP(encodingValue, "encoding", "e", encodingValue.Usage())
 	pushCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
 	pushCmd.Flags().BoolVar(&opts.UseTree, "tree", false, "Recursively push all SBOMs in external reference tree")
 
