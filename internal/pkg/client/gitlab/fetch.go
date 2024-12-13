@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -77,21 +76,6 @@ var (
 	errFailedWebRequest = errors.New("web request failed")
 	errForbiddenAccess  = errors.New("the supplied token is missing the read_dependency permission")
 )
-
-func initClientDependencyListExport(client *Client, baseURL, gitLabToken string) error {
-	gitlabClient, err := gitlab.NewClient(gitLabToken, gitlab.WithBaseURL(baseURL))
-	if err != nil {
-		return fmt.Errorf("failed to create client: %w", err)
-	}
-
-	client.ProjectProvider = gitlabClient.Projects
-	client.BranchProvider = gitlabClient.Branches
-	client.CommitProvider = gitlabClient.Commits
-	client.DependencyListExporter = gitlabClient.DependencyListExport
-	client.Export = nil
-
-	return nil
-}
 
 func validateHTTPStatusCode(statusCode int) error {
 	if statusCode < http.StatusOK || http.StatusMultipleChoices <= statusCode {
@@ -194,26 +178,8 @@ func (client *Client) Fetch(fetchURL string, _ *bomctloptions.FetchOptions) ([]b
 		return nil, fmt.Errorf("%w: %s", errInvalidGitLabURL, fetchURL)
 	}
 
-	domain := url.Hostname
-	if url.Port != "" {
-		domain = fmt.Sprintf("%s:%s", domain, url.Port)
-	}
-
-	baseURL := fmt.Sprintf("https://%s/api/v4", domain)
 	projectName := url.Path
 	branchName := url.Fragment
-
-	gitLabToken := os.Getenv("BOMCTL_GITLAB_TOKEN")
-
-	if client.InitFetch == nil {
-		client.InitFetch = func(c *Client) error {
-			return initClientDependencyListExport(c, baseURL, gitLabToken)
-		}
-	}
-
-	if err := client.InitFetch(client); err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
 
 	if err := client.createExport(projectName, branchName); err != nil {
 		return nil, err

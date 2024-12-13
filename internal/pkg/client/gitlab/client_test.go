@@ -233,18 +233,16 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		[]gogitlab.RequestOptionFunc(nil),
 	).Return(bytes.NewBuffer(expectedSbomData), successGitLabResponse, nil)
 
-	glcs.Run("fetch", func() {
-		_, err := (&gitlab.Client{
-			InitFetch: func(c *gitlab.Client) error {
-				c.ProjectProvider = mockedProjectProvider
-				c.BranchProvider = mockedBranchProvider
-				c.CommitProvider = mockedCommitProvider
-				c.DependencyListExporter = mockedDependencyListExporter
-				c.Export = nil
+	client := &gitlab.Client{
+		ProjectProvider:        mockedProjectProvider,
+		BranchProvider:         mockedBranchProvider,
+		CommitProvider:         mockedCommitProvider,
+		DependencyListExporter: mockedDependencyListExporter,
+		Export:                 nil,
+	}
 
-				return nil
-			},
-		}).Fetch(dummyFetchURL, nil)
+	glcs.Run("Fetch", func() {
+		_, err := client.Fetch(dummyFetchURL, nil)
 		glcs.Require().NoError(err, "failed to create dependency list export: %v", err)
 
 		mockedProjectProvider.AssertExpectations(glcs.T())

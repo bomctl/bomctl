@@ -22,6 +22,7 @@ package client
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/github"
@@ -44,7 +45,13 @@ type Client interface {
 }
 
 func New(sbomURL string) (Client, error) {
-	for _, client := range []Client{&github.Client{}, &gitlab.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}} {
+	for _, client := range []Client{
+		&github.Client{},
+		gitlab.NewGitLabClient(sbomURL, os.Getenv("BOMCTL_GITLAB_TOKEN")),
+		&git.Client{},
+		&http.Client{},
+		&oci.Client{},
+	} {
 		if url := client.Parse(sbomURL); url != nil {
 			return client, nil
 		}

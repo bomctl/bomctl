@@ -33,9 +33,8 @@ type Client struct {
 	BranchProvider
 	CommitProvider
 	DependencyListExporter
-	Export *gitlab.DependencyListExport
-
-	InitFetch func(*Client) error
+	Export      *gitlab.DependencyListExport
+	GitLabToken string
 }
 
 func (*Client) Name() string {
@@ -72,4 +71,35 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		Path:     results["path"],
 		Fragment: results["branch"],
 	}
+}
+
+func NewGitLabClient(sourceURL, gitLabToken string) *Client {
+	client := &Client{
+		GitLabToken: gitLabToken,
+	}
+
+	url := client.Parse(sourceURL)
+	if url == nil {
+		return nil
+	}
+
+	domain := url.Hostname
+	if url.Port != "" {
+		domain = fmt.Sprintf("%s:%s", domain, url.Port)
+	}
+
+	baseURL := fmt.Sprintf("https://%s/api/v4", domain)
+
+	gitLabClient, err := gitlab.NewClient(gitLabToken, gitlab.WithBaseURL(baseURL))
+	if err != nil {
+		return nil
+	}
+
+	client.ProjectProvider = gitLabClient.Projects
+	client.BranchProvider = gitLabClient.Branches
+	client.CommitProvider = gitLabClient.Commits
+	client.DependencyListExporter = gitLabClient.DependencyListExport
+	client.Export = nil
+
+	return client
 }
