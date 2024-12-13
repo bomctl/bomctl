@@ -67,7 +67,7 @@ func AddTestDocuments(backend *db.Backend) ([]DocumentInfo, error) {
 			return nil, fmt.Errorf("reading testdata file %s: %w", sboms[idx].Name(), err)
 		}
 
-		doc, err := backend.AddDocument(data)
+		doc, err := backend.AddDocument(data, db.WithSourceDocumentAnnotations(data))
 		if err != nil {
 			return nil, fmt.Errorf("storing document: %w", err)
 		}

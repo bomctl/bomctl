@@ -74,7 +74,7 @@ func setupCache(script *testscript.TestScript, _ bool, args []string) {
 		sbomData, err := os.ReadFile(filepath.Join(testDataDir, name))
 		script.Check(err)
 
-		_, err = backend.AddDocument(sbomData)
+		_, err = backend.AddDocument(sbomData, db.WithSourceDocumentAnnotations(sbomData))
 		script.Check(err)
 	}
 }

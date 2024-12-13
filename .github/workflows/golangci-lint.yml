@@ -59,7 +59,7 @@ jobs:
         uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8 # v6.1.1
         with:
           install-mode: goinstall
-          version: a1d6c560de1a193a0c68ffed68cd5928ef39e884 # v1.61.0
+          version: 89476e7a1eaa0a8a06c17343af960a5fd9e7edb7 # v1.62.2
 
       - name: Check Go file license headers
         run: .github/scripts/check-go-headers.sh
