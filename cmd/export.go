@@ -24,7 +24,6 @@ import (
 	"os"
 	"regexp"
 	"slices"
-	"strings"
 
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/protobom/protobom/pkg/native"
@@ -52,11 +51,8 @@ func exportCmd() *cobra.Command { //nolint:funlen
 
 			defer backend.CloseClient()
 
-			formatString, err := cmd.Flags().GetString("format")
-			cobra.CheckErr(err)
-
-			encoding, err := cmd.Flags().GetString("encoding")
-			cobra.CheckErr(err)
+			formatString := cmd.Flag("format").Value.String()
+			encoding := cmd.Flag("encoding").Value.String()
 
 			format, err := parseFormat(formatString, encoding)
 			if err != nil {
@@ -98,18 +94,21 @@ func exportCmd() *cobra.Command { //nolint:funlen
 		},
 	}
 
-	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "path to output file")
-	exportCmd.Flags().StringP("format", "f", db.OriginalFormat, formatHelp())
-	exportCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
+	formatValue, encodingValue := formatChoice(), encodingChoice()
+
+	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "Path to output file")
+	exportCmd.Flags().VarP(formatValue, "format", "f", formatValue.Usage())
+	exportCmd.Flags().VarP(encodingValue, "encoding", "e", encodingValue.Usage())
+
+	cobra.CheckErr(exportCmd.RegisterFlagCompletionFunc("format", formatValue.CompletionFunc()))
+	cobra.CheckErr(exportCmd.RegisterFlagCompletionFunc("encoding", encodingValue.CompletionFunc()))
 
 	return exportCmd
 }
 
-func encodingHelp() string {
-	return fmt.Sprintf("output encoding [%s: [%s], %s: [%s]]",
-		formats.SPDXFORMAT, strings.Join(encodingOptions()[formats.SPDXFORMAT], ", "),
-		formats.CDXFORMAT, strings.Join(encodingOptions()[formats.CDXFORMAT], ", "),
-	)
+func encodingChoice() *choiceValue {
+	return newChoiceValue("Output encoding ('xml' supported for CycloneDX formats only)",
+		formats.JSON, formats.JSON, formats.XML)
 }
 
 func encodingOptions() map[string][]string {
@@ -120,8 +119,8 @@ func encodingOptions() map[string][]string {
 	}
 }
 
-func formatHelp() string {
-	return fmt.Sprintf("SBOM output format [%s]", strings.Join(formatOptions(), ", "))
+func formatChoice() *choiceValue {
+	return newChoiceValue("Output format", db.OriginalFormat, formatOptions()...)
 }
 
 func formatOptions() []string {
