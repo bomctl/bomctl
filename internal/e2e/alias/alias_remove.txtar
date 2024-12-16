@@ -63,17 +63,23 @@ exec bomctl list --cache-dir $WORK
 cmp stdout empty_remove_list.txt
 
 -- empty_remove_list.txt --
+
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : 
 Version : 1
 # Nodes : 3
+
 -- orange_remove_list.txt --
+
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : orange
 Version : 1
 # Nodes : 3
+
 -- apple_remove_list.txt --
+
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : apple
 Version : 1
 # Nodes : 3
+

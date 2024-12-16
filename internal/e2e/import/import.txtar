@@ -130,15 +130,19 @@ Tags for urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 vanilla
 
 -- import_alias_list.txt --
+
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : chocolate
 Version : 1
 # Nodes : 3
+
 -- import_list.txt --
+
 ID      : urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79
 Alias   : 
 Version : 1
 # Nodes : 3
+
 -- import_test.cdx.json --
 {
   "bomFormat": "CycloneDX",
