@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/sliceutil/sliceutils_test.go
+// SPDX-FileName: internal/pkg/sliceutil/sliceutil_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -254,6 +254,44 @@ func (ss *sliceutilsSuite) TestNext() {
 		} else {
 			ss.Equal(data.expected, actual)
 		}
+	}
+}
+
+func (ss *sliceutilsSuite) TestUnpack() {
+	var first, second, third string
+
+	for _, data := range []struct {
+		expectedFirst, expectedSecond, expectedThird string
+		items, expectedExtra                         []string
+	}{
+		{
+			items:          []string{"first", "second", "third", "fourth"},
+			expectedFirst:  "first",
+			expectedSecond: "second",
+			expectedThird:  "third",
+			expectedExtra:  []string{"fourth"},
+		},
+		{
+			items:          []string{"first", "second", "third"},
+			expectedFirst:  "first",
+			expectedSecond: "second",
+			expectedThird:  "third",
+			expectedExtra:  []string{},
+		},
+		{
+			items:          []string{"first", "second"},
+			expectedFirst:  "first",
+			expectedSecond: "second",
+			expectedThird:  "",
+			expectedExtra:  []string{},
+		},
+	} {
+		extra := sliceutil.Unpack(data.items, &first, &second, &third)
+
+		ss.ElementsMatch(data.expectedExtra, extra)
+		ss.Equal(data.expectedFirst, first)
+		ss.Equal(data.expectedSecond, second)
+		ss.Equal(data.expectedThird, third)
 	}
 }
 
