@@ -107,8 +107,7 @@ func exportCmd() *cobra.Command { //nolint:funlen
 }
 
 func encodingChoice() *choiceValue {
-	return newChoiceValue("Output encoding ('xml' supported for CycloneDX formats only)",
-		formats.JSON, formats.JSON, formats.XML)
+	return newChoiceValue("Output encoding ('xml' supported for CycloneDX formats only)", formats.JSON, formats.XML)
 }
 
 func encodingOptions() map[string][]string {
@@ -120,7 +119,7 @@ func encodingOptions() map[string][]string {
 }
 
 func formatChoice() *choiceValue {
-	return newChoiceValue("Output format", db.OriginalFormat, formatOptions()...)
+	return newChoiceValue("Output format", db.OriginalFormat, formatOptions()[1:]...)
 }
 
 func formatOptions() []string {
