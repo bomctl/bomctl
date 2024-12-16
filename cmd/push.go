@@ -60,6 +60,7 @@ func pushCmd() *cobra.Command {
 				opts.Logger.Fatal(err)
 			}
 		},
+		ValidArgsFunction: completions,
 	}
 
 	formatValue, encodingValue := formatChoice(), encodingChoice()
