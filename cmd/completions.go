@@ -25,9 +25,11 @@ import (
 	"strings"
 
 	"github.com/protobom/protobom/pkg/sbom"
+	"github.com/protobom/storage/backends/ent"
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
@@ -67,14 +69,14 @@ func completions(
 			return nil, cobra.ShellCompDirectiveError
 		}
 
-		for _, annotation := range annotations {
-			if strings.HasPrefix(annotation.Name, db.AliasAnnotation) &&
-				strings.HasPrefix(annotation.Value, toComplete) {
-				comps = cobra.AppendActiveHelp(comps, fmt.Sprintf("%s (%s)", documentID, annotation.Value))
-
-				break
-			}
+		annotation, err := sliceutil.Next(annotations, func(a *ent.Annotation) bool {
+			return strings.HasPrefix(a.Name, db.AliasAnnotation) && strings.HasPrefix(a.Value, toComplete)
+		})
+		if err != nil {
+			logger.New("").Fatal(err)
 		}
+
+		comps = cobra.AppendActiveHelp(comps, fmt.Sprintf("%s (%s)", documentID, annotation.Value))
 	}
 
 	return comps, cobra.ShellCompDirectiveNoFileComp
