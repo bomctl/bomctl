@@ -29,7 +29,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
@@ -46,7 +45,7 @@ func completions(
 
 	documents, err := backend.GetDocumentsByIDOrAlias()
 	if err != nil {
-		backend.Logger.Fatal(err)
+		return nil, cobra.ShellCompDirectiveError
 	}
 
 	documentIDs := sliceutil.Extract(documents, func(doc *sbom.Document) string {
@@ -73,7 +72,7 @@ func completions(
 			return strings.HasPrefix(a.Name, db.AliasAnnotation) && strings.HasPrefix(a.Value, toComplete)
 		})
 		if err != nil {
-			logger.New("").Fatal(err)
+			return nil, cobra.ShellCompDirectiveError
 		}
 
 		comps = cobra.AppendActiveHelp(comps, fmt.Sprintf("%s (%s)", documentID, annotation.Value))
