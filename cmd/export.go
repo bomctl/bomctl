@@ -102,6 +102,8 @@ func exportCmd() *cobra.Command { //nolint:funlen
 	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "path to output file")
 	exportCmd.Flags().StringP("format", "f", db.OriginalFormat, formatHelp())
 	exportCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
+	cobra.CheckErr(exportCmd.RegisterFlagCompletionFunc("format", formatCompletions))
+	cobra.CheckErr(exportCmd.RegisterFlagCompletionFunc("encoding", encodingCompletions))
 
 	return exportCmd
 }

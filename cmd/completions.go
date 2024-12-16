@@ -24,9 +24,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/spf13/cobra"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 func completions(
@@ -45,8 +47,11 @@ func completions(
 		backend.Logger.Fatal(err)
 	}
 
-	for _, document := range documents {
-		documentID := document.GetMetadata().GetId()
+	documentIDs := sliceutil.Extract(documents, func(doc *sbom.Document) string {
+		return doc.GetMetadata().GetId()
+	})
+
+	for _, documentID := range documentIDs {
 		if slices.Contains(comps, documentID) {
 			continue
 		}
@@ -59,7 +64,7 @@ func completions(
 
 		annotations, err := backend.GetDocumentAnnotations(documentID)
 		if err != nil {
-			return nil, cobra.ShellCompDirectiveNoFileComp
+			return nil, cobra.ShellCompDirectiveError
 		}
 
 		for _, annotation := range annotations {
@@ -73,4 +78,25 @@ func completions(
 	}
 
 	return comps, cobra.ShellCompDirectiveNoFileComp
+}
+
+func encodingCompletions(
+	_ *cobra.Command,
+	_ []string,
+	_ string,
+) ([]string, cobra.ShellCompDirective) {
+	s := make([]string, 0, len(encodingOptions()))
+	for _, value := range encodingOptions() {
+		s = append(s, value...)
+	}
+
+	return s, cobra.ShellCompDirectiveNoFileComp
+}
+
+func formatCompletions(
+	_ *cobra.Command,
+	_ []string,
+	_ string,
+) ([]string, cobra.ShellCompDirective) {
+	return formatOptions(), cobra.ShellCompDirectiveNoFileComp
 }
