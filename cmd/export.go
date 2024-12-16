@@ -100,6 +100,9 @@ func exportCmd() *cobra.Command { //nolint:funlen
 	exportCmd.Flags().VarP(formatValue, "format", "f", formatValue.Usage())
 	exportCmd.Flags().VarP(encodingValue, "encoding", "e", encodingValue.Usage())
 
+	cobra.CheckErr(exportCmd.RegisterFlagCompletionFunc("format", formatValue.CompletionFunc()))
+	cobra.CheckErr(exportCmd.RegisterFlagCompletionFunc("encoding", encodingValue.CompletionFunc()))
+
 	return exportCmd
 }
 
@@ -116,7 +119,7 @@ func encodingOptions() map[string][]string {
 }
 
 func formatChoice() *choiceValue {
-	return newChoiceValue("Output format", db.OriginalFormat, formatOptions()...)
+	return newChoiceValue("Output format", db.OriginalFormat, formatOptions()[1:]...)
 }
 
 func formatOptions() []string {

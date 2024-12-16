@@ -59,6 +59,12 @@ func (cv *choiceValue) Choices() string {
 	return fmt.Sprintf("[%s]", strings.Join(cv.choices, ", "))
 }
 
+func (cv *choiceValue) CompletionFunc() func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+		return cv.choices, cobra.ShellCompDirectiveDefault
+	}
+}
+
 func (cv *choiceValue) Error() string {
 	return "must be one of " + cv.Choices()
 }

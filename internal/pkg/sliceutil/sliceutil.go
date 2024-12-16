@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/pkg/sliceutil/sliceutils.go
+// SPDX-FileName: internal/pkg/sliceutil/sliceutil.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ package sliceutil
 import (
 	"errors"
 	"reflect"
+	"slices"
 )
 
 var ErrItemsExhausted = errors.New("no match found in items")
@@ -29,7 +30,7 @@ var ErrItemsExhausted = errors.New("no match found in items")
 // All returns true if all items satisfy the specified condition.
 // If cond is nil, checks whether all items are a value other than zero value (truthy).
 //
-// # Example:
+// # Example
 //
 //	func main() {
 //		items := []int{0, 1, 2, 3}
@@ -58,7 +59,7 @@ func All[T any](items []T, cond func(T) bool) bool {
 // Any returns true if any item satisfies the specified condition.
 // If cond is nil, checks whether any item is a value other than zero value (truthy).
 //
-// # Example:
+// # Example
 //
 //	func main() {
 //		items := []int{0, 0, -1, 0}
@@ -86,7 +87,7 @@ func Any[T any](items []T, cond func(T) bool) bool {
 
 // Extract extracts fields from a slice of structs.
 //
-// # Example:
+// # Example
 //
 //	type toExtract struct {
 //		value int
@@ -115,7 +116,7 @@ func Extract[T any, E any](items []T, cond func(T) E) []E {
 // Filter returns a slice of items from the original slice that satisfy the specified condition.
 // If cond is nil, items equal to the underlying type's zero value (falsy) are filtered out.
 //
-// # Example:
+// # Example
 //
 //	type toFilter struct {
 //		value int
@@ -151,7 +152,7 @@ func Filter[T any](items []T, cond func(T) bool) []T {
 
 // Map applies a transformation function to each item of a slice.
 //
-// # Example:
+// # Example
 //
 //	type toMap struct {
 //		value int
@@ -182,7 +183,7 @@ func Map[T any](items []T, mapFunc func(T) T) []T {
 // Next returns the next item in a slice that satisifies a given condition.
 // If cond is nil, returns the next item with a value other than zero value (truthy).
 //
-// # Example:
+// # Example
 //
 //	func main() {
 //		filter := func(item struct{ int }) bool {
@@ -220,6 +221,66 @@ func Next[T any](items []T, cond func(T) bool) (T, error) {
 	var unset T
 
 	return unset, ErrItemsExhausted
+}
+
+// Unpack assigns elements of a slice to multiple variables.
+//
+// If len(values) > len(vars), extra unassigned values are returned.
+//
+// If len(vars) > len(values), additional variables provided are set to their type's zero value.
+//
+// # Example
+//
+//	func main() {
+//		var (
+//			one, two, three string
+//			extra           []string
+//		)
+//
+//		extra = sliceutil.Unpack([]string{"one", "two", "three"}, &one, &two, &three)
+//		fmt.Printf("one:\t%s\ntwo:\t%s\nthree:\t%s\nextra:\t%+v\n", one, two, three, extra)
+//
+//		// Output:
+//		// one:    one
+//		// two:    two
+//		// three:  three
+//		// extra:  []
+//
+//		extra = sliceutil.Unpack([]string{"one", "two", "three", "four"}, &one, &two, &three)
+//		fmt.Printf("one:\t%s\ntwo:\t%s\nthree:\t%s\nextra:\t%+v\n", one, two, three, extra)
+//
+//		// Output:
+//		// one:    one
+//		// two:    two
+//		// three:  three
+//		// extra:  [four]
+//
+//		extra = sliceutil.Unpack([]string{"one", "two"}, &one, &two, &three)
+//		fmt.Printf("one:\t%s\ntwo:\t%s\nthree:\t%s\nextra:\t%+v\n", one, two, three, extra)
+//
+//		// Output:
+//		// one:    one
+//		// two:    two
+//		// three:
+//		// extra:  []
+//	}
+func Unpack[T any](values []T, vars ...*T) []T {
+	var unset T
+
+	for idx := range vars {
+		*vars[idx] = unset
+	}
+
+	extra := make([]T, len(values))
+
+	copy(extra, values)
+
+	for idx := range min(len(values), len(vars)) {
+		*vars[idx] = values[idx]
+		extra = slices.Delete(extra, 0, 1)
+	}
+
+	return extra
 }
 
 func isTruthy[T any](item T) bool {
