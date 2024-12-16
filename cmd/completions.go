@@ -21,12 +21,14 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/protobom/storage/backends/ent"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
@@ -37,11 +39,16 @@ func completions(
 	_ []string,
 	toComplete string,
 ) ([]string, cobra.ShellCompDirective) {
-	backend := backendFromContext(cmd)
+	cacheDir := viper.GetString("cache_dir")
 
-	comps := []string{}
+	backend, err := db.NewBackend(db.WithDatabaseFile(filepath.Join(cacheDir, db.DatabaseFile)))
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
 
 	defer backend.CloseClient()
+
+	comps := []string{}
 
 	documents, err := backend.GetDocumentsByIDOrAlias()
 	if err != nil {
