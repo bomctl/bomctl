@@ -69,8 +69,6 @@ func pushCmd() *cobra.Command {
 
 	pushCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
 	pushCmd.Flags().StringP("format", "f", formats.CDXFORMAT, formatHelp())
-	cobra.CheckErr(pushCmd.RegisterFlagCompletionFunc("format", formatCompletions))
-	cobra.CheckErr(pushCmd.RegisterFlagCompletionFunc("encoding", encodingCompletions))
 	pushCmd.Flags().BoolVar(&opts.UseNetRC, "netrc", false, "Use .netrc file for authentication to remote hosts")
 	pushCmd.Flags().BoolVar(&opts.UseTree, "tree", false, "Recursively push all SBOMs in external reference tree")
 

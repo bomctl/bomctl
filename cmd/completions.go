@@ -79,24 +79,3 @@ func completions(
 
 	return comps, cobra.ShellCompDirectiveNoFileComp
 }
-
-func encodingCompletions(
-	_ *cobra.Command,
-	_ []string,
-	_ string,
-) ([]string, cobra.ShellCompDirective) {
-	s := make([]string, 0, len(encodingOptions()))
-	for _, value := range encodingOptions() {
-		s = append(s, value...)
-	}
-
-	return s, cobra.ShellCompDirectiveNoFileComp
-}
-
-func formatCompletions(
-	_ *cobra.Command,
-	_ []string,
-	_ string,
-) ([]string, cobra.ShellCompDirective) {
-	return formatOptions(), cobra.ShellCompDirectiveNoFileComp
-}
