@@ -152,8 +152,11 @@ func rootCmd() *cobra.Command {
 		PersistentPreRun: preRun,
 	}
 
-	rootCmd.PersistentFlags().String("cache-dir", defaultCacheDir(), "cache directory")
-	rootCmd.PersistentFlags().String("config", defaultConfig(), "config file")
+	cacheDir := directoryValue(defaultCacheDir())
+	configFile := existingFileValue(defaultConfig())
+
+	rootCmd.PersistentFlags().Var(&cacheDir, "cache-dir", "Cache directory")
+	rootCmd.PersistentFlags().Var(&configFile, "config", "Config file")
 	rootCmd.PersistentFlags().CountP("verbose", "v", "Enable debug output")
 
 	cobra.OnInitialize(initCache, initConfig(rootCmd))
