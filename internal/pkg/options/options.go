@@ -68,9 +68,7 @@ type (
 
 	LinkOptions struct {
 		*Options
-		ToIDs       []string
-		DocumentIDs []string
-		NodeIDs     []string
+		Links []Link
 	}
 
 	MergeOptions struct {

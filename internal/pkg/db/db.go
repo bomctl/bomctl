@@ -143,6 +143,16 @@ func (backend *Backend) AddDocument(sbomData []byte, backendOpts ...Option) (*sb
 	return document, nil
 }
 
+// GetDocumentAlias gets the alias for the specified document ID from the database.
+func (backend *Backend) GetDocumentAlias(id string) string {
+	alias, err := backend.GetDocumentUniqueAnnotation(id, AliasAnnotation)
+	if err != nil {
+		return ""
+	}
+
+	return alias
+}
+
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
 func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) {
 	switch documents, getDocsErr := backend.GetDocumentsByID(id); {

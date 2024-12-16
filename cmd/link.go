@@ -20,10 +20,25 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/tree"
+	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 
+	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/link"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+)
+
+const (
+	blue    = lipgloss.ANSIColor(termenv.ANSIBlue)
+	cyan    = lipgloss.ANSIColor(termenv.ANSICyan)
+	green   = lipgloss.ANSIColor(termenv.ANSIGreen)
+	magenta = lipgloss.ANSIColor(termenv.ANSIMagenta)
+	yellow  = lipgloss.ANSIColor(termenv.ANSIYellow)
 )
 
 func linkCmd() *cobra.Command {
@@ -33,8 +48,10 @@ func linkCmd() *cobra.Command {
 		Long:  "Edit links between documents and/or nodes",
 	}
 
-	typeChoice := newChoiceValue("Type referenced by SRC_ID", "node", "document")
-	linkCmd.PersistentFlags().VarP(typeChoice, "type", "t", typeChoice.Usage())
+	typeValue := newChoiceValue("Type referenced by SRC_ID", "node", "document")
+	linkCmd.PersistentFlags().VarP(typeValue, "type", "t", typeValue.Usage())
+
+	cobra.CheckErr(linkCmd.RegisterFlagCompletionFunc("type", typeValue.CompletionFunc()))
 
 	linkCmd.AddCommand(linkAddCmd(), linkClearCmd(), linkListCmd(), linkRemoveCmd())
 
@@ -55,9 +72,7 @@ func linkAddCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			parseLinkArgs(cmd, args[:1], opts)
-
-			opts.ToIDs = append(opts.ToIDs, args[1])
+			opts.Links = populateLinkTargets(cmd.Flag("type").Value.String(), args[:1], args[1:], backend)
 
 			if err := link.AddLink(backend, opts); err != nil {
 				opts.Logger.Fatal(err)
@@ -82,7 +97,7 @@ func linkClearCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			parseLinkArgs(cmd, args, opts)
+			opts.Links = populateLinkTargets(cmd.Flag("type").Value.String(), args, nil, backend)
 
 			if err := link.ClearLinks(backend, opts); err != nil {
 				opts.Logger.Fatal(err)
@@ -108,11 +123,14 @@ func linkListCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			parseLinkArgs(cmd, args, opts)
+			opts.Links = populateLinkTargets(cmd.Flag("type").Value.String(), args[:1], nil, backend)
 
-			if err := link.ListLinks(backend, opts); err != nil {
+			incoming, err := link.ListLinks(backend, opts)
+			if err != nil {
 				opts.Logger.Fatal(err)
 			}
+
+			fmt.Fprintln(os.Stdout, newLinksTree(opts.Links[0], incoming))
 		},
 	}
 
@@ -134,9 +152,7 @@ func linkRemoveCmd() *cobra.Command {
 
 			defer backend.CloseClient()
 
-			parseLinkArgs(cmd, args[:1], opts)
-
-			opts.ToIDs = append(opts.ToIDs, args[1:]...)
+			opts.Links = populateLinkTargets(cmd.Flag("type").Value.String(), args[:1], args[1:], backend)
 
 			if err := link.RemoveLink(backend, opts); err != nil {
 				opts.Logger.Fatal(err)
@@ -146,12 +162,88 @@ func linkRemoveCmd() *cobra.Command {
 
 	return removeCmd
 }
+func newLinksTree(links options.Link, incoming []options.LinkTarget) *tree.Tree {
+	style := lipgloss.NewStyle().Bold(true)
 
-func parseLinkArgs(cmd *cobra.Command, args []string, opts *options.LinkOptions) {
-	switch cmd.Flag("type").Value.String() {
-	case "document":
-		opts.DocumentIDs = append(opts.DocumentIDs, args...)
-	case "node":
-		opts.NodeIDs = append(opts.NodeIDs, args...)
+	itemStyle := func(children tree.Children, i int) lipgloss.Style {
+		if links.To[i].Type == options.LinkTargetTypeNode {
+			return style.Foreground(yellow)
+		}
+
+		return style.Foreground(blue)
 	}
+
+	outgoingTree := tree.Root(style.Foreground(cyan).Render(links.From.String())).
+		ItemStyleFunc(itemStyle)
+
+	for _, to := range links.To {
+		outgoingTree.Child(tree.Root(to.String()))
+	}
+
+	hasIncoming := len(incoming) == 0
+
+	incomingTree := tree.New().Root("Incoming links:").
+		ItemStyleFunc(itemStyle).
+		Hide(hasIncoming)
+
+	for _, inc := range incoming {
+		incomingTree.Child(tree.Root(inc.String()))
+	}
+
+	linksTree := tree.New().
+		Indenter(func(children tree.Children, index int) string { return "" }).
+		Enumerator(func(children tree.Children, index int) string { return "" }).
+		Child(outgoingTree, tree.Root(" ").Hide(hasIncoming), incomingTree)
+
+	return linksTree
+}
+
+func populateLinkTargets(linkType string, from, to []string, backend *db.Backend) []options.Link {
+	links := []options.Link{}
+	targets := []options.LinkTarget{}
+
+	for _, arg := range to {
+		targets = append(targets, options.LinkTarget{
+			Alias: arg,
+			ID:    resolveDocumentID(arg, backend),
+			Type:  options.LinkTargetTypeDocument,
+		})
+	}
+
+	switch linkType {
+	case "document":
+		for _, arg := range from {
+			links = append(links, options.Link{
+				From: options.LinkTarget{
+					Alias: arg,
+					ID:    resolveDocumentID(arg, backend),
+					Type:  options.LinkTargetTypeDocument,
+				},
+				To: targets,
+			})
+		}
+	case "node":
+		for _, arg := range from {
+			links = append(links, options.Link{
+				From: options.LinkTarget{
+					ID:   arg,
+					Type: options.LinkTargetTypeNode,
+				},
+				To: targets,
+			})
+		}
+	}
+
+	return links
+}
+
+func resolveDocumentID(id string, backend *db.Backend) string {
+	document, err := backend.GetDocumentByIDOrAlias(id)
+	cobra.CheckErr(err)
+
+	if document == nil {
+		backend.Logger.Warn("Document not found", "id", id)
+	}
+
+	return document.GetMetadata().GetId()
 }
