@@ -24,8 +24,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
-	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
@@ -66,55 +64,6 @@ func defaultConfig() string {
 	cobra.CheckErr(err)
 
 	return filepath.Join(cfgDir, "bomctl", "bomctl.yaml")
-}
-
-func getDocumentCompletionArgs(
-	cmd *cobra.Command,
-	_ []string,
-	toComplete string,
-) ([]string, cobra.ShellCompDirective) {
-	backend, err := db.BackendFromContext(cmd.Context())
-	if err != nil {
-		logger.New("").Fatal(err)
-	}
-
-	comps := []string{}
-
-	defer backend.CloseClient()
-
-	documents, err := backend.GetDocumentsByIDOrAlias()
-	if err != nil {
-		backend.Logger.Fatal(err)
-	}
-
-	for _, document := range documents {
-		documentID := document.GetMetadata().GetId()
-		if slices.Contains(comps, documentID) {
-			continue
-		}
-
-		if strings.HasPrefix(documentID, toComplete) {
-			comps = cobra.AppendActiveHelp(comps, documentID)
-
-			continue
-		}
-
-		annotations, err := backend.GetDocumentAnnotations(documentID)
-		if err != nil {
-			return nil, cobra.ShellCompDirectiveNoFileComp
-		}
-
-		for _, annotation := range annotations {
-			if strings.HasPrefix(annotation.Name, db.AliasAnnotation) &&
-				strings.HasPrefix(annotation.Value, toComplete) {
-				comps = cobra.AppendActiveHelp(comps, fmt.Sprintf("%s (%s)", documentID, annotation.Value))
-
-				break
-			}
-		}
-	}
-
-	return comps, cobra.ShellCompDirectiveNoFileComp
 }
 
 func initCache() {

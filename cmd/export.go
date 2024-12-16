@@ -96,7 +96,7 @@ func exportCmd() *cobra.Command { //nolint:funlen
 				}
 			}
 		},
-		ValidArgsFunction: getDocumentCompletionArgs,
+		ValidArgsFunction: completions,
 	}
 
 	exportCmd.Flags().VarP(&outputFile, "output-file", "o", "path to output file")

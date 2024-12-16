@@ -67,7 +67,7 @@ func tagAddCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to add tags: %v", err)
 			}
 		},
-		ValidArgsFunction: getDocumentCompletionArgs,
+		ValidArgsFunction: completions,
 	}
 
 	return addCmd
@@ -103,7 +103,7 @@ func tagClearCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to clear tags: %v", err)
 			}
 		},
-		ValidArgsFunction: getDocumentCompletionArgs,
+		ValidArgsFunction: completions,
 	}
 
 	return clearCmd
@@ -140,7 +140,7 @@ func tagListCmd() *cobra.Command {
 			fmt.Fprintf(os.Stdout, "\nTags for %v\n%v\n", args[0], strings.Repeat("─", cliTableWidth))
 			fmt.Fprintf(os.Stdout, "%v\n\n", strings.Join(tags, "\n"))
 		},
-		ValidArgsFunction: getDocumentCompletionArgs,
+		ValidArgsFunction: completions,
 	}
 
 	return listCmd
@@ -172,7 +172,7 @@ func tagRemoveCmd() *cobra.Command {
 				backend.Logger.Fatalf("failed to remove tags: %v", err)
 			}
 		},
-		ValidArgsFunction: getDocumentCompletionArgs,
+		ValidArgsFunction: completions,
 	}
 
 	return removeCmd

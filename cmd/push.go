@@ -64,7 +64,7 @@ func pushCmd() *cobra.Command {
 				opts.Logger.Fatal(err)
 			}
 		},
-		ValidArgsFunction: getDocumentCompletionArgs,
+		ValidArgsFunction: completions,
 	}
 
 	pushCmd.Flags().StringP("encoding", "e", formats.JSON, encodingHelp())
