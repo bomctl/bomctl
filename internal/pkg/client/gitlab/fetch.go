@@ -173,7 +173,7 @@ func (client *Client) downloadExport() ([]byte, error) {
 }
 
 func (client *Client) Fetch(fetchURL string, _ *bomctloptions.FetchOptions) ([]byte, error) {
-	url := client.Parse(fetchURL)
+	url := (&Client{}).Parse(fetchURL)
 	if url == nil {
 		return nil, fmt.Errorf("%w: %s", errInvalidGitLabURL, fetchURL)
 	}

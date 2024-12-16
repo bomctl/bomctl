@@ -154,7 +154,7 @@ Alternatively, use the following syntax to directly fetch the most recent depend
 bomctl fetch https://github.com/bomctl/bomctl
 ```
 
-Or you can use the following syntax to fetch an SBOM from a GitLab repository through the [DependencyListExport web API](https://docs.gitlab.com/ee/api/dependency_list_export.html). Authorization for this command is configured by assigning the value of your GitLab token to the `BOMCTL_GITLAB_TOKEN` environment variable.
+An SBOM may also be fetched from a GitLab repository through the [DependencyListExport web API](https://docs.gitlab.com/ee/api/dependency_list_export.html) by using the following URL format. Authorization for this command is configured by assigning the value of your GitLab token to the `BOMCTL_GITLAB_TOKEN` environment variable.
 
 ```shell
 bomctl fetch https://www.gitlab.com/PROJECT/REPOSITORY@BRANCH
