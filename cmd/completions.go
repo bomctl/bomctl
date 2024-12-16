@@ -35,7 +35,7 @@ import (
 )
 
 func completions(
-	cmd *cobra.Command,
+	_ *cobra.Command,
 	_ []string,
 	toComplete string,
 ) ([]string, cobra.ShellCompDirective) {
