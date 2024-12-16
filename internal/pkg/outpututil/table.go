@@ -106,18 +106,19 @@ func (t *Table) canFit() bool {
 }
 
 func (t *Table) formatList() string {
-	renderedRows := []string{}
-
+	output := ""
 	for _, row := range t.rows {
-		renderedRows = append(renderedRows, strings.Join([]string{
+		output = strings.Join([]string{
+			output,
 			fmt.Sprintf("%-8s: %s", columnNameID, row.id),
 			fmt.Sprintf("%-8s: %s", columnNameAlias, row.alias),
 			fmt.Sprintf("%-8s: %s", columnNameVersion, row.version),
 			fmt.Sprintf("%-8s: %s", columnNameNumNodes, row.numNodes),
-		}, "\n"))
+			"",
+		}, "\n")
 	}
 
-	return strings.Join(renderedRows, "\n\n")
+	return output
 }
 
 func (t *Table) formatTable() string {

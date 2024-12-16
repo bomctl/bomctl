@@ -65,6 +65,7 @@ INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl
 -- fetch_alias.txt --
 INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl_0.1.3_darwin_amd64.tar.gz.cdx.json
 -- fetch_alias_list.txt --
+
 ID      : urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db
 Alias   : 
 Version : 1
@@ -79,10 +80,13 @@ ID      : urn:uuid:22ff1e59-cd6e-485a-83d1-24e64f87c5db
 Alias   : third
 Version : 1
 # Nodes : 81
+
 -- fetch_tag.txt --
 INFO  fetch: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl/main/internal/e2e/testdata/merge_A.cdx.json
 -- fetch_tag_list.txt --
+
 ID      : urn:uuid:3de02d44-f9c6-4a94-bf48-eb92730dc3b5
 Alias   : 
 Version : 1
 # Nodes : 5
+
