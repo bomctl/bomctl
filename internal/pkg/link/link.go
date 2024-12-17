@@ -92,7 +92,6 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) ([]options.LinkTa
 		annotations ent.Annotations
 		documents   []*sbom.Document
 		nodes       []*sbom.Node
-		incoming    []options.LinkTarget
 		err         error
 	)
 
@@ -136,22 +135,21 @@ func ListLinks(backend *db.Backend, opts *options.LinkOptions) ([]options.LinkTa
 	// Update value of provided links.
 	opts.Links = []options.Link{link}
 
-	for _, doc := range documents {
-		id := doc.GetMetadata().GetId()
-		alias := backend.GetDocumentAlias(id)
-		incoming = append(incoming, options.LinkTarget{
-			ID:    id,
-			Alias: alias,
+	incoming := sliceutil.Extract(documents, func(d *sbom.Document) options.LinkTarget {
+		return options.LinkTarget{
+			ID:    d.GetMetadata().GetId(),
+			Alias: backend.GetDocumentAlias(d.GetMetadata().GetId()),
 			Type:  options.LinkTargetTypeDocument,
-		})
-	}
+		}
+	})
 
-	for _, node := range nodes {
-		incoming = append(incoming, options.LinkTarget{
-			ID:   node.GetId(),
-			Type: options.LinkTargetTypeNode,
-		})
-	}
+	incoming = append(incoming, sliceutil.Extract(nodes, func(n *sbom.Node) options.LinkTarget {
+		return options.LinkTarget{
+			ID:    n.GetId(),
+			Alias: backend.GetDocumentAlias(n.GetId()),
+			Type:  options.LinkTargetTypeDocument,
+		}
+	})...)
 
 	return incoming, nil
 }

@@ -165,8 +165,8 @@ func linkRemoveCmd() *cobra.Command {
 func newLinksTree(links options.Link, incoming []options.LinkTarget) *tree.Tree {
 	style := lipgloss.NewStyle().Bold(true)
 
-	itemStyle := func(children tree.Children, i int) lipgloss.Style {
-		if links.To[i].Type == options.LinkTargetTypeNode {
+	itemStyle := func(_ tree.Children, idx int) lipgloss.Style {
+		if links.To[idx].Type == options.LinkTargetTypeNode {
 			return style.Foreground(yellow)
 		}
 
@@ -191,8 +191,8 @@ func newLinksTree(links options.Link, incoming []options.LinkTarget) *tree.Tree 
 	}
 
 	linksTree := tree.New().
-		Indenter(func(children tree.Children, index int) string { return "" }).
-		Enumerator(func(children tree.Children, index int) string { return "" }).
+		Indenter(func(_ tree.Children, _ int) string { return "" }).
+		Enumerator(func(_ tree.Children, _ int) string { return "" }).
 		Child(outgoingTree, tree.Root(" ").Hide(hasIncoming), incomingTree)
 
 	return linksTree
