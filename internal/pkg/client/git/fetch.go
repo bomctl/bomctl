@@ -27,20 +27,12 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
+func (client *Client) PrepareFetch(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) error {
+	return client.cloneRepo(url, auth, opts)
+}
+
+func (client *Client) Fetch(fetchURL string, _opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
-	auth := netutil.NewBasicAuth(url.Username, url.Password)
-
-	if opts.UseNetRC {
-		if err := auth.UseNetRC(url.Hostname); err != nil {
-			return nil, fmt.Errorf("failed to set auth: %w", err)
-		}
-	}
-
-	// Clone the repository into the temp directory
-	if err := client.cloneRepo(url, auth, opts.Options); err != nil {
-		return nil, err
-	}
 
 	// Read the file specified in the URL fragment.
 	file, err := client.worktree.Filesystem.Open(url.Fragment)
