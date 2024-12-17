@@ -31,22 +31,41 @@ import (
 	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
+	"github.com/bomctl/bomctl/internal/pkg/client/git"
+	"github.com/bomctl/bomctl/internal/pkg/client/github"
+	"github.com/bomctl/bomctl/internal/pkg/client/http"
+	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
-func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
+func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) { //nolint:cyclop
 	backend, err := db.BackendFromContext(opts.Context())
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	fetcher, err := client.New(sbomURL)
+	fetcher, err := NewFetcher(sbomURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating fetch client: %w", err)
 	}
 
 	opts.Logger.Info(fmt.Sprintf("Fetching from %s URL", fetcher.Name()), "url", sbomURL)
+
+	url := fetcher.Parse(sbomURL)
+	auth := netutil.NewBasicAuth(url.Username, url.Password)
+
+	if opts.UseNetRC {
+		if err := auth.UseNetRC(url.Hostname); err != nil {
+			return nil, fmt.Errorf("failed to set auth: %w", err)
+		}
+	}
+
+	if err := fetcher.PrepareFetch(url, auth, opts.Options); err != nil {
+		return nil, fmt.Errorf("preparing fetch: %w", err)
+	}
 
 	sbomData, err := fetcher.Fetch(sbomURL, opts)
 	if err != nil {
@@ -75,6 +94,17 @@ func Fetch(sbomURL string, opts *options.FetchOptions) (*sbom.Document, error) {
 
 	// Fetch externally referenced BOMs
 	return document, fetchExternalReferences(document, backend, opts)
+}
+
+func NewFetcher(url string) (client.Fetcher, error) {
+	clients := []client.Fetcher{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}}
+
+	fetcher, err := sliceutil.Next(clients, func(f client.Fetcher) bool { return f.Parse(url) != nil })
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", client.ErrUnsupportedURL, url)
+	}
+
+	return fetcher, nil
 }
 
 func fetchExternalReferences(document *sbom.Document, backend *db.Backend, opts *options.FetchOptions) error {

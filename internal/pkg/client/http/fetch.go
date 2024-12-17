@@ -29,6 +29,10 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
+func (*Client) PrepareFetch(_url *netutil.URL, _auth *netutil.BasicAuth, _opts *options.Options) error {
+	return nil
+}
+
 func (client *Client) Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error) {
 	url := client.Parse(fetchURL)
 	auth := netutil.NewBasicAuth(url.Username, url.Password)
