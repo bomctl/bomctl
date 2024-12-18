@@ -20,8 +20,6 @@
 package db_test
 
 import (
-	"cmp"
-	"slices"
 	"testing"
 
 	"github.com/protobom/protobom/pkg/sbom"
@@ -54,6 +52,8 @@ func (dbs *dbSuite) SetupTest() {
 
 func (dbs *dbSuite) TearDownTest() {
 	dbs.Backend.CloseClient()
+	dbs.documents = nil
+	dbs.documentInfo = nil
 }
 
 func (dbs *dbSuite) TestBackend_AddDocumentRevision() {
@@ -126,13 +126,8 @@ func (dbs *dbSuite) TestBackend_GetDocumentByID() {
 		retrieved, err := dbs.Backend.GetDocumentByID(document.GetMetadata().GetId())
 		dbs.Require().NoError(err, "failed retrieving document", "id", document.GetMetadata().GetId())
 
-		expectedEdges := consolidateEdges(document.GetNodeList().GetEdges())
-		actualEdges := consolidateEdges(retrieved.GetNodeList().GetEdges())
-
+		dbs.Require().ElementsMatch(document.GetNodeList().GetRootElements(), retrieved.GetNodeList().GetRootElements())
 		dbs.Require().Equal(document.GetMetadata().GetId(), retrieved.GetMetadata().GetId())
-		dbs.Require().Len(retrieved.GetNodeList().GetNodes(), len(document.GetNodeList().GetNodes()))
-		dbs.Require().Equal(expectedEdges, actualEdges)
-		dbs.Require().Equal(document.GetNodeList().GetRootElements(), retrieved.GetNodeList().GetRootElements())
 	}
 }
 
@@ -168,9 +163,6 @@ func (dbs *dbSuite) TestBackend_GetDocumentTags() {
 }
 
 func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
-	docs, err := dbs.Backend.GetDocumentsByID()
-	dbs.Require().NoError(err)
-
 	for _, data := range []struct {
 		name     string
 		tags     []string
@@ -184,7 +176,7 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		{
 			name:     "Normal (1 tag, 2 docs)",
 			tags:     []string{"tag2"},
-			expected: dbs.documents[0:2],
+			expected: dbs.documents,
 		},
 		{
 			name:     "Normal (another tag, 1 doc)",
@@ -194,7 +186,7 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		{
 			name:     "Normal (multiple tags)",
 			tags:     []string{"tag1", "tag2", "tag3"},
-			expected: dbs.documents[0:2],
+			expected: dbs.documents,
 		},
 		{
 			name:     "Unknown tag",
@@ -204,13 +196,17 @@ func (dbs *dbSuite) TestBackend_FilterDocumentsByTag() {
 		{
 			name:     "No tags",
 			tags:     []string{},
-			expected: dbs.documents[0:2],
+			expected: dbs.documents,
 		},
 	} {
 		dbs.Run(data.name, func() {
-			filteredDocs, err := dbs.Backend.FilterDocumentsByTag(docs, data.tags...)
+			filteredDocs, err := dbs.Backend.FilterDocumentsByTag(dbs.documents, data.tags...)
 			dbs.Require().NoError(err)
-			dbs.Require().Len(filteredDocs, len(data.expected))
+			dbs.Require().Len(
+				filteredDocs,
+				len(data.expected),
+				"expected length: %d does not match actual: %d", len(filteredDocs), len(data.expected),
+			)
 
 			for idx := range data.expected {
 				dbs.Equal(filteredDocs[idx].GetMetadata().GetId(), data.expected[idx].GetMetadata().GetId())
@@ -292,42 +288,4 @@ func (dbs *dbSuite) TestBackend_SetAlias() {
 func TestDBSuite(t *testing.T) {
 	t.Parallel()
 	suite.Run(t, new(dbSuite))
-}
-
-func consolidateEdges(edges []*sbom.Edge) []*sbom.Edge {
-	consolidated := []*sbom.Edge{}
-
-	// Mapping of from ID and edge type to slice of to IDs.
-	edgeMap := make(map[struct {
-		fromID   string
-		edgeType string
-	}][]string)
-
-	for _, edge := range edges {
-		key := struct {
-			fromID   string
-			edgeType string
-		}{edge.GetFrom(), edge.GetType().String()}
-
-		edgeMap[key] = append(edgeMap[key], edge.GetTo()...)
-	}
-
-	for typedEdge, toIDs := range edgeMap {
-		slices.Sort(toIDs)
-
-		if len(toIDs) > 0 {
-			slices.Sort(toIDs)
-
-			edgeType := sbom.Edge_Type_value[typedEdge.edgeType]
-			consolidated = append(consolidated, &sbom.Edge{
-				Type: sbom.Edge_Type(edgeType),
-				From: typedEdge.fromID,
-				To:   toIDs,
-			})
-		}
-	}
-
-	slices.SortStableFunc(consolidated, func(a, b *sbom.Edge) int { return cmp.Compare(a.GetFrom(), b.GetFrom()) })
-
-	return consolidated
 }

@@ -39,13 +39,15 @@ import (
 )
 
 const (
-	AliasAnnotation        string = "bomctl_annotation_alias"
-	BaseDocumentAnnotation string = "bomctl_annotation_base_document"
-	SourceDataAnnotation   string = "bomctl_annotation_source_data"
-	SourceFormatAnnotation string = "bomctl_annotation_source_format"
-	SourceHashAnnotation   string = "bomctl_annotation_source_hash"
-	SourceURLAnnotation    string = "bomctl_annotation_source_url"
-	TagAnnotation          string = "bomctl_annotation_tag"
+	AliasAnnotation           string = "bomctl_annotation_alias"
+	BaseDocumentAnnotation    string = "bomctl_annotation_base_document"
+	RevisedDocumentAnnotation string = "bomctl_annotation_revised_document"
+	LatestRevisionAnnotation  string = "bomctl_annotation_latest_revision"
+	SourceDataAnnotation      string = "bomctl_annotation_source_data"
+	SourceFormatAnnotation    string = "bomctl_annotation_source_format"
+	SourceHashAnnotation      string = "bomctl_annotation_source_hash"
+	SourceURLAnnotation       string = "bomctl_annotation_source_url"
+	TagAnnotation             string = "bomctl_annotation_tag"
 
 	DatabaseFile string = "bomctl.db"
 
@@ -142,6 +144,23 @@ func (backend *Backend) AddDocument(sbomData []byte, backendOpts ...Option) (*sb
 	return document, nil
 }
 
+func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
+	taggedDocuments, err := backend.GetDocumentsByAnnotation(TagAnnotation, tags...)
+	if err != nil {
+		return nil, fmt.Errorf("getting documents with tags %v: %w", tags, err)
+	}
+
+	taggedDocumentIDs := sliceutil.Extract(taggedDocuments, func(doc *sbom.Document) string {
+		return doc.GetMetadata().GetId()
+	})
+
+	documents = sliceutil.Filter(documents, func(doc *sbom.Document) bool {
+		return slices.Contains(taggedDocumentIDs, doc.GetMetadata().GetId())
+	})
+
+	return documents, nil
+}
+
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
 func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) {
 	switch documents, getDocsErr := backend.GetDocumentsByID(id); {
@@ -222,24 +241,7 @@ func (backend *Backend) GetDocumentTags(id string) ([]string, error) {
 	return tags, nil
 }
 
-func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
-	taggedDocuments, err := backend.GetDocumentsByAnnotation(TagAnnotation, tags...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
-	}
-
-	taggedDocumentIDs := sliceutil.Extract(taggedDocuments, func(doc *sbom.Document) string {
-		return doc.GetMetadata().GetId()
-	})
-
-	documents = sliceutil.Filter(documents, func(doc *sbom.Document) bool {
-		return slices.Contains(taggedDocumentIDs, doc.GetMetadata().GetId())
-	})
-
-	return documents, nil
-}
-
-func (backend *Backend) SetAlias(documentID, alias string, force bool) (err error) { //revive:disable:flag-parameter
+func (backend *Backend) SetAlias(documentID, alias string, force bool) error { //revive:disable:flag-parameter
 	if err := backend.validateNewAlias(alias); err != nil {
 		return fmt.Errorf("failed to set alias: %w", err)
 	}
@@ -298,6 +300,11 @@ func WithSourceDocumentAnnotations(sbomData []byte) Option {
 				Value:    string(hash[:]),
 				IsUnique: true,
 			},
+			&ent.Annotation{
+				Name:     LatestRevisionAnnotation,
+				Value:    "true",
+				IsUnique: false,
+			},
 		)
 
 		return nil
@@ -319,7 +326,20 @@ func WithRevisedDocumentAnnotations(base *sbom.Document) Option {
 				Value:    baseUUID.String(),
 				IsUnique: true,
 			},
+			&ent.Annotation{
+				Name:     LatestRevisionAnnotation,
+				Value:    "true",
+				IsUnique: false,
+			},
 		)
+
+		if err := backend.RemoveDocumentAnnotations(baseID, LatestRevisionAnnotation); err != nil {
+			return fmt.Errorf("failed to remove latest annotation: %w", err)
+		}
+
+		if err := backend.AddDocumentAnnotations(baseID, RevisedDocumentAnnotation, "true"); err != nil {
+			return fmt.Errorf("failed to add revision annotation: %w", err)
+		}
 
 		docAlias, err := backend.GetDocumentUniqueAnnotation(baseID, AliasAnnotation)
 		if err != nil {
