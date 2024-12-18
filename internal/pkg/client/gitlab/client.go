@@ -21,8 +21,6 @@ package gitlab
 
 import (
 	"fmt"
-	neturl "net/url"
-	"os"
 	"regexp"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -37,30 +35,6 @@ type Client struct {
 	DependencyListExporter
 	Export      *gitlab.DependencyListExport
 	GitLabToken string
-}
-
-func (client *Client) init(sourceURL string) error {
-	gitLabToken := os.Getenv("BOMCTL_GITLAB_TOKEN")
-
-	url, err := neturl.Parse(sourceURL)
-	if err != nil {
-		return fmt.Errorf("failed to parse the url: %w", err)
-	}
-
-	baseURL := fmt.Sprintf("https://%s/api/v4", url.Host)
-
-	gitLabClient, err := gitlab.NewClient(gitLabToken, gitlab.WithBaseURL(baseURL))
-	if err != nil {
-		return fmt.Errorf("failed to initialize the client: %w", err)
-	}
-
-	client.GitLabToken = gitLabToken
-	client.ProjectProvider = gitLabClient.Projects
-	client.BranchProvider = gitLabClient.Branches
-	client.CommitProvider = gitLabClient.Commits
-	client.DependencyListExporter = gitLabClient.DependencyListExport
-
-	return nil
 }
 
 func (*Client) Name() string {
@@ -88,10 +62,6 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		if value, ok := results[required]; !ok || value == "" {
 			return nil
 		}
-	}
-
-	if err := client.init(rawURL); err != nil {
-		return nil
 	}
 
 	return &netutil.URL{

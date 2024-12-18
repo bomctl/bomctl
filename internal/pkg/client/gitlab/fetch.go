@@ -24,11 +24,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	bomctloptions "github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
+	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
 type (
@@ -172,8 +174,33 @@ func (client *Client) downloadExport() ([]byte, error) {
 	return sbomData, nil
 }
 
-func (client *Client) Fetch(fetchURL string, _ *bomctloptions.FetchOptions) ([]byte, error) {
-	url := (&Client{}).Parse(fetchURL)
+func (client *Client) PrepareFetch(url *netutil.URL, _auth *netutil.BasicAuth, _opts *options.Options) error {
+	gitLabToken := os.Getenv("BOMCTL_GITLAB_TOKEN")
+
+	host := url.Hostname
+
+	if url.Port != "" {
+		host = fmt.Sprintf("%s:%s", host, url.Port)
+	}
+
+	baseURL := fmt.Sprintf("https://%s/api/v4", host)
+
+	gitLabClient, err := gitlab.NewClient(gitLabToken, gitlab.WithBaseURL(baseURL))
+	if err != nil {
+		return fmt.Errorf("failed to initialize the client: %w", err)
+	}
+
+	client.GitLabToken = gitLabToken
+	client.ProjectProvider = gitLabClient.Projects
+	client.BranchProvider = gitLabClient.Branches
+	client.CommitProvider = gitLabClient.Commits
+	client.DependencyListExporter = gitLabClient.DependencyListExport
+
+	return nil
+}
+
+func (client *Client) Fetch(fetchURL string, _ *options.FetchOptions) ([]byte, error) {
+	url := client.Parse(fetchURL)
 	if url == nil {
 		return nil, fmt.Errorf("%w: %s", errInvalidGitLabURL, fetchURL)
 	}
