@@ -205,10 +205,7 @@ func (client *Client) Fetch(fetchURL string, _ *options.FetchOptions) ([]byte, e
 		return nil, fmt.Errorf("%w: %s", errInvalidGitLabURL, fetchURL)
 	}
 
-	projectName := url.Path
-	branchName := url.Fragment
-
-	if err := client.createExport(projectName, branchName); err != nil {
+	if err := client.createExport(url.Path, url.GitRef); err != nil {
 		return nil, err
 	}
 

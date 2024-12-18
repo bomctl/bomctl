@@ -45,7 +45,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("(?i)^%s%s%s$",
 		`(?P<scheme>https?|git|ssh):\/\/`,
 		`(?P<hostname>[^@\/?#:]+gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
-		`(?P<path>[^@#]+)@(?P<branch>\S+)`))
+		`(?P<path>[^@#]+)@(?P<gitRef>\S+)`))
 }
 
 func (client *Client) Parse(rawURL string) *netutil.URL {
@@ -58,7 +58,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 
 	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path", "branch"} {
+	for _, required := range []string{"scheme", "hostname", "path", "gitRef"} {
 		if value, ok := results[required]; !ok || value == "" {
 			return nil
 		}
@@ -69,6 +69,6 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		Hostname: results["hostname"],
 		Port:     results["port"],
 		Path:     results["path"],
-		Fragment: results["branch"],
+		GitRef:   results["gitRef"],
 	}
 }
