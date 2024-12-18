@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: cmd/errors.go
+// SPDX-FileName: internal/pkg/options/link.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,14 +17,45 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package cmd
+package options
 
-import "errors"
+import "fmt"
 
-var (
-	errDirNotFound          = errors.New("not a directory or does not exist")
-	errDocumentNotFound     = errors.New("no documents found with the specified ID")
-	errEncodingNotSupported = errors.New("encoding not supported for selected format")
-	errFileNotFound         = errors.New("not a file or does not exist")
-	errFormatNotSupported   = errors.New("format not supported")
+const (
+	LinkTargetTypeNode LinkTargetType = iota
+	LinkTargetTypeDocument
 )
+
+type (
+	LinkTargetType uint8
+
+	LinkTarget struct {
+		ID, Alias string
+		Type      LinkTargetType
+	}
+
+	Link struct {
+		From LinkTarget
+		To   []LinkTarget
+	}
+)
+
+func (lt *LinkTarget) String() string {
+	str := lt.ID
+	if lt.Type == LinkTargetTypeDocument && lt.Alias != "" && lt.Alias != str {
+		str += fmt.Sprintf(" (%s)", lt.Alias)
+	}
+
+	return str
+}
+
+func (lt LinkTargetType) String() string {
+	switch lt {
+	case LinkTargetTypeDocument:
+		return "document"
+	case LinkTargetTypeNode:
+		return "node"
+	}
+
+	return ""
+}
