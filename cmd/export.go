@@ -92,6 +92,7 @@ func exportCmd() *cobra.Command { //nolint:funlen
 				}
 			}
 		},
+		ValidArgsFunction: completions,
 	}
 
 	formatValue, encodingValue := formatChoice(), encodingChoice()

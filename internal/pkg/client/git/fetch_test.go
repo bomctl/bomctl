@@ -28,6 +28,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/testutil"
 )
@@ -45,6 +46,8 @@ func (gfs *gitFetchSuite) TestClient_Fetch() {
 			opts := &options.FetchOptions{Options: gfs.Options}
 
 			fetchURL := fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.%s.json", gfs.Server.URL, alias)
+
+			gfs.Require().NoError(gfs.PrepareFetch(gfs.Parse(fetchURL), netutil.NewBasicAuth("", ""), opts.Options))
 
 			got, err := gfs.Fetch(fetchURL, opts)
 			gfs.Require().NoError(err)

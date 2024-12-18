@@ -61,6 +61,7 @@ func listCmd() *cobra.Command {
 
 			fmt.Fprintln(os.Stdout, listOutput.String())
 		},
+		ValidArgsFunction: completions,
 	}
 
 	listCmd.Flags().StringArrayVar(&tags, "tag", []string{},

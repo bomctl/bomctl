@@ -21,33 +21,29 @@ package client
 
 import (
 	"errors"
-	"fmt"
 
-	"github.com/bomctl/bomctl/internal/pkg/client/git"
-	"github.com/bomctl/bomctl/internal/pkg/client/github"
-	"github.com/bomctl/bomctl/internal/pkg/client/http"
-	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-var errUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
+var ErrUnsupportedURL = errors.New("failed to parse URL; see `--help` for valid URL patterns")
 
-type Client interface {
-	netutil.Parser
-	AddFile(pushURL, id string, opts *options.PushOptions) error
-	Name() string
-	Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error)
-	PreparePush(pushURL string, opts *options.PushOptions) error
-	Push(pushURL string, opts *options.PushOptions) error
-}
-
-func New(sbomURL string) (Client, error) {
-	for _, client := range []Client{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}} {
-		if url := client.Parse(sbomURL); url != nil {
-			return client, nil
-		}
+type (
+	Client interface {
+		netutil.Parser
+		Name() string
 	}
 
-	return nil, fmt.Errorf("%w: %s", errUnsupportedURL, sbomURL)
-}
+	Fetcher interface {
+		Client
+		Fetch(fetchURL string, opts *options.FetchOptions) ([]byte, error)
+		PrepareFetch(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) error
+	}
+
+	Pusher interface {
+		Client
+		AddFile(pushURL, id string, opts *options.PushOptions) error
+		PreparePush(pushURL string, opts *options.PushOptions) error
+		Push(pushURL string, opts *options.PushOptions) error
+	}
+)
