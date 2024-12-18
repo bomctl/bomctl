@@ -147,7 +147,7 @@ func (backend *Backend) AddDocument(sbomData []byte, backendOpts ...Option) (*sb
 func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ...string) ([]*sbom.Document, error) {
 	taggedDocuments, err := backend.GetDocumentsByAnnotation(TagAnnotation, tags...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get documents by tag: %w", err)
+		return nil, fmt.Errorf("getting documents with tags %v: %w", tags, err)
 	}
 
 	taggedDocumentIDs := sliceutil.Extract(taggedDocuments, func(doc *sbom.Document) string {
