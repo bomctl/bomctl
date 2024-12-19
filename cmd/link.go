@@ -79,6 +79,7 @@ func linkAddCmd() *cobra.Command {
 				opts.Logger.Fatal(err)
 			}
 		},
+		ValidArgsFunction: completions,
 	}
 
 	return addCmd
@@ -104,6 +105,7 @@ func linkClearCmd() *cobra.Command {
 				opts.Logger.Fatal(err)
 			}
 		},
+		ValidArgsFunction: completions,
 	}
 
 	return clearCmd
@@ -133,6 +135,7 @@ func linkListCmd() *cobra.Command {
 
 			fmt.Fprintln(os.Stdout, newLinksTree(opts.Links[0], incoming))
 		},
+		ValidArgsFunction: completions,
 	}
 
 	return listCmd
@@ -159,6 +162,7 @@ func linkRemoveCmd() *cobra.Command {
 				opts.Logger.Fatal(err)
 			}
 		},
+		ValidArgsFunction: completions,
 	}
 
 	return removeCmd
