@@ -205,11 +205,11 @@ linters-settings:
       - name: add-constant
         exclude: [TEST]
         arguments:
-          - maxLitCount: "5"
+          - maxLitCount: "6"
             allowStrs: '""'
             allowInts: 0,1,2
             allowFloats: 0.0,0.,1.0,1.,2.0,2.
-            ignoreFuncs: os\.*,fmt\.*,make,viper\.*
+            ignoreFuncs: os\..*,fmt\..*,make,viper\..*
 
       # Handled by `gocognit` linter
       - name: cognitive-complexity

@@ -31,6 +31,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/link"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 const (
@@ -162,38 +163,37 @@ func linkRemoveCmd() *cobra.Command {
 
 	return removeCmd
 }
+
 func newLinksTree(links options.Link, incoming []options.LinkTarget) *tree.Tree {
-	style := lipgloss.NewStyle().Bold(true)
+	style := lipgloss.NewStyle()
 
-	itemStyle := func(_ tree.Children, idx int) lipgloss.Style {
-		if links.To[idx].Type == options.LinkTargetTypeNode {
-			return style.Foreground(yellow)
-		}
+	hasOutgoing, hasIncoming := len(links.To) > 0, len(incoming) > 0
 
-		return style.Foreground(blue)
-	}
+	outgoingTree := tree.Root("Outgoing links:").
+		Child(sliceutil.Extract(links.To, func(lt options.LinkTarget) string { return lt.String() })).
+		ItemStyle(style.Foreground(blue)).
+		Hide(!hasOutgoing)
 
-	outgoingTree := tree.Root(style.Foreground(cyan).Render(links.From.String())).
-		ItemStyleFunc(itemStyle)
+	incomingTree := tree.Root("Incoming links:").
+		Child(sliceutil.Extract(incoming, func(lt options.LinkTarget) string { return lt.String() })).
+		ItemStyleFunc(func(_ tree.Children, idx int) lipgloss.Style {
+			if hasIncoming && incoming[idx].Type == options.LinkTargetTypeNode {
+				return style.Foreground(yellow)
+			}
 
-	for _, to := range links.To {
-		outgoingTree.Child(tree.Root(to.String()))
-	}
+			return style.Foreground(blue)
+		}).
+		Hide(!hasIncoming)
 
-	hasIncoming := len(incoming) == 0
-
-	incomingTree := tree.New().Root("Incoming links:").
-		ItemStyleFunc(itemStyle).
-		Hide(hasIncoming)
-
-	for _, inc := range incoming {
-		incomingTree.Child(tree.Root(inc.String()))
-	}
-
-	linksTree := tree.New().
-		Indenter(func(_ tree.Children, _ int) string { return "" }).
-		Enumerator(func(_ tree.Children, _ int) string { return "" }).
-		Child(outgoingTree, tree.Root(" ").Hide(hasIncoming), incomingTree)
+	linksTree := tree.Root(fmt.Sprintf("Links for %s:", style.Foreground(cyan).Render(links.From.String()))).
+		Indenter(func(_ tree.Children, _ int) string { return " " }).
+		Enumerator(func(_ tree.Children, _ int) string { return " " }).
+		Child(
+			tree.Root(" ").Hide(!hasOutgoing),
+			outgoingTree,
+			tree.Root(" ").Hide(!hasIncoming),
+			incomingTree,
+		)
 
 	return linksTree
 }
@@ -203,24 +203,33 @@ func populateLinkTargets(linkType string, from, to []string, backend *db.Backend
 	targets := []options.LinkTarget{}
 
 	for _, arg := range to {
-		targets = append(targets, options.LinkTarget{
+		target := options.LinkTarget{
 			Alias: arg,
 			ID:    resolveDocumentID(arg, backend),
 			Type:  options.LinkTargetTypeDocument,
-		})
+		}
+
+		if target.Alias == target.ID {
+			target.Alias = backend.GetDocumentAlias(target.ID)
+		}
+
+		targets = append(targets, target)
 	}
 
 	switch linkType {
 	case "document":
 		for _, arg := range from {
-			links = append(links, options.Link{
-				From: options.LinkTarget{
-					Alias: arg,
-					ID:    resolveDocumentID(arg, backend),
-					Type:  options.LinkTargetTypeDocument,
-				},
-				To: targets,
-			})
+			target := options.LinkTarget{
+				Alias: arg,
+				ID:    resolveDocumentID(arg, backend),
+				Type:  options.LinkTargetTypeDocument,
+			}
+
+			if target.Alias == target.ID {
+				target.Alias = backend.GetDocumentAlias(target.ID)
+			}
+
+			links = append(links, options.Link{From: target, To: targets})
 		}
 	case "node":
 		for _, arg := range from {

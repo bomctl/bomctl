@@ -11,10 +11,11 @@ require (
 	github.com/google/go-github/v66 v66.0.0
 	github.com/google/uuid v1.6.0
 	github.com/jdx/go-netrc v1.0.0
+	github.com/muesli/termenv v0.15.2
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/protobom/protobom v0.5.0
-	github.com/protobom/storage v0.1.6-0.20241212153243-ecc724b07c79
+	github.com/protobom/storage v0.1.6-0.20241219171015-480bacc21393
 	github.com/rogpeppe/go-internal v1.13.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -22,7 +23,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/term v0.27.0
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.0
 	oras.land/oras-go/v2 v2.5.0
 )
 
@@ -66,7 +67,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect

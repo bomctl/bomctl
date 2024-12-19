@@ -137,9 +137,10 @@ tasks:
     vars:
       TEST_ARGS: '{{.TEST_ARGS | default list | join " "}}'
       TEST_PATH: '{{.TEST_PATH | default "./..."}}'
+      VERBOSE_ARG: '{{.CLI_VERBOSE | ternary " -v " " "}}'
     cmds:
-      - cmd: printf "Running {{.CYAN}}go test -failfast -v {{.TEST_ARGS}} {{.TEST_PATH}}{{.RESET}}\n"
-      - cmd: go test -failfast -v {{.TEST_ARGS}} {{.TEST_PATH}}
+      - cmd: printf "Running {{.CYAN}}go test -failfast{{.VERBOSE_ARG}}{{.TEST_ARGS}} {{.TEST_PATH}}{{.RESET}}\n"
+      - cmd: go test -failfast{{.VERBOSE_ARG}}{{.TEST_ARGS}} {{.TEST_PATH}}
 
   test:
     desc: Run all tests

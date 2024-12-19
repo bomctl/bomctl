@@ -33,7 +33,7 @@ type sliceutilsSuite struct {
 }
 
 func (ss *sliceutilsSuite) TestAll() {
-	for _, data := range []struct {
+	for _, subtest := range []struct {
 		cond     func(any) bool
 		items    []any
 		expected bool
@@ -67,14 +67,14 @@ func (ss *sliceutilsSuite) TestAll() {
 			expected: false,
 		},
 	} {
-		actual := sliceutil.All(data.items, data.cond)
+		actual := sliceutil.All(subtest.items, subtest.cond)
 
-		ss.Require().Equal(data.expected, actual)
+		ss.Require().Equal(subtest.expected, actual)
 	}
 }
 
 func (ss *sliceutilsSuite) TestAny() {
-	for _, data := range []struct {
+	for _, subtest := range []struct {
 		cond     func(any) bool
 		items    []any
 		expected bool
@@ -108,9 +108,9 @@ func (ss *sliceutilsSuite) TestAny() {
 			expected: false,
 		},
 	} {
-		actual := sliceutil.Any(data.items, data.cond)
+		actual := sliceutil.Any(subtest.items, subtest.cond)
 
-		ss.Require().Equal(data.expected, actual)
+		ss.Require().Equal(subtest.expected, actual)
 	}
 }
 
@@ -119,7 +119,7 @@ func (ss *sliceutilsSuite) TestExtract() {
 		value string
 	}
 
-	for _, data := range []struct {
+	for _, subtest := range []struct {
 		cond     func(testStringValue) string
 		items    []testStringValue
 		expected []string
@@ -130,9 +130,9 @@ func (ss *sliceutilsSuite) TestExtract() {
 			expected: []string{"", "one", "two", "three"},
 		},
 	} {
-		actual := sliceutil.Extract(data.items, data.cond)
+		actual := sliceutil.Extract(subtest.items, subtest.cond)
 
-		ss.Require().Equal(data.expected, actual)
+		ss.Require().Equal(subtest.expected, actual)
 	}
 }
 
@@ -141,7 +141,7 @@ func (ss *sliceutilsSuite) TestFilter() {
 		value string
 	}
 
-	for _, data := range []struct {
+	for _, subtest := range []struct {
 		cond     func(testStringValue) bool
 		items    []testStringValue
 		expected []testStringValue
@@ -164,9 +164,9 @@ func (ss *sliceutilsSuite) TestFilter() {
 			expected: []testStringValue{{"two"}, {"three"}},
 		},
 	} {
-		actual := sliceutil.Filter(data.items, data.cond)
+		actual := sliceutil.Filter(subtest.items, subtest.cond)
 
-		ss.Require().Equal(data.expected, actual)
+		ss.Require().Equal(subtest.expected, actual)
 	}
 }
 
@@ -211,28 +211,33 @@ func (ss *sliceutilsSuite) TestNext() {
 		value any
 	}
 
-	for _, data := range []struct {
+	for _, subtest := range []struct {
+		name      string
 		cond      func(testAnyValue) bool
 		expected  testAnyValue
 		items     []testAnyValue
 		shouldErr bool
 	}{
 		{
+			name:     "multiple-valid-items",
 			cond:     nil,
 			items:    []testAnyValue{{nil}, {"one"}, {"two"}, {"three"}},
 			expected: testAnyValue{"one"},
 		},
 		{
+			name:      "no-valid-item",
 			cond:      nil,
 			items:     []testAnyValue{{nil}, {nil}, {nil}, {nil}},
 			shouldErr: true,
 		},
 		{
-			cond:      nil,
-			items:     []testAnyValue{{[]any{nil}}, {[]any{nil}}, {[]any{nil}}, {[]any{nil}}},
-			shouldErr: true,
+			name:     "non-empty-slice",
+			cond:     nil,
+			items:    []testAnyValue{{[]any{nil}}, {[]any{nil}}, {[]any{nil}}, {[]any{nil}}},
+			expected: testAnyValue{[]any{nil}},
 		},
 		{
+			name: "custom-condition-no-valid-item",
 			cond: func(item testAnyValue) bool {
 				return item.value != ""
 			},
@@ -240,6 +245,7 @@ func (ss *sliceutilsSuite) TestNext() {
 			shouldErr: true,
 		},
 		{
+			name: "custom-condition-with-valid-item",
 			cond: func(item testAnyValue) bool {
 				return item.value != ""
 			},
@@ -247,20 +253,22 @@ func (ss *sliceutilsSuite) TestNext() {
 			expected: testAnyValue{"two"},
 		},
 	} {
-		actual, err := sliceutil.Next(data.items, data.cond)
+		ss.Run(subtest.name, func() {
+			actual, err := sliceutil.Next(subtest.items, subtest.cond)
 
-		if data.shouldErr {
-			ss.Error(err)
-		} else {
-			ss.Equal(data.expected, actual)
-		}
+			if subtest.shouldErr {
+				ss.Error(err)
+			} else {
+				ss.Equal(subtest.expected, actual)
+			}
+		})
 	}
 }
 
 func (ss *sliceutilsSuite) TestUnpack() {
 	var first, second, third string
 
-	for _, data := range []struct {
+	for _, subtest := range []struct {
 		expectedFirst, expectedSecond, expectedThird string
 		items, expectedExtra                         []string
 	}{
@@ -286,12 +294,12 @@ func (ss *sliceutilsSuite) TestUnpack() {
 			expectedExtra:  []string{},
 		},
 	} {
-		extra := sliceutil.Unpack(data.items, &first, &second, &third)
+		extra := sliceutil.Unpack(subtest.items, &first, &second, &third)
 
-		ss.ElementsMatch(data.expectedExtra, extra)
-		ss.Equal(data.expectedFirst, first)
-		ss.Equal(data.expectedSecond, second)
-		ss.Equal(data.expectedThird, third)
+		ss.ElementsMatch(subtest.expectedExtra, extra)
+		ss.Equal(subtest.expectedFirst, first)
+		ss.Equal(subtest.expectedSecond, second)
+		ss.Equal(subtest.expectedThird, third)
 	}
 }
 

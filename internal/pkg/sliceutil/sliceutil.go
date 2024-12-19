@@ -284,12 +284,20 @@ func Unpack[T any](values []T, vars ...*T) []T {
 }
 
 func isTruthy[T any](item T) bool {
-	value := reflect.ValueOf(item)
-	if value.Comparable() {
-		zeroValue := reflect.Zero(reflect.TypeOf(item))
-
-		return !value.Equal(zeroValue)
+	// If item is already a reflect.Value, return the result for its underlying data.
+	if value, ok := any(item).(reflect.Value); ok {
+		return isTruthy(value.Interface())
 	}
 
-	return false
+	value := reflect.ValueOf(item)
+
+	switch value.Kind() {
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+		return value.Len() > 0
+	case reflect.Pointer:
+		// Dereference pointer and return the result for its underlying data.
+		return !value.IsNil() && value.IsValid() && isTruthy(value.Elem().Interface())
+	default:
+		return !value.IsZero()
+	}
 }

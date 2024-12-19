@@ -30,6 +30,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/link"
 	"github.com/bomctl/bomctl/internal/pkg/logger"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 	"github.com/bomctl/bomctl/internal/testutil"
 )
 
@@ -40,7 +41,26 @@ type linkSuite struct {
 	documentInfo []testutil.DocumentInfo
 }
 
-func (ls *linkSuite) SetupSuite() {
+var (
+	cdxDocTarget = options.LinkTarget{
+		ID:    "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+		Alias: "cdx",
+		Type:  options.LinkTargetTypeDocument,
+	}
+
+	spdxDocTarget = options.LinkTarget{
+		ID:    "https://spdx.org/spdxdocs/apko/#DOCUMENT",
+		Alias: "spdx",
+		Type:  options.LinkTargetTypeDocument,
+	}
+
+	nodeTarget = options.LinkTarget{
+		ID:   "Package-libbrotlicommon1-1.0.9-r3",
+		Type: options.LinkTargetTypeNode,
+	}
+)
+
+func (ls *linkSuite) SetupSubTest() {
 	var err error
 
 	ls.Backend, err = testutil.NewTestBackend()
@@ -54,7 +74,7 @@ func (ls *linkSuite) SetupSuite() {
 	}
 }
 
-func (ls *linkSuite) TearDownSuite() {
+func (ls *linkSuite) TearDownSubTest() {
 	ls.Backend.CloseClient()
 }
 
@@ -62,34 +82,17 @@ func (ls *linkSuite) TestAddLink() {
 	opts := options.New().WithLogger(logger.New("link_add_test"))
 
 	subtests := []struct {
-		name        string
-		documentIDs []string
-		nodeIDs     []string
-		toIDs       []string
+		name     string
+		from, to options.LinkTarget
 	}{
-		{
-			name:        "alias-document",
-			documentIDs: []string{"spdx"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:        "document-document",
-			documentIDs: []string{"https://spdx.org/spdxdocs/apko/#DOCUMENT"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:    "node-document",
-			nodeIDs: []string{"Package-libbrotlicommon1-1.0.9-r3"},
-			toIDs:   []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
+		{name: "document-document", from: spdxDocTarget, to: cdxDocTarget},
+		{name: "node-document", from: nodeTarget, to: cdxDocTarget},
 	}
 
 	for _, subtest := range subtests {
 		linkOpts := &options.LinkOptions{
-			Options:     opts,
-			DocumentIDs: subtest.documentIDs,
-			NodeIDs:     subtest.nodeIDs,
-			ToIDs:       subtest.toIDs,
+			Options: opts,
+			Links:   []options.Link{{From: subtest.from, To: []options.LinkTarget{subtest.to}}},
 		}
 
 		ls.Run(subtest.name, func() {
@@ -97,25 +100,21 @@ func (ls *linkSuite) TestAddLink() {
 
 			annotations := ent.Annotations{}
 
-			if len(linkOpts.DocumentIDs) > 0 {
-				docID, err := ls.Backend.GetDocumentByIDOrAlias(linkOpts.DocumentIDs[0])
+			var err error
+
+			switch subtest.from.Type {
+			case options.LinkTargetTypeDocument:
+				annotations, err = ls.Backend.GetDocumentAnnotations(subtest.from.ID, db.LinkToAnnotation)
 				ls.Require().NoError(err)
-
-				annotations, err = ls.Backend.GetDocumentAnnotations(docID.GetMetadata().GetId())
-				ls.Require().NoError(err)
-			}
-
-			if len(linkOpts.NodeIDs) > 0 {
-				var err error
-
-				annotations, err = ls.Backend.GetNodeAnnotations(linkOpts.NodeIDs[0])
+			case options.LinkTargetTypeNode:
+				annotations, err = ls.Backend.GetNodeAnnotations(subtest.from.ID, db.LinkToAnnotation)
 				ls.Require().NoError(err)
 			}
 
 			ls.Require().NotEmpty(annotations)
 			lastAnnotation := annotations[len(annotations)-1]
 
-			ls.Require().Equal(lastAnnotation.Value, linkOpts.ToIDs[0])
+			ls.Require().Equal(lastAnnotation.Value, subtest.to.ID)
 		})
 	}
 }
@@ -124,49 +123,55 @@ func (ls *linkSuite) TestClearLinks() {
 	opts := options.New().WithLogger(logger.New("link_clear_test"))
 
 	subtests := []struct {
-		name        string
-		documentIDs []string
-		nodeIDs     []string
+		name string
+		from []options.LinkTarget
 	}{
-		{
-			name:        "alias-document",
-			documentIDs: []string{"spdx"},
-		},
-		{
-			name:        "document",
-			documentIDs: []string{"https://spdx.org/spdxdocs/apko/#DOCUMENT"},
-		},
-		{
-			name:    "node",
-			nodeIDs: []string{"Package-libbrotlicommon1-1.0.9-r3"},
-		},
-		{
-			name:        "document-and-node",
-			documentIDs: []string{"https://spdx.org/spdxdocs/apko/#DOCUMENT"},
-			nodeIDs:     []string{"Package-libbrotlicommon1-1.0.9-r3"},
-		},
+		{name: "document", from: []options.LinkTarget{spdxDocTarget}},
+		{name: "node", from: []options.LinkTarget{nodeTarget}},
+		{name: "document-and-node", from: []options.LinkTarget{spdxDocTarget, nodeTarget}},
 	}
 
 	for _, subtest := range subtests {
-		linkOpts := &options.LinkOptions{
-			Options:     opts,
-			DocumentIDs: subtest.documentIDs,
-			NodeIDs:     subtest.nodeIDs,
-		}
-
 		ls.Run(subtest.name, func() {
-			ls.Require().NoError(link.ClearLinks(ls.Backend, linkOpts))
+			for _, from := range subtest.from {
+				linkOpts := &options.LinkOptions{
+					Options: opts,
+					Links:   []options.Link{{From: from, To: []options.LinkTarget{cdxDocTarget}}},
+				}
 
-			if len(linkOpts.DocumentIDs) > 0 {
-				annotations, err := ls.Backend.GetDocumentAnnotations(subtest.documentIDs[0], db.LinkToAnnotation)
-				ls.Require().NoError(err)
-				ls.Empty(annotations)
+				// Add links to verify clearing functionality.
+				ls.Require().NoError(link.AddLink(ls.Backend, linkOpts))
+
+				switch from.Type {
+				case options.LinkTargetTypeDocument:
+					annotations, err := ls.Backend.GetDocumentAnnotations(from.ID, db.LinkToAnnotation)
+					ls.Require().NoError(err)
+					ls.NotEmpty(annotations)
+				case options.LinkTargetTypeNode:
+					annotations, err := ls.Backend.GetNodeAnnotations(from.ID, db.LinkToAnnotation)
+					ls.Require().NoError(err)
+					ls.NotEmpty(annotations)
+				}
 			}
 
-			if len(linkOpts.NodeIDs) > 0 {
-				annotations, err := ls.Backend.GetNodeAnnotations(subtest.nodeIDs[0], db.LinkToAnnotation)
-				ls.Require().NoError(err)
-				ls.Empty(annotations)
+			ls.Require().NoError(link.ClearLinks(ls.Backend, &options.LinkOptions{
+				Options: opts,
+				Links: sliceutil.Extract(subtest.from, func(lt options.LinkTarget) options.Link {
+					return options.Link{From: lt, To: []options.LinkTarget{cdxDocTarget}}
+				}),
+			}))
+
+			for _, from := range subtest.from {
+				switch from.Type {
+				case options.LinkTargetTypeDocument:
+					annotations, err := ls.Backend.GetDocumentAnnotations(from.ID, db.LinkToAnnotation)
+					ls.Require().NoError(err)
+					ls.Empty(annotations)
+				case options.LinkTargetTypeNode:
+					annotations, err := ls.Backend.GetNodeAnnotations(from.ID, db.LinkToAnnotation)
+					ls.Require().NoError(err)
+					ls.Empty(annotations)
+				}
 			}
 		})
 	}
@@ -175,45 +180,40 @@ func (ls *linkSuite) TestClearLinks() {
 func (ls *linkSuite) TestListLinks() {
 	opts := options.New().WithLogger(logger.New("link_list_test"))
 	subtests := []struct {
-		name        string
-		documentIDs []string
-		nodeIDs     []string
-		toIDs       []string
+		name string
+		from options.LinkTarget
 	}{
-		{
-			name:        "alias-document",
-			documentIDs: []string{"spdx"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:        "document",
-			documentIDs: []string{"https://spdx.org/spdxdocs/apko/#DOCUMENT"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:    "node",
-			nodeIDs: []string{"Package-libbrotlicommon1-1.0.9-r3"},
-			toIDs:   []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:        "document-and-node",
-			documentIDs: []string{"https://spdx.org/spdxdocs/apko/#DOCUMENT"},
-			nodeIDs:     []string{"Package-libbrotlicommon1-1.0.9-r3"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
+		{name: "document", from: spdxDocTarget},
+		{name: "node", from: nodeTarget},
 	}
 
 	for _, subtest := range subtests {
-		linkOpts := &options.LinkOptions{
-			Options:     opts,
-			DocumentIDs: subtest.documentIDs,
-			NodeIDs:     subtest.nodeIDs,
-			ToIDs:       subtest.toIDs,
-		}
-
 		ls.Run(subtest.name, func() {
+			linkOpts := &options.LinkOptions{
+				Options: opts,
+				Links:   []options.Link{{From: subtest.from}},
+			}
+
+			_, err := link.ListLinks(ls.Backend, linkOpts)
+			ls.Require().NoError(err)
+			ls.Empty(linkOpts.Links[0].To)
+
+			linkOpts.Links = []options.Link{{From: subtest.from, To: []options.LinkTarget{cdxDocTarget}}}
+
+			// Add link to verify list.
 			ls.Require().NoError(link.AddLink(ls.Backend, linkOpts))
-			ls.Require().NoError(link.ListLinks(ls.Backend, linkOpts))
+
+			_, err = link.ListLinks(ls.Backend, linkOpts)
+			ls.Require().NoError(err)
+			ls.NotEmpty(linkOpts.Links[0].To)
+
+			linkOpts.Links = []options.Link{{From: cdxDocTarget}}
+
+			incoming, err := link.ListLinks(ls.Backend, linkOpts)
+			ls.Require().NoError(err)
+			ls.Empty(linkOpts.Links[0].To)
+
+			ls.ElementsMatch(incoming, []options.LinkTarget{subtest.from})
 		})
 	}
 }
@@ -222,60 +222,45 @@ func (ls *linkSuite) TestRemoveLink() {
 	opts := options.New().WithLogger(logger.New("link_remove_test"))
 
 	subtests := []struct {
-		name        string
-		documentIDs []string
-		nodeIDs     []string
-		toIDs       []string
+		name     string
+		from, to options.LinkTarget
 	}{
-		{
-			name:        "alias-document",
-			documentIDs: []string{"spdx"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:        "document-document",
-			documentIDs: []string{"https://spdx.org/spdxdocs/apko/#DOCUMENT"},
-			toIDs:       []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
-		{
-			name:    "node-document",
-			nodeIDs: []string{"Package-libbrotlicommon1-1.0.9-r3"},
-			toIDs:   []string{"urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79"},
-		},
+		{name: "document-document", from: spdxDocTarget, to: cdxDocTarget},
+		{name: "node-document", from: nodeTarget, to: cdxDocTarget},
 	}
 
 	for _, subtest := range subtests {
-		linkOpts := &options.LinkOptions{
-			Options:     opts,
-			DocumentIDs: subtest.documentIDs,
-			NodeIDs:     subtest.nodeIDs,
-			ToIDs:       subtest.toIDs,
-		}
-
 		ls.Run(subtest.name, func() {
-			ls.Require().NoError(link.RemoveLink(ls.Backend, linkOpts))
-
-			names := []string{}
-
-			if len(linkOpts.DocumentIDs) > 0 {
-				annotations, err := ls.Backend.GetDocumentAnnotations(subtest.documentIDs[0])
-				ls.Require().NoError(err)
-
-				for _, annotation := range annotations {
-					names = append(names, annotation.Name)
-				}
+			linkOpts := &options.LinkOptions{
+				Options: opts,
+				Links:   []options.Link{{From: subtest.from, To: []options.LinkTarget{subtest.to}}},
 			}
 
-			if len(linkOpts.NodeIDs) > 0 {
-				annotations, err := ls.Backend.GetNodeAnnotations(subtest.nodeIDs[0])
+			// Add link to verify removal.
+			ls.Require().NoError(link.AddLink(ls.Backend, linkOpts))
+
+			switch subtest.from.Type {
+			case options.LinkTargetTypeDocument:
+				annotations, err := ls.Backend.GetDocumentAnnotations(subtest.from.ID, db.LinkToAnnotation)
 				ls.Require().NoError(err)
+				ls.NotEmpty(annotations)
 
-				for _, annotation := range annotations {
-					names = append(names, annotation.Name)
-				}
+				ls.Require().NoError(link.RemoveLink(ls.Backend, linkOpts))
+
+				annotations, err = ls.Backend.GetDocumentAnnotations(subtest.from.ID, db.LinkToAnnotation)
+				ls.Require().NoError(err)
+				ls.Empty(annotations)
+			case options.LinkTargetTypeNode:
+				annotations, err := ls.Backend.GetNodeAnnotations(subtest.from.ID, db.LinkToAnnotation)
+				ls.Require().NoError(err)
+				ls.NotEmpty(annotations)
+
+				ls.Require().NoError(link.RemoveLink(ls.Backend, linkOpts))
+
+				annotations, err = ls.Backend.GetNodeAnnotations(subtest.from.ID, db.LinkToAnnotation)
+				ls.Require().NoError(err)
+				ls.Empty(annotations)
 			}
-
-			ls.Require().NotContains(names, "bomctl_annotation_link_to")
 		})
 	}
 }
