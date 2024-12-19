@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: cmd/errors.go
+// SPDX-FileName: internal/e2e/link/link_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,14 +17,31 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package cmd
+package e2e_link_test
 
-import "errors"
+import (
+	"os"
+	"testing"
 
-var (
-	errDirNotFound          = errors.New("not a directory or does not exist")
-	errDocumentNotFound     = errors.New("no documents found with the specified ID")
-	errEncodingNotSupported = errors.New("encoding not supported for selected format")
-	errFileNotFound         = errors.New("not a file or does not exist")
-	errFormatNotSupported   = errors.New("format not supported")
+	"github.com/rogpeppe/go-internal/testscript"
+
+	"github.com/bomctl/bomctl/cmd"
+	"github.com/bomctl/bomctl/internal/e2e/e2eutil"
 )
+
+func TestBomctlLink(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	t.Parallel()
+	testscript.Run(t, testscript.Params{
+		Dir:                 ".",
+		RequireExplicitExec: true,
+		Cmds:                e2eutil.CustomCommands(),
+	})
+}
+
+func TestMain(m *testing.M) {
+	os.Exit(testscript.RunMain(m, map[string]func() int{"bomctl": cmd.Execute}))
+}

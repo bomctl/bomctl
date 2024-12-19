@@ -41,8 +41,9 @@ import (
 const (
 	AliasAnnotation           string = "bomctl_annotation_alias"
 	BaseDocumentAnnotation    string = "bomctl_annotation_base_document"
-	RevisedDocumentAnnotation string = "bomctl_annotation_revised_document"
 	LatestRevisionAnnotation  string = "bomctl_annotation_latest_revision"
+	LinkToAnnotation          string = "bomctl_annotation_link_to"
+	RevisedDocumentAnnotation string = "bomctl_annotation_revised_document"
 	SourceDataAnnotation      string = "bomctl_annotation_source_data"
 	SourceFormatAnnotation    string = "bomctl_annotation_source_format"
 	SourceHashAnnotation      string = "bomctl_annotation_source_hash"
@@ -161,6 +162,16 @@ func (backend *Backend) FilterDocumentsByTag(documents []*sbom.Document, tags ..
 	return documents, nil
 }
 
+// GetDocumentAlias gets the alias for the specified document ID from the database.
+func (backend *Backend) GetDocumentAlias(id string) string {
+	alias, err := backend.GetDocumentUniqueAnnotation(id, AliasAnnotation)
+	if err != nil {
+		return ""
+	}
+
+	return alias
+}
+
 // GetDocumentByID retrieves a protobom Document with the specified ID from the database.
 func (backend *Backend) GetDocumentByID(id string) (doc *sbom.Document, err error) {
 	switch documents, getDocsErr := backend.GetDocumentsByID(id); {
@@ -183,20 +194,20 @@ func (backend *Backend) GetDocumentByIDOrAlias(id string) (*sbom.Document, error
 		return nil, fmt.Errorf("document could not be retrieved: %w", err)
 	}
 
-	if document == nil {
-		switch documents, getDocErr := backend.GetDocumentsByAnnotation(AliasAnnotation, id); {
-		case getDocErr != nil:
-			err = fmt.Errorf("document could not be retrieved: %w", getDocErr)
-		case len(documents) == 0:
-			document = nil
-		case len(documents) > 1:
-			err = fmt.Errorf("%w %s", errMultipleDocuments, id)
-		default:
-			document = documents[0]
-		}
+	if document != nil {
+		return document, nil
 	}
 
-	return document, err
+	switch documents, err := backend.GetDocumentsByAnnotation(AliasAnnotation, id); {
+	case err != nil:
+		return nil, fmt.Errorf("document could not be retrieved: %w", err)
+	case len(documents) == 0:
+		return nil, nil
+	case len(documents) > 1:
+		return nil, fmt.Errorf("%w %s", errMultipleDocuments, id)
+	default:
+		return documents[0], nil
+	}
 }
 
 func (backend *Backend) GetDocumentsByIDOrAlias(ids ...string) ([]*sbom.Document, error) {
