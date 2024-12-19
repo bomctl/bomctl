@@ -30,22 +30,28 @@ stderr -count=1 '^Error: accepts 2 arg\(s\), received 0$'
 
 # link add one arg (FAILURE EXPECTED)
 ! exec bomctl link add --cache-dir $WORK --type=document "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
-stderr '^Error: accepts 2 arg\(s\), received 1'
+stderr '^Error: accepts 2 arg\(s\), received 1$'
+! stdout .
+
+# link add invalid document ID (FAILURE EXPECTED)
+! exec bomctl link add --cache-dir $WORK --type=document invalid "urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db"
+stderr '^WARN  db: Document not found id=invalid$'
+stderr '^FATAL link: querying documents: ent: document not found$'
 ! stdout .
 
 # link remove no input (FAILURE EXPECTED)
 ! exec bomctl link remove --cache-dir $WORK
-stderr '^Error: requires at least 2 arg\(s\), only received 0'
+stderr '^Error: requires at least 2 arg\(s\), only received 0$'
 ! stdout .
 
 # link list no input (FAILURE EXPECTED)
 ! exec bomctl link list --cache-dir $WORK
-stderr '^Error: accepts 1 arg\(s\), received 0'
+stderr '^Error: accepts 1 arg\(s\), received 0$'
 ! stdout .
 
 # link clear no input (FAILURE EXPECTED)
 ! exec bomctl link clear --cache-dir $WORK
-stderr '^Error: requires at least 1 arg\(s\), only received 0'
+stderr '^Error: requires at least 1 arg\(s\), only received 0$'
 ! stdout .
 
 # link add two documents
