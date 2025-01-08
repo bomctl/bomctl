@@ -21,21 +21,32 @@ package gitlab
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 
+	"github.com/protobom/protobom/pkg/sbom"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
-type Client struct {
-	ProjectProvider
-	BranchProvider
-	CommitProvider
-	DependencyListExporter
-	Export      *gitlab.DependencyListExport
-	GitLabToken string
-}
+type (
+	SbomFile struct {
+		Contents *sbom.Document
+		Name     string
+	}
+
+	Client struct {
+		ProjectProvider
+		BranchProvider
+		CommitProvider
+		DependencyListExporter
+		GenericPackagePublisher
+		Export      *gitlab.DependencyListExport
+		PushQueue   []*SbomFile
+		GitLabToken string
+	}
+)
 
 func (*Client) Name() string {
 	return "GitLab"
@@ -45,7 +56,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("(?i)^%s%s%s$",
 		`(?P<scheme>https?|git|ssh):\/\/`,
 		`(?P<hostname>[^@\/?#:]+gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
-		`(?P<path>[^@#]+)@(?P<gitRef>\S+)`))
+		`(?P<path>[^@?#]+)(?:@(?P<gitRef>[^?#]+))(?:\?(?P<query>[^#]+))?`))
 }
 
 func (client *Client) Parse(rawURL string) *netutil.URL {
@@ -58,7 +69,14 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 
 	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path", "gitRef"} {
+	requiredFields := []string{
+		"scheme",
+		"hostname",
+		"path",
+		// "gitRef", // Required if Fetch only
+		// "query",  // Required if Push only
+	}
+	for _, required := range requiredFields {
 		if value, ok := results[required]; !ok || value == "" {
 			return nil
 		}
@@ -70,5 +88,14 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		Port:     results["port"],
 		Path:     results["path"],
 		GitRef:   results["gitRef"],
+		Query:    results["query"],
 	}
+}
+
+func validateHTTPStatusCode(statusCode int) error {
+	if statusCode < http.StatusOK || http.StatusMultipleChoices <= statusCode {
+		return fmt.Errorf("%w. HTTP status code: %d", errFailedWebRequest, statusCode)
+	}
+
+	return nil
 }

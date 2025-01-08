@@ -19,16 +19,132 @@
 
 package gitlab
 
-import "github.com/bomctl/bomctl/internal/pkg/options"
+import (
+	"fmt"
+	"io"
+	"os"
+	"regexp"
+	"strings"
 
-func (*Client) AddFile(_name, _id string, _opts *options.PushOptions) error {
+	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+)
+
+type (
+	GenericPackagePublisher interface {
+		PublishPackageFile(
+			any,
+			string,
+			string,
+			string,
+			io.Reader,
+			*gitlab.PublishPackageFileOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.GenericPackagesFile, *gitlab.Response, error)
+	}
+)
+
+func (client *Client) PreparePush(pushURL string, _opts *options.PushOptions) error {
+	gitLabToken := os.Getenv("BOMCTL_GITLAB_TOKEN")
+
+	url := client.Parse(pushURL)
+
+	host := url.Hostname
+
+	if url.Port != "" {
+		host = fmt.Sprintf("%s:%s", host, url.Port)
+	}
+
+	baseURL := fmt.Sprintf("https://%s/api/v4", host)
+
+	gitLabClient, err := gitlab.NewClient(gitLabToken, gitlab.WithBaseURL(baseURL))
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	client.GenericPackagePublisher = gitLabClient.GenericPackages
+
+	client.PushQueue = make([]*SbomFile, 0)
+
 	return nil
 }
 
-func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
+func (client *Client) AddFile(_pushURL, id string, opts *options.PushOptions) error {
+	opts.Logger.Info("Adding file", "id", id)
+
+	backend, err := db.BackendFromContext(opts.Context())
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	sbom, err := backend.GetDocumentByIDOrAlias(id)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	re := regexp.MustCompile(`urn:uuid:([\w-]+)`)
+	match := re.FindStringSubmatch(id)
+	sbomFilename := match[1] + ".json"
+
+	client.PushQueue = append(client.PushQueue, &SbomFile{
+		Name:     sbomFilename,
+		Contents: sbom,
+	})
+
 	return nil
 }
 
-func (*Client) Push(_pushURL string, _opts *options.PushOptions) error {
+func (client *Client) Push(pushURL string, _opts *options.PushOptions) error {
+	url := client.Parse(pushURL)
+	if url == nil {
+		return fmt.Errorf("%w: %s", errInvalidGitLabURL, pushURL)
+	}
+
+	project, response, err := client.GetProject(url.Path, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get project info: %w", err)
+	}
+
+	if err := validateHTTPStatusCode(response.StatusCode); err != nil {
+		return err
+	}
+
+	packageName := ""
+	packageVersion := ""
+
+	parameters := strings.Split(url.Query, "&")
+
+	for _, parameter := range parameters {
+		nameValuePair := strings.Split(parameter, "=")
+
+		switch nameValuePair[0] {
+		case "package_name":
+			packageName = nameValuePair[1]
+		case "package_version":
+			packageVersion = nameValuePair[1]
+		}
+	}
+
+	for _, sbomFile := range client.PushQueue {
+		sbomReader := strings.NewReader(sbomFile.Contents.String())
+
+		_, response, err := client.GenericPackagePublisher.PublishPackageFile(
+			project.ID,
+			packageName,
+			packageVersion,
+			sbomFile.Name,
+			sbomReader,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to push sbom: %w", err)
+		}
+
+		if err := validateHTTPStatusCode(response.StatusCode); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

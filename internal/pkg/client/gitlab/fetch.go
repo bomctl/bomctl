@@ -79,14 +79,6 @@ var (
 	errForbiddenAccess  = errors.New("the supplied token is missing the read_dependency permission")
 )
 
-func validateHTTPStatusCode(statusCode int) error {
-	if statusCode < http.StatusOK || http.StatusMultipleChoices <= statusCode {
-		return fmt.Errorf("%w. HTTP status code: %d", errFailedWebRequest, statusCode)
-	}
-
-	return nil
-}
-
 func (client *Client) createExport(projectName, branchName string) error {
 	project, response, err := client.GetProject(projectName, nil)
 	if err != nil {
