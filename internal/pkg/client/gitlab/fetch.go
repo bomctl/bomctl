@@ -33,46 +33,6 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-type (
-	ProjectProvider interface {
-		GetProject(
-			any,
-			*gitlab.GetProjectOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.Project, *gitlab.Response, error)
-	}
-
-	BranchProvider interface {
-		GetBranch(
-			any,
-			string,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.Branch, *gitlab.Response, error)
-	}
-
-	CommitProvider interface {
-		GetCommit(
-			any,
-			string,
-			*gitlab.GetCommitOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.Commit, *gitlab.Response, error)
-	}
-
-	DependencyListExporter interface {
-		CreateDependencyListExport(
-			int,
-			*gitlab.CreateDependencyListExportOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.DependencyListExport, *gitlab.Response, error)
-		GetDependencyListExport(
-			int,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.DependencyListExport, *gitlab.Response, error)
-		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
-	}
-)
-
 var (
 	errInvalidGitLabURL = errors.New("invalid URL for GitLab fetching")
 	errFailedWebRequest = errors.New("web request failed")

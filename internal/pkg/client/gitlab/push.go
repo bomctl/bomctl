@@ -26,9 +26,11 @@ import (
 	"regexp"
 	"strings"
 
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
 type (
@@ -43,7 +45,15 @@ type (
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.GenericPackagesFile, *gitlab.Response, error)
 	}
+
+	StringWriter struct {
+		*strings.Builder
+	}
 )
+
+func (*StringWriter) Close() error {
+	return nil
+}
 
 func (client *Client) PreparePush(pushURL string, _opts *options.PushOptions) error {
 	gitLabToken := os.Getenv("BOMCTL_GITLAB_TOKEN")
@@ -63,6 +73,8 @@ func (client *Client) PreparePush(pushURL string, _opts *options.PushOptions) er
 		return fmt.Errorf("%w", err)
 	}
 
+	client.GitLabToken = gitLabToken
+	client.ProjectProvider = gitLabClient.Projects
 	client.GenericPackagePublisher = gitLabClient.GenericPackages
 
 	client.PushQueue = make([]*SbomFile, 0)
@@ -85,11 +97,25 @@ func (client *Client) AddFile(_pushURL, id string, opts *options.PushOptions) er
 
 	re := regexp.MustCompile(`urn:uuid:([\w-]+)`)
 	match := re.FindStringSubmatch(id)
-	sbomFilename := match[1] + ".json"
+	sbomFilename := match[1]
+
+	re = regexp.MustCompile(`\bxml\b`)
+	match = re.FindStringSubmatch(string(opts.Format))
+
+	if len(match) == 0 {
+		sbomFilename += ".json"
+	} else {
+		sbomFilename += ".xml"
+	}
+
+	sbomWriter := &StringWriter{&strings.Builder{}}
+	if err := outpututil.WriteStream(sbom, opts.Format, opts.Options, sbomWriter); err != nil {
+		return fmt.Errorf("failed to serialize SBOM %s: %w", id, err)
+	}
 
 	client.PushQueue = append(client.PushQueue, &SbomFile{
 		Name:     sbomFilename,
-		Contents: sbom,
+		Contents: sbomWriter.String(),
 	})
 
 	return nil
@@ -127,7 +153,7 @@ func (client *Client) Push(pushURL string, _opts *options.PushOptions) error {
 	}
 
 	for _, sbomFile := range client.PushQueue {
-		sbomReader := strings.NewReader(sbomFile.Contents.String())
+		sbomReader := strings.NewReader(sbomFile.Contents)
 
 		_, response, err := client.GenericPackagePublisher.PublishPackageFile(
 			project.ID,

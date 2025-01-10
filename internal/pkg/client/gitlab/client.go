@@ -21,10 +21,10 @@ package gitlab
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 
-	"github.com/protobom/protobom/pkg/sbom"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
@@ -32,8 +32,46 @@ import (
 
 type (
 	SbomFile struct {
-		Contents *sbom.Document
+		Contents string
 		Name     string
+	}
+
+	ProjectProvider interface {
+		GetProject(
+			any,
+			*gitlab.GetProjectOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Project, *gitlab.Response, error)
+	}
+
+	BranchProvider interface {
+		GetBranch(
+			any,
+			string,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Branch, *gitlab.Response, error)
+	}
+
+	CommitProvider interface {
+		GetCommit(
+			any,
+			string,
+			*gitlab.GetCommitOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Commit, *gitlab.Response, error)
+	}
+
+	DependencyListExporter interface {
+		CreateDependencyListExport(
+			int,
+			*gitlab.CreateDependencyListExportOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.DependencyListExport, *gitlab.Response, error)
+		GetDependencyListExport(
+			int,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.DependencyListExport, *gitlab.Response, error)
+		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
 	}
 
 	Client struct {
@@ -42,9 +80,9 @@ type (
 		CommitProvider
 		DependencyListExporter
 		GenericPackagePublisher
+		GitLabToken string
 		Export      *gitlab.DependencyListExport
 		PushQueue   []*SbomFile
-		GitLabToken string
 	}
 )
 
@@ -55,8 +93,8 @@ func (*Client) Name() string {
 func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("(?i)^%s%s%s$",
 		`(?P<scheme>https?|git|ssh):\/\/`,
-		`(?P<hostname>[^@\/?#:]+gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
-		`(?P<path>[^@?#]+)(?:@(?P<gitRef>[^?#]+))(?:\?(?P<query>[^#]+))?`))
+		`(?P<hostname>[^@\/?#:]*gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
+		`(?P<path>[^@?#]+)(?:@(?P<gitRef>[^?#]+))?(?:\?(?P<query>[^#]+))?`))
 }
 
 func (client *Client) Parse(rawURL string) *netutil.URL {
