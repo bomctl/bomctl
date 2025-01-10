@@ -53,9 +53,26 @@ type (
 	mockDependencyListExporter struct {
 		mock.Mock
 	}
+
+	mockGenericPackagePublisher struct {
+		mock.Mock
+	}
 )
 
 //revive:disable:unchecked-type-assertion
+
+func (mpp *mockGenericPackagePublisher) PublishPackageFile(
+	pid any,
+	packageName, packageVersion, fileName string,
+	content io.Reader,
+	opt *gogitlab.PublishPackageFileOptions,
+	options ...gogitlab.RequestOptionFunc,
+) (*gogitlab.GenericPackagesFile, *gogitlab.Response, error) {
+	args := mpp.Called(pid, packageName, packageVersion, fileName, content, opt, options)
+
+	//nolint:errcheck,wrapcheck
+	return args.Get(0).(*gogitlab.GenericPackagesFile), args.Get(1).(*gogitlab.Response), args.Error(2)
+}
 
 func (mpp *mockProjectProvider) GetProject(
 	pid any,
@@ -249,6 +266,72 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		mockedBranchProvider.AssertExpectations(glcs.T())
 		mockedCommitProvider.AssertExpectations(glcs.T())
 		mockedDependencyListExporter.AssertExpectations(glcs.T())
+	})
+}
+
+func (glcs *gitLabClientSuite) TestClient_Push() {
+	// "centos", "https://gitlab.com/lmphil/deleteme?package_name=deleteme-sbom&package_version=1.0.0"
+
+	dummyHost := "gitlab.dummy"
+	dummyProjectID := 1234
+	dummyProjectName := "TESTING/TEST"
+	dummyPackageName := "SBOM"
+	dummyPackageVersion := "1.0.0"
+
+	dummySbomUuid := "92ae62e5-a14a-49ab-8100-d8c012538d01"
+	dummySbomFileName := fmt.Sprintf("%s.json", dummySbomUuid)
+
+	dummySbomContent := "DUMMY SBOM CONTENT"
+
+	dummyURL := fmt.Sprintf("https://%s/%s?package_name=%s&package_version=%s", dummyHost, dummyProjectName, dummyPackageName, dummyPackageVersion)
+
+	mockedProjectProvider := &mockProjectProvider{}
+	mockedGenericPackagePublisher := &mockGenericPackagePublisher{}
+
+	mockedProjectProvider.On(
+		"GetProject",
+		dummyProjectName,
+		(*gogitlab.GetProjectOptions)(nil),
+		[]gogitlab.RequestOptionFunc(nil),
+	).Return(
+		&gogitlab.Project{
+			ID:   dummyProjectID,
+			Name: dummyProjectName,
+		},
+		successGitLabResponse,
+		nil,
+	)
+
+	mockedGenericPackagePublisher.On(
+		"PublishPackageFile",
+		dummyProjectID,
+		dummyPackageName,
+		dummyPackageVersion,
+		dummySbomFileName,
+		mock.Anything,
+		(*gogitlab.PublishPackageFileOptions)(nil),
+		[]gogitlab.RequestOptionFunc(nil),
+	).Return(
+		&gogitlab.GenericPackagesFile{},
+		successGitLabResponse,
+		nil,
+	)
+
+	client := &gitlab.Client{
+		ProjectProvider:         mockedProjectProvider,
+		GenericPackagePublisher: mockedGenericPackagePublisher,
+		PushQueue: []*gitlab.SbomFile{{
+			Name:     dummySbomFileName,
+			Contents: dummySbomContent,
+		}},
+	}
+
+	glcs.Run("Push", func() {
+		err := client.Push(dummyURL, nil)
+		glcs.Require().NoError(err, "failed to create dependency list export: %v", err)
+
+		mockedProjectProvider.AssertExpectations(glcs.T())
+		mockedGenericPackagePublisher.AssertExpectations(glcs.T())
 	})
 }
 
