@@ -78,7 +78,7 @@ func (ocs *ociClientSuite) TestClient_Fetch() {
 		},
 	} {
 		ocs.Run(data.name, func() {
-			fetchURL := fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, data.tag)
+			fetchURL := fmt.Sprintf("oci://%s/%s?ref=%s", serverURL.Host, repoName, data.tag)
 
 			ocs.Require().NoError(ocs.packManifest(data.tag, data.descriptors...))
 

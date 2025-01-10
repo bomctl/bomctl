@@ -64,7 +64,7 @@ func (mpp *mockProjectProvider) GetProject(
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mpp.Called(pid, opt, options)
 
-	//nolint:errcheck,wrapcheck
+	//nolint:wrapcheck
 	return args.Get(0).(*gogitlab.Project), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -75,7 +75,7 @@ func (mbp *mockBranchProvider) GetBranch(
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mbp.Called(pid, branch, options)
 
-	//nolint:errcheck,wrapcheck
+	//nolint:wrapcheck
 	return args.Get(0).(*gogitlab.Branch), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -87,7 +87,7 @@ func (mcp *mockCommitProvider) GetCommit(
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mcp.Called(pid, sha, opt, options)
 
-	//nolint:errcheck,wrapcheck
+	//nolint:wrapcheck
 	return args.Get(0).(*gogitlab.Commit), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -98,7 +98,7 @@ func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(pipelineID, opt, options)
 
-	//nolint:errcheck,wrapcheck
+	//nolint:wrapcheck
 	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -108,7 +108,7 @@ func (mdle *mockDependencyListExporter) GetDependencyListExport(
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
-	//nolint:errcheck,wrapcheck
+	//nolint:wrapcheck
 	return args.Get(0).(*gogitlab.DependencyListExport), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
@@ -118,7 +118,7 @@ func (mdle *mockDependencyListExporter) DownloadDependencyListExport(
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
-	//nolint:errcheck,wrapcheck
+	//nolint:wrapcheck
 	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 

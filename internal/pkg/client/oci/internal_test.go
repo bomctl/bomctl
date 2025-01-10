@@ -21,6 +21,7 @@ package oci
 
 import (
 	"io"
+	neturl "net/url"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content/memory"
@@ -32,7 +33,7 @@ import (
 
 var GetDocument = getDocument
 
-func (client *Client) CreateRepository(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) error {
+func (client *Client) CreateRepository(url *neturl.URL, auth *netutil.BasicAuth, opts *options.Options) error {
 	return client.createRepository(url, auth, opts)
 }
 

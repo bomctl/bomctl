@@ -32,12 +32,12 @@ import (
 )
 
 func (ocs *ociClientSuite) TestClient_AddFile() {
-	serverURL, err := neturl.Parse(ocs.Server.URL)
+	serverURL, err := neturl.Parse("//" + ocs.Server.URL)
 	ocs.Require().NoError(err)
 
 	ocs.Require().NoError(
 		ocs.Client.PreparePush(
-			fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag),
+			fmt.Sprintf("oci://%s/%s?ref=%s", serverURL.Host, repoName, manifestTag),
 			&options.PushOptions{Options: ocs.Options},
 		),
 	)
@@ -47,7 +47,7 @@ func (ocs *ociClientSuite) TestClient_AddFile() {
 	// Test adding all SBOM files to artifact archive.
 	for _, document := range ocs.documents {
 		ocs.Require().NoError(ocs.Client.AddFile(
-			fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag),
+			fmt.Sprintf("%s/%s?ref=%s", serverURL.Host, repoName, manifestTag),
 			document.GetMetadata().GetId(),
 			&options.PushOptions{Options: ocs.Options, Format: formats.SPDX23JSON},
 		))
@@ -63,11 +63,11 @@ func (ocs *ociClientSuite) TestClient_AddFile() {
 }
 
 func (ocs *ociClientSuite) TestClient_Push() {
-	serverURL, err := neturl.Parse(ocs.Server.URL)
+	serverURL, err := neturl.Parse("//" + ocs.Server.URL)
 	ocs.Require().NoError(err)
 
 	ocs.Repo().Client = &orasauth.Client{Client: ocs.Server.Client()}
-	pushURL := fmt.Sprintf("%s/%s:%s", serverURL.Host, repoName, manifestTag+"-single")
+	pushURL := fmt.Sprintf("oci://%s/%s?ref=%s", serverURL.Host, repoName, manifestTag+"-single")
 	annotations := map[string]string{ocispec.AnnotationCreated: created}
 
 	for idx := range ocs.sbomBlobs {
