@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/e2e/tag/tag_test.go
+// SPDX-FileName: internal/pkg/client/gitlab/push.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,31 +17,18 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package e2e_tag_test
+package gitlab
 
-import (
-	"os"
-	"testing"
+import "github.com/bomctl/bomctl/internal/pkg/options"
 
-	"github.com/rogpeppe/go-internal/testscript"
-
-	"github.com/bomctl/bomctl/cmd"
-	"github.com/bomctl/bomctl/internal/e2e/e2eutil"
-)
-
-func TestBomctlTag(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-
-	t.Parallel()
-	testscript.Run(t, testscript.Params{
-		Dir:                 ".",
-		RequireExplicitExec: true,
-		Cmds:                e2eutil.CustomCommands(),
-	})
+func (*Client) AddFile(_name, _id string, _opts *options.PushOptions) error {
+	return nil
 }
 
-func TestMain(m *testing.M) {
-	os.Exit(testscript.RunMain(m, map[string]func() int{"bomctl": cmd.Execute}))
+func (*Client) PreparePush(_pushURL string, _opts *options.PushOptions) error {
+	return nil
+}
+
+func (*Client) Push(_pushURL string, _opts *options.PushOptions) error {
+	return nil
 }

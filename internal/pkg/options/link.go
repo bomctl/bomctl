@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/e2e/tag/tag_test.go
+// SPDX-FileName: internal/pkg/options/link.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,31 +17,45 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package e2e_tag_test
+package options
 
-import (
-	"os"
-	"testing"
+import "fmt"
 
-	"github.com/rogpeppe/go-internal/testscript"
-
-	"github.com/bomctl/bomctl/cmd"
-	"github.com/bomctl/bomctl/internal/e2e/e2eutil"
+const (
+	LinkTargetTypeNode LinkTargetType = iota
+	LinkTargetTypeDocument
 )
 
-func TestBomctlTag(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
+type (
+	LinkTargetType uint8
+
+	LinkTarget struct {
+		ID, Alias string
+		Type      LinkTargetType
 	}
 
-	t.Parallel()
-	testscript.Run(t, testscript.Params{
-		Dir:                 ".",
-		RequireExplicitExec: true,
-		Cmds:                e2eutil.CustomCommands(),
-	})
+	Link struct {
+		From LinkTarget
+		To   []LinkTarget
+	}
+)
+
+func (lt *LinkTarget) String() string {
+	str := lt.ID
+	if lt.Type == LinkTargetTypeDocument && lt.Alias != "" && lt.Alias != str {
+		str += fmt.Sprintf(" (%s)", lt.Alias)
+	}
+
+	return str
 }
 
-func TestMain(m *testing.M) {
-	os.Exit(testscript.RunMain(m, map[string]func() int{"bomctl": cmd.Execute}))
+func (lt LinkTargetType) String() string {
+	switch lt {
+	case LinkTargetTypeDocument:
+		return "document"
+	case LinkTargetTypeNode:
+		return "node"
+	}
+
+	return ""
 }

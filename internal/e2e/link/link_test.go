@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SPDX-FileCopyrightText: Copyright © 2024 bomctl a Series of LF Projects, LLC
-// SPDX-FileName: internal/e2e/tag/tag_test.go
+// SPDX-FileName: internal/e2e/link/link_test.go
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package e2e_tag_test
+package e2e_link_test
 
 import (
 	"os"
@@ -29,7 +29,7 @@ import (
 	"github.com/bomctl/bomctl/internal/e2e/e2eutil"
 )
 
-func TestBomctlTag(t *testing.T) {
+func TestBomctlLink(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}

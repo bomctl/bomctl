@@ -22,6 +22,7 @@ package git_test
 import (
 	"testing"
 
+	gogit "github.com/go-git/go-git/v5"
 	"github.com/protobom/protobom/pkg/formats"
 	"github.com/stretchr/testify/suite"
 
@@ -54,38 +55,38 @@ func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
 }
 
 func (gps *gitPushSuite) TestClient_AddFile() {
+	pushURL := gps.Server.URL + "/test/repo.git@main#path/to/testbom.cdx.json"
+
 	opts := &options.PushOptions{
 		Options: gps.Options,
 		Format:  formats.CDX15JSON,
 	}
 
-	if err := gps.Client.AddFile(
-		gps.Server.URL+"/test/repo.git@main#path/to/testbom.cdx.json",
-		gps.documents[0].GetMetadata().GetId(),
-		opts,
-	); err != nil {
-		gps.FailNowf("Error testing AddFile", "%s", err.Error())
-	}
+	gps.Require().NoError(gps.Client.AddFile(pushURL, gps.documents[0].GetMetadata().GetId(), opts))
 
 	// Get worktree status.
 	status, err := gps.Client.Worktree().Status()
 	gps.Require().NoError(err)
 
 	// File must be staged with a status of "A" (added).
-	gps.Require().Equal("A", string(status.File("path/to/testbom.cdx.json").Staging))
+	gps.Require().Equal(gogit.Added, status.File("path/to/testbom.cdx.json").Staging)
 }
 
 func (gps *gitPushSuite) TestClient_Push() {
-	pushURL := gps.Server.URL + "/test/repo.git@main#path/to/sbom.cdx.json"
+	pushURL := gps.Server.URL + "/test/repo.git@main#path/to/testbom.cdx.json"
 
 	opts := &options.PushOptions{
 		Options: gps.Options,
 		Format:  formats.CDX15JSON,
-		UseTree: false,
 	}
 
 	gps.Require().NoError(gps.Client.AddFile(pushURL, gps.documents[0].GetMetadata().GetId(), opts))
 	gps.Require().NoError(gps.Client.Push(pushURL, opts))
+
+	// Get worktree status.
+	status, err := gps.Client.Worktree().Status()
+	gps.Require().NoError(err)
+	gps.True(status.IsClean())
 }
 
 func (gps *gitPushSuite) TestGetDocument() {

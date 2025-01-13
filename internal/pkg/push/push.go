@@ -27,16 +27,32 @@ import (
 	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
+	"github.com/bomctl/bomctl/internal/pkg/client/git"
+	"github.com/bomctl/bomctl/internal/pkg/client/github"
+	"github.com/bomctl/bomctl/internal/pkg/client/http"
+	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
 	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
+
+func NewPusher(url string) (client.Pusher, error) {
+	clients := []client.Pusher{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}}
+
+	pusher, err := sliceutil.Next(clients, func(f client.Pusher) bool { return f.Parse(url) != nil })
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", client.ErrUnsupportedURL, url)
+	}
+
+	return pusher, nil
+}
 
 func Push(sbomID, pushURL string, opts *options.PushOptions) error {
 	opts.Logger.Info("Pushing document", "id", sbomID)
 
 	// Create appropriate push client based on user provided destination.
-	pushClient, err := client.New(pushURL)
+	pushClient, err := NewPusher(pushURL)
 	if err != nil {
 		return fmt.Errorf("creating push client: %w", err)
 	}
@@ -66,7 +82,7 @@ func Push(sbomID, pushURL string, opts *options.PushOptions) error {
 	return nil
 }
 
-func addExternalReferenceFiles(sbomID, pushURL string, pushClient client.Client, opts *options.PushOptions) error {
+func addExternalReferenceFiles(sbomID, pushURL string, pushClient client.Pusher, opts *options.PushOptions) error {
 	extRefs, err := getExternalReferences(sbomID, opts)
 	if err != nil {
 		return fmt.Errorf("%w", err)

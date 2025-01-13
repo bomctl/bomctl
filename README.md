@@ -111,21 +111,21 @@ Flags:
 
 ### Export
 
-Export stored SBOMs to either standard output or the file system.
+Export stored SBOM(s) to filesystem
 
 ```shell
 bomctl export [flags] SBOM_ID...
 
 Flags:
-  -e, --encoding string    output encoding [spdx: [json], cyclonedx: [json, xml]] (default "json")
-  -f, --format string      SBOM output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
+  -e, --encoding CHOICE    Output encoding ('xml' supported for CycloneDX formats only) [json, xml] (default json)
+  -f, --format CHOICE      Output format [original, spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5, cyclonedx-1.6] (default original)
   -h, --help               help for export
-  -o, --output-file FILE   path to output file
+  -o, --output-file FILE   Path to output file
 ```
 
 ### Fetch
 
-Ability to retrieve SBOM files over several protocols, including HTTPS, OCI, and git.
+Ability to retrieve SBOM files over several protocols and web APIs, including HTTPS, OCI, Git, GitHub, and GitLab.
 
 ```shell
 bomctl fetch [flags] SBOM_URL...
@@ -154,6 +154,12 @@ Alternatively, use the following syntax to directly fetch the most recent depend
 bomctl fetch https://github.com/bomctl/bomctl
 ```
 
+An SBOM may also be fetched from a GitLab repository through the [DependencyListExport web API](https://docs.gitlab.com/ee/api/dependency_list_export.html) by using the following URL format. Authorization for this command is configured by assigning the value of your GitLab token to the `BOMCTL_GITLAB_TOKEN` environment variable.
+
+```shell
+bomctl fetch https://www.gitlab.com/PROJECT/REPOSITORY@BRANCH
+```
+
 ### Import
 
 Import SBOM files from either standard input or the local file system.
@@ -165,6 +171,24 @@ Flags:
       --alias stringArray   Readable identifier(s) to apply to imported document(s) (specify multiple times for multiple documents)
   -h, --help                help for import
       --tag stringArray     Tag(s) to apply to all imported documents (can be specified multiple times)
+```
+
+### Link
+
+Edit links between documents and/or nodes
+
+```shell
+bomctl link [command]
+
+Subcommands:
+  add         Add a link from a document or node to a document
+  clear       Remove all links from specified documents and nodes
+  list        List the links of a document or node
+  remove      Remove specified links from a document or node
+
+Flags:
+  -h, --help          help for link
+  -t, --type CHOICE   Type referenced by SRC_ID [node, document] (default node)
 ```
 
 ### List
@@ -187,7 +211,7 @@ Flags:
 Merge specified cached SBOM documents.
 
 ```shell
-  bomctl merge [flags] DOCUMENT_ID...
+bomctl merge [flags] DOCUMENT_ID...
 
 Flags:
       --alias string      Readable identifier to apply to merged document
@@ -198,14 +222,14 @@ Flags:
 
 ### Push
 
-Push stored SBOM file to remote URL or filesystem.
+Push stored SBOM file to remote URL or filesystem
 
 ```shell
-  bomctl push [flags] SBOM_ID DEST_PATH
+bomctl push [flags] SBOM_ID DEST_PATH
 
 Flags:
-  -e, --encoding string   output encoding [spdx: [json], cyclonedx: [json, xml]] (default "json")
-  -f, --format string     SBOM output format [spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5] (default "cyclonedx")
+  -e, --encoding CHOICE   Output encoding ('xml' supported for CycloneDX formats only) [json, xml] (default json)
+  -f, --format CHOICE     Output format [original, spdx, spdx-2.3, cyclonedx, cyclonedx-1.0, cyclonedx-1.1, cyclonedx-1.2, cyclonedx-1.3, cyclonedx-1.4, cyclonedx-1.5, cyclonedx-1.6] (default original)
   -h, --help              help for push
       --netrc             Use .netrc file for authentication to remote hosts
       --tree              Recursively push all SBOMs in external reference tree
