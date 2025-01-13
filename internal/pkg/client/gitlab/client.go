@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package gitlab
+package gitlab //nolint:revive
 
 import (
 	"fmt"
@@ -31,11 +31,6 @@ import (
 )
 
 type (
-	SbomFile struct {
-		Contents string
-		Name     string
-	}
-
 	ProjectProvider interface {
 		GetProject(
 			any,
@@ -72,6 +67,23 @@ type (
 			...gitlab.RequestOptionFunc,
 		) (*gitlab.DependencyListExport, *gitlab.Response, error)
 		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
+	}
+
+	GenericPackagePublisher interface {
+		PublishPackageFile(
+			any,
+			string,
+			string,
+			string,
+			io.Reader,
+			*gitlab.PublishPackageFileOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.GenericPackagesFile, *gitlab.Response, error)
+	}
+
+	SbomFile struct {
+		Contents string
+		Name     string
 	}
 
 	Client struct {

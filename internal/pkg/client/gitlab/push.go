@@ -21,7 +21,6 @@ package gitlab
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -33,23 +32,9 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
-type (
-	GenericPackagePublisher interface {
-		PublishPackageFile(
-			any,
-			string,
-			string,
-			string,
-			io.Reader,
-			*gitlab.PublishPackageFileOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.GenericPackagesFile, *gitlab.Response, error)
-	}
-
-	StringWriter struct {
-		*strings.Builder
-	}
-)
+type StringWriter struct {
+	*strings.Builder
+}
 
 func (*StringWriter) Close() error {
 	return nil
