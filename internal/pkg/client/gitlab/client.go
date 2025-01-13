@@ -17,7 +17,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-package gitlab //nolint:revive
+package gitlab
 
 import (
 	"fmt"
