@@ -21,21 +21,35 @@ package gitlab_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	gogitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/gitlab"
+	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 type (
 	gitLabClientSuite struct {
 		suite.Suite
+		tmpDir string
+		*options.Options
+		*db.Backend
+		documents    []*sbom.Document
+		documentInfo []testutil.DocumentInfo
 	}
 
 	mockProjectProvider struct {
@@ -66,7 +80,7 @@ func (mpp *mockGenericPackagePublisher) PublishPackageFile(
 	packageName, packageVersion, fileName string,
 	content io.Reader,
 	opt *gogitlab.PublishPackageFileOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (*gogitlab.GenericPackagesFile, *gogitlab.Response, error) {
 	args := mpp.Called(pid, packageName, packageVersion, fileName, content, opt, options)
 
@@ -77,7 +91,7 @@ func (mpp *mockGenericPackagePublisher) PublishPackageFile(
 func (mpp *mockProjectProvider) GetProject(
 	pid any,
 	opt *gogitlab.GetProjectOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mpp.Called(pid, opt, options)
 
@@ -88,7 +102,7 @@ func (mpp *mockProjectProvider) GetProject(
 func (mbp *mockBranchProvider) GetBranch(
 	pid any,
 	branch string,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mbp.Called(pid, branch, options)
 
@@ -100,7 +114,7 @@ func (mcp *mockCommitProvider) GetCommit(
 	pid any,
 	sha string,
 	opt *gogitlab.GetCommitOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mcp.Called(pid, sha, opt, options)
 
@@ -111,7 +125,7 @@ func (mcp *mockCommitProvider) GetCommit(
 func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 	pipelineID int,
 	opt *gogitlab.CreateDependencyListExportOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(pipelineID, opt, options)
 
@@ -121,7 +135,7 @@ func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 
 func (mdle *mockDependencyListExporter) GetDependencyListExport(
 	id int,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
@@ -131,12 +145,43 @@ func (mdle *mockDependencyListExporter) GetDependencyListExport(
 
 func (mdle *mockDependencyListExporter) DownloadDependencyListExport(
 	id int,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
+}
+
+func (glcs *gitLabClientSuite) SetupTest() {
+	var err error
+
+	glcs.tmpDir, err = os.MkdirTemp("", "gitlab-push-test")
+	glcs.Require().NoError(err, "Failed to create temporary directory")
+
+	glcs.Backend, err = testutil.NewTestBackend()
+	glcs.Require().NoError(err, "failed database backend creation")
+
+	glcs.documentInfo, err = testutil.AddTestDocuments(glcs.Backend)
+	glcs.Require().NoError(err, "failed database backend setup")
+
+	for _, docInfo := range glcs.documentInfo {
+		glcs.documents = append(glcs.documents, docInfo.Document)
+	}
+
+	glcs.Options = options.New().
+		WithCacheDir(glcs.tmpDir).
+		WithContext(context.WithValue(context.Background(), db.BackendKey{}, glcs.Backend))
+}
+
+func (glcs *gitLabClientSuite) TearDownTest() {
+	glcs.Backend.CloseClient()
+	glcs.documents = nil
+	glcs.documentInfo = nil
+
+	if err := os.RemoveAll(glcs.tmpDir); err != nil {
+		glcs.T().Fatalf("Error removing temp directory %s", glcs.tmpDir)
+	}
 }
 
 //revive:enable:unchecked-type-assertion
@@ -270,20 +315,29 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 }
 
 func (glcs *gitLabClientSuite) TestClient_Push() {
-	// "centos", "https://gitlab.com/lmphil/deleteme?package_name=deleteme-sbom&package_version=1.0.0"
-
 	dummyHost := "gitlab.dummy"
 	dummyProjectID := 1234
 	dummyProjectName := "TESTING/TEST"
 	dummyPackageName := "SBOM"
 	dummyPackageVersion := "1.0.0"
 
-	dummySbomUuid := "92ae62e5-a14a-49ab-8100-d8c012538d01"
-	dummySbomFileName := fmt.Sprintf("%s.json", dummySbomUuid)
+	dummyURL := fmt.Sprintf(
+		"https://%s/%s?package_name=%s&package_version=%s",
+		dummyHost,
+		dummyProjectName,
+		dummyPackageName,
+		dummyPackageVersion,
+	)
 
-	dummySbomContent := "DUMMY SBOM CONTENT"
+	uuidRegex := regexp.MustCompile(`urn:uuid:([\w-]+)`)
+	uuidMatch := uuidRegex.FindStringSubmatch(glcs.documents[0].GetMetadata().GetId())
+	expectedSbomFileName := uuidMatch[1] + ".json"
 
-	dummyURL := fmt.Sprintf("https://%s/%s?package_name=%s&package_version=%s", dummyHost, dummyProjectName, dummyPackageName, dummyPackageVersion)
+	sbomWriter := &gitlab.StringWriter{&strings.Builder{}}
+	err := outpututil.WriteStream(glcs.documents[0], "original", glcs.Options, sbomWriter)
+	glcs.Require().NoError(err, "failed to serialize SBOM: %v", err)
+
+	expectedSbom := sbomWriter.String()
 
 	mockedProjectProvider := &mockProjectProvider{}
 	mockedGenericPackagePublisher := &mockGenericPackagePublisher{}
@@ -307,7 +361,7 @@ func (glcs *gitLabClientSuite) TestClient_Push() {
 		dummyProjectID,
 		dummyPackageName,
 		dummyPackageVersion,
-		dummySbomFileName,
+		expectedSbomFileName,
 		mock.Anything,
 		(*gogitlab.PublishPackageFileOptions)(nil),
 		[]gogitlab.RequestOptionFunc(nil),
@@ -320,14 +374,23 @@ func (glcs *gitLabClientSuite) TestClient_Push() {
 	client := &gitlab.Client{
 		ProjectProvider:         mockedProjectProvider,
 		GenericPackagePublisher: mockedGenericPackagePublisher,
-		PushQueue: []*gitlab.SbomFile{{
-			Name:     dummySbomFileName,
-			Contents: dummySbomContent,
-		}},
 	}
 
 	glcs.Run("Push", func() {
-		err := client.Push(dummyURL, nil)
+		err = client.AddFile(
+			dummyURL,
+			glcs.documents[0].GetMetadata().GetId(),
+			&options.PushOptions{
+				Options: glcs.Options,
+				Format:  "original",
+			},
+		)
+		glcs.Require().NoError(err, "failed to add file: %v", err)
+		glcs.Require().Len(client.PushQueue, 1)
+		glcs.Require().Equal(expectedSbomFileName, client.PushQueue[0].Name)
+		glcs.Require().Equal(expectedSbom, client.PushQueue[0].Contents)
+
+		err = client.Push(dummyURL, nil)
 		glcs.Require().NoError(err, "failed to create dependency list export: %v", err)
 
 		mockedProjectProvider.AssertExpectations(glcs.T())

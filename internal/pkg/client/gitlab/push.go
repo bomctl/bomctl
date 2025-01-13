@@ -95,14 +95,14 @@ func (client *Client) AddFile(_pushURL, id string, opts *options.PushOptions) er
 		return fmt.Errorf("%w", err)
 	}
 
-	re := regexp.MustCompile(`urn:uuid:([\w-]+)`)
-	match := re.FindStringSubmatch(id)
-	sbomFilename := match[1]
+	uuidRegex := regexp.MustCompile(`urn:uuid:([\w-]+)`)
+	uuidMatch := uuidRegex.FindStringSubmatch(id)
+	sbomFilename := uuidMatch[1]
 
-	re = regexp.MustCompile(`\bxml\b`)
-	match = re.FindStringSubmatch(string(opts.Format))
+	xmlFormatRegex := regexp.MustCompile(`\bxml\b`)
+	xmlFormatMatch := xmlFormatRegex.FindStringSubmatch(string(opts.Format))
 
-	if len(match) == 0 {
+	if len(xmlFormatMatch) == 0 {
 		sbomFilename += ".json"
 	} else {
 		sbomFilename += ".xml"
