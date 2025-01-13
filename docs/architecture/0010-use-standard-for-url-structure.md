@@ -226,8 +226,8 @@ with a different client upon failure.
   - `https://git@github.com:bomctl/bomctl.git@main#sbom.cdx.json`
   - `https://github.com/bomctl/bomctl.git@main#path/to/sbom.cdx.json`
 - OCI Client
-  - `https://username@registry.acme.com:12345/example/image:1.2.3`
-  - `https://registry.acme.com/example/image:1.2.3`
+  - `https://username@registry.acme.com:12345/example/image?ref=1.2.3`
+  - `https://registry.acme.com/example/image?ref=1.2.3`
 
 </details>
 
@@ -261,10 +261,10 @@ with a different client upon failure.
 - OCI Client
   - Current: `oci://username@registry.acme.com:12345/example/image:1.2.3`
     - Purl: `pkg:oci/example/image@1.2.3?repository_url=registry.acme.com&username=username&port=12345`
-    - URL: `https://username@registry.acme.com:12345/example/image:1.2.3`
+    - URL: `https://username@registry.acme.com:12345/example/image?ref=1.2.3`
   - Current: `registry.acme.com/example/image:1.2.3`
     - Purl: `pkg:oci/example/image@1.2.3?repository_url=registry.acme.com`
-    - URL: `https://registry.acme.com/example/image:1.2.3`
+    - URL: `https://registry.acme.com/example/image?ref=1.2.3`
 
 ## Decision
 
