@@ -143,10 +143,10 @@ func (client *Client) PrepareFetch(url *netutil.URL, _auth *netutil.BasicAuth, _
 	}
 
 	client.GitLabToken = gitLabToken
-	client.ProjectProvider = gitLabClient.Projects
-	client.BranchProvider = gitLabClient.Branches
-	client.CommitProvider = gitLabClient.Commits
-	client.DependencyListExporter = gitLabClient.DependencyListExport
+	client.projectProvider = gitLabClient.Projects
+	client.branchProvider = gitLabClient.Branches
+	client.commitProvider = gitLabClient.Commits
+	client.dependencyListExporter = gitLabClient.DependencyListExport
 
 	return nil
 }

@@ -32,11 +32,11 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/outpututil"
 )
 
-type StringWriter struct {
+type stringWriter struct {
 	*strings.Builder
 }
 
-func (*StringWriter) Close() error {
+func (*stringWriter) Close() error {
 	return nil
 }
 
@@ -59,10 +59,10 @@ func (client *Client) PreparePush(pushURL string, _opts *options.PushOptions) er
 	}
 
 	client.GitLabToken = gitLabToken
-	client.ProjectProvider = gitLabClient.Projects
-	client.GenericPackagePublisher = gitLabClient.GenericPackages
+	client.projectProvider = gitLabClient.Projects
+	client.genericPackagePublisher = gitLabClient.GenericPackages
 
-	client.PushQueue = make([]*SbomFile, 0)
+	client.PushQueue = make([]*sbomFile, 0)
 
 	return nil
 }
@@ -93,12 +93,12 @@ func (client *Client) AddFile(_pushURL, id string, opts *options.PushOptions) er
 		sbomFilename += ".xml"
 	}
 
-	sbomWriter := &StringWriter{&strings.Builder{}}
+	sbomWriter := &stringWriter{&strings.Builder{}}
 	if err := outpututil.WriteStream(sbom, opts.Format, opts.Options, sbomWriter); err != nil {
 		return fmt.Errorf("failed to serialize SBOM %s: %w", id, err)
 	}
 
-	client.PushQueue = append(client.PushQueue, &SbomFile{
+	client.PushQueue = append(client.PushQueue, &sbomFile{
 		Name:     sbomFilename,
 		Contents: sbomWriter.String(),
 	})
@@ -140,7 +140,7 @@ func (client *Client) Push(pushURL string, _opts *options.PushOptions) error {
 	for _, sbomFile := range client.PushQueue {
 		sbomReader := strings.NewReader(sbomFile.Contents)
 
-		_, response, err := client.GenericPackagePublisher.PublishPackageFile(
+		_, response, err := client.genericPackagePublisher.PublishPackageFile(
 			project.ID,
 			packageName,
 			packageVersion,

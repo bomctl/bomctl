@@ -295,13 +295,12 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		[]gogitlab.RequestOptionFunc(nil),
 	).Return(bytes.NewBuffer(expectedSbomData), successGitLabResponse, nil)
 
-	client := &gitlab.Client{
-		ProjectProvider:        mockedProjectProvider,
-		BranchProvider:         mockedBranchProvider,
-		CommitProvider:         mockedCommitProvider,
-		DependencyListExporter: mockedDependencyListExporter,
-		Export:                 nil,
-	}
+	client := gitlab.NewFetchClient(
+		mockedProjectProvider,
+		mockedBranchProvider,
+		mockedCommitProvider,
+		mockedDependencyListExporter,
+	)
 
 	glcs.Run("Fetch", func() {
 		_, err := client.Fetch(dummyFetchURL, nil)
@@ -371,10 +370,7 @@ func (glcs *gitLabClientSuite) TestClient_Push() {
 		nil,
 	)
 
-	client := &gitlab.Client{
-		ProjectProvider:         mockedProjectProvider,
-		GenericPackagePublisher: mockedGenericPackagePublisher,
-	}
+	client := gitlab.NewPushClient(mockedProjectProvider, mockedGenericPackagePublisher)
 
 	glcs.Run("Push", func() {
 		err = client.AddFile(

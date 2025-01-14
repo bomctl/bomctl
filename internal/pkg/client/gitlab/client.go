@@ -31,7 +31,7 @@ import (
 )
 
 type (
-	ProjectProvider interface {
+	projectProvider interface {
 		GetProject(
 			any,
 			*gitlab.GetProjectOptions,
@@ -39,7 +39,7 @@ type (
 		) (*gitlab.Project, *gitlab.Response, error)
 	}
 
-	BranchProvider interface {
+	branchProvider interface {
 		GetBranch(
 			any,
 			string,
@@ -47,7 +47,7 @@ type (
 		) (*gitlab.Branch, *gitlab.Response, error)
 	}
 
-	CommitProvider interface {
+	commitProvider interface {
 		GetCommit(
 			any,
 			string,
@@ -56,7 +56,7 @@ type (
 		) (*gitlab.Commit, *gitlab.Response, error)
 	}
 
-	DependencyListExporter interface {
+	dependencyListExporter interface {
 		CreateDependencyListExport(
 			int,
 			*gitlab.CreateDependencyListExportOptions,
@@ -69,7 +69,7 @@ type (
 		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
 	}
 
-	GenericPackagePublisher interface {
+	genericPackagePublisher interface {
 		PublishPackageFile(
 			any,
 			string,
@@ -81,20 +81,20 @@ type (
 		) (*gitlab.GenericPackagesFile, *gitlab.Response, error)
 	}
 
-	SbomFile struct {
+	sbomFile struct {
 		Contents string
 		Name     string
 	}
 
 	Client struct {
-		ProjectProvider
-		BranchProvider
-		CommitProvider
-		DependencyListExporter
-		GenericPackagePublisher
+		projectProvider
+		branchProvider
+		commitProvider
+		dependencyListExporter
+		genericPackagePublisher
 		GitLabToken string
 		Export      *gitlab.DependencyListExport
-		PushQueue   []*SbomFile
+		PushQueue   []*sbomFile
 	}
 )
 
