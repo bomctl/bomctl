@@ -91,13 +91,13 @@ func New(sbomURL string) (Client, error) {
 	return DetermineClient(parsedURL)
 }
 
-func DetermineClient(parsedURL *neturl.URL) (Client, error) { //nolint:cyclop
+func DetermineClient(parsedURL *neturl.URL) (Client, error) {
 	if client, err := checkScheme(parsedURL); err == nil {
 		return client, nil
 	}
 
-	gitlabRegex := regexp.MustCompile(`(www\.)?gitlab(\.?[a-zA-Z0-9.]+)?\.com`)
-	githubRegex := regexp.MustCompile(`(www\.)?github(\.?[a-zA-Z0-9.]+)?\.com`)
+	gitlabRegex := regexp.MustCompile(`^(www\.)?([a-zA-Z0-9.]+\.)?gitlab\.com$`)
+	githubRegex := regexp.MustCompile(`^(www\.)?([a-zA-Z0-9.]+\.)?github\.com$`)
 
 	switch {
 	case strings.HasSuffix(parsedURL.Path, ".git") || parsedURL.Fragment != "":
