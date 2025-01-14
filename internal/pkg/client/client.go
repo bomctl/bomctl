@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	neturl "net/url"
+	"regexp"
 	"strings"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
@@ -95,12 +96,15 @@ func DetermineClient(parsedURL *neturl.URL) (Client, error) { //nolint:cyclop
 		return client, nil
 	}
 
+	gitlabRegex := regexp.MustCompile(`(www\.)?gitlab(\.?[a-zA-Z0-9.]+)?\.com`)
+	githubRegex := regexp.MustCompile(`(www\.)?github(\.?[a-zA-Z0-9.]+)?\.com`)
+
 	switch {
-	case strings.Contains(parsedURL.Path, ".git") || parsedURL.Fragment != "":
+	case strings.HasSuffix(parsedURL.Path, ".git") || parsedURL.Fragment != "":
 		return &git.Client{}, nil
-	case strings.Contains(parsedURL.Host, "github") && !strings.Contains(parsedURL.Host, "githubusercontent"):
+	case githubRegex.MatchString(parsedURL.Host):
 		return &github.Client{}, nil
-	case strings.Contains(parsedURL.Host, "gitlab"):
+	case gitlabRegex.MatchString(parsedURL.Host):
 		return &gitlab.Client{}, nil
 	case sliceutil.Any(registrySlice(), func(s string) bool { return strings.Contains(parsedURL.Host, s) }):
 		//nolint:wrapcheck
@@ -135,5 +139,5 @@ func checkScheme(parsedURL *neturl.URL) (Client, error) {
 
 func registrySlice() []string {
 	// maybe check for env variable like BOMCTL_REGISTRY or something and append to slice if it exists
-	return []string{"registry", "harbor", "ghcr.io", "gcr.io", "docker.io"}
+	return []string{"docker.io", "gcr.io", "ghcr.io", "quay.io"}
 }
