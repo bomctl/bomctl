@@ -140,7 +140,7 @@ func TestBomctlPush(t *testing.T) {
 		Setup: func(env *testscript.Env) error {
 			server := setupGitServer(t, env.Getenv("WORK"))
 
-			pushURL := server.URL + "/test/repo.git@main#path/to/sbom.cdx.json"
+			pushURL := server.URL + "/test/repo.git?ref=main#path/to/sbom.cdx.json"
 			env.Setenv("PUSH_URL", pushURL)
 			env.Setenv("HTTPS_PROXY", os.Getenv("HTTPS_PROXY"))
 

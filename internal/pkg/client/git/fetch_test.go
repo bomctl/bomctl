@@ -21,6 +21,7 @@ package git_test
 
 import (
 	"fmt"
+	neturl "net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -45,11 +46,13 @@ func (gfs *gitFetchSuite) TestClient_Fetch() {
 		gfs.Run(alias, func() {
 			opts := &options.FetchOptions{Options: gfs.Options}
 
-			fetchURL := fmt.Sprintf("%s/test/repo.git@main#path/to/sbom.%s.json", gfs.Server.URL, alias)
+			fetchString := fmt.Sprintf("%s/test/repo.git?ref=main#path/to/sbom.%s.json", gfs.Server.URL, alias)
+			fetchURL, err := neturl.Parse(fetchString)
+			gfs.Require().NoError(err)
 
-			gfs.Require().NoError(gfs.PrepareFetch(gfs.Parse(fetchURL), netutil.NewBasicAuth("", ""), opts.Options))
+			gfs.Require().NoError(gfs.PrepareFetch(fetchURL, netutil.NewBasicAuth("", ""), opts.Options))
 
-			got, err := gfs.Fetch(fetchURL, opts)
+			got, err := gfs.Fetch(fetchString, opts)
 			gfs.Require().NoError(err)
 
 			gfs.Len(got, len(want))

@@ -31,14 +31,14 @@ stderr -count=1 '^(Error: requires at least 2 arg\(s\), only received 1)'
 # push
 exec bomctl push --cache-dir $WORK urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79 $PUSH_URL
 stderr -count=1 '^(INFO  push: Pushing document id=urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79)\n'
-stderr -count=1 '(INFO  push: Pushing to Git URL url=http://127.0.0.1:[0-9]{5}/test/repo.git@main#path/to/sbom.cdx.json)\n'
+stderr -count=1 '(INFO  push: Pushing to Git URL url="http://127\.0\.0\.1:[0-9]{5}/test/repo.git\?ref=main#path/to/sbom\.cdx\.json")\n'
 stderr -count=1 '(INFO  push: Writing document name=path/to/sbom.cdx.json)'
 ! stdout .
 
 # push --tree
 [net] exec bomctl push --cache-dir $WORK -f spdx --tree urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db $PUSH_URL
 stderr -count=1 '^(INFO  push: Pushing document id=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)\n'
-stderr -count=1 '(INFO  push: Pushing to Git URL url=http://127\.0\.0\.1:[0-9]{5}/test/repo.git@main#path/to/sbom\.cdx\.json)\n'
+stderr -count=1 '(INFO  push: Pushing to Git URL url="http://127\.0\.0\.1:[0-9]{5}/test/repo.git\?ref=main#path/to/sbom\.cdx\.json")\n'
 stderr -count=1 '(INFO  push: Writing document name=path/to/sbom\.cdx\.json)\n'
 stderr -count=1 '(INFO  push: Fetching external reference SBOMs id=urn:uuid:f360ad8b-dc41-4256-afed-337a04dff5db)\n'
 stderr -count=1 '(INFO  push: Fetching from HTTP URL url=https://raw.githubusercontent.com/bomctl/bomctl-playground/main/examples/bomctl-container-image/app/bomctl_0\.3\.0_linux_amd64\.tar\.gz\.spdx\.json)\n'

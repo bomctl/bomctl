@@ -124,6 +124,84 @@ func (cs *clientSuite) TestClient_DetermineClient() {
 			expected: "",
 			err:      true,
 		},
+		{
+			name:     "http scheme",
+			url:      "http://github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "https scheme with username, port",
+			url:      "https://git@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "https scheme with username, password, port",
+			url:      "https://username:password@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "https scheme with username",
+			url:      "https://git@github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "ssh scheme",
+			url:      "ssh://github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "ssh scheme with username, port",
+			url:      "ssh://git@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "ssh scheme with username, password, port",
+			url:      "ssh://username:password@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "ssh scheme with username",
+			url:      "ssh://git@github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "git scheme",
+			url:      "git://github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "git scheme with username, port",
+			url:      "git://git@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "git scheme with username, password, port",
+			url:      "git://username:password@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "git scheme with username",
+			url:      "git://git@github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: "Git",
+		},
+		{
+			name:     "path does not end in .git",
+			url:      "https://github.com/bomctl/bomctl?ref=main#sbom.cdx.json",
+			expected: "",
+			err:      true,
+		},
+		{
+			name:     "missing git ref",
+			url:      "https://github.com/bomctl/bomctl.git#sbom.cdx.json",
+			expected: "",
+			err:      true,
+		},
+		{
+			name:     "missing path to SBOM file",
+			url:      "https://github.com/bomctl/bomctl.git?ref=main",
+			expected: "",
+			err:      true,
+		},
 	} {
 		cs.Run(data.name, func() {
 			actual, err := client.New(data.url)

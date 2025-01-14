@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	neturl "net/url"
 	"path/filepath"
 	"time"
 
@@ -42,7 +43,11 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 		return err
 	}
 
-	url := client.Parse(pushURL)
+	url, err := neturl.Parse(pushURL)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
 	name := url.Fragment
 
 	// Create any parent directories specified in fragment.
@@ -75,11 +80,16 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 }
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
-	url := client.Parse(pushURL)
-	auth := netutil.NewBasicAuth(url.Username, url.Password)
+	url, err := neturl.Parse(pushURL)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	pw, _ := url.User.Password()
+	auth := netutil.NewBasicAuth(url.User.Username(), pw)
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(url.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname()); err != nil {
 			return fmt.Errorf("setting .netrc auth: %w", err)
 		}
 	}
@@ -89,11 +99,16 @@ func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) err
 }
 
 func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
-	url := client.Parse(pushURL)
-	auth := netutil.NewBasicAuth(url.Username, url.Password)
+	url, err := neturl.Parse(pushURL)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	pw, _ := url.User.Password()
+	auth := netutil.NewBasicAuth(url.User.Username(), pw)
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(url.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname()); err != nil {
 			return fmt.Errorf("failed to set auth: %w", err)
 		}
 	}

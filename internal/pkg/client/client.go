@@ -101,7 +101,8 @@ func DetermineClient(parsedURL *neturl.URL) (Client, error) {
 
 	switch {
 	case strings.HasSuffix(parsedURL.Path, ".git") || parsedURL.Fragment != "":
-		return &git.Client{}, nil
+		//nolint:wrapcheck
+		return git.Init(parsedURL)
 	case githubRegex.MatchString(parsedURL.Host):
 		return &github.Client{}, nil
 	case gitlabRegex.MatchString(parsedURL.Host):
