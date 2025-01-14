@@ -20,8 +20,11 @@
 package git
 
 import (
+	"errors"
 	"fmt"
+	neturl "net/url"
 	"regexp"
+	"strings"
 
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
@@ -53,53 +56,43 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *netutil.URL {
-	results := map[string]string{}
-	pattern := client.RegExp()
-	match := pattern.FindStringSubmatch(rawURL)
-
-	for idx, name := range match {
-		results[pattern.SubexpNames()[idx]] = name
-	}
-
-	if results["scheme"] == "" {
-		results["scheme"] = "ssh"
+func Init(targetURL *neturl.URL) (*Client, error) {
+	if targetURL.Scheme == "" {
+		targetURL.Scheme = "ssh"
 	}
 
 	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path", "gitRef", "fragment"} {
-		if value, ok := results[required]; !ok || value == "" {
-			return nil
-		}
+	if targetURL.Host == "" || targetURL.Path == "" || targetURL.RawQuery == "" || targetURL.Fragment == "" {
+		return nil, errors.ErrUnsupported
 	}
 
-	return &netutil.URL{
-		Scheme:   results["scheme"],
-		Username: results["username"],
-		Password: results["password"],
-		Hostname: results["hostname"],
-		Port:     results["port"],
-		Path:     results["path"],
-		GitRef:   results["gitRef"],
-		Query:    results["query"],
-		Fragment: results["fragment"],
+	// I don't think this is necessary if we allow users to specify the client via prefix
+	// We can add '.git' if it's missing in the clone repo funcion
+	if !strings.HasSuffix(targetURL.Path, ".git") {
+		return nil, errors.ErrUnsupported
 	}
+
+	// could call clone repo here
+
+	return &Client{}, nil
 }
 
-func (client *Client) cloneRepo(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
+func (client *Client) cloneRepo(url *neturl.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
 	// Copy parsedRepoURL, excluding auth, git ref, and fragment.
-	baseURL := &netutil.URL{
-		Scheme:   url.Scheme,
-		Hostname: url.Hostname,
-		Path:     url.Path,
-		Port:     url.Port,
+	baseURL := &neturl.URL{
+		Scheme: url.Scheme,
+		Host:   url.Host,
+		Path:   url.Path,
 	}
+
+	query := url.Query()
+	gitref := query.Get("ref")
 
 	cloneOpts := &git.CloneOptions{
 		URL:           baseURL.String(),
 		Auth:          auth,
 		RemoteName:    git.DefaultRemoteName,
-		ReferenceName: plumbing.NewBranchReferenceName(url.GitRef),
+		ReferenceName: plumbing.NewBranchReferenceName(gitref),
 		SingleBranch:  true,
 		Depth:         1,
 	}

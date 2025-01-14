@@ -22,6 +22,7 @@ package netutil
 import (
 	"errors"
 	"fmt"
+	neturl "net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -85,4 +86,39 @@ func (url *URL) String() string {
 	urlString = strings.Join(removeEmpty(url.Digest), "@")
 
 	return urlString
+}
+
+func GetNetUtilURL(url *neturl.URL) *URL {
+	returnURL := &URL{
+		Scheme:   url.Scheme,
+		Username: url.User.Username(),
+		Hostname: url.Hostname(),
+		Port:     url.Port(),
+		Path:     url.Path,
+		Query:    url.RawQuery,
+		Fragment: url.Fragment,
+	}
+
+	pw, _ := url.User.Password()
+	returnURL.Password = pw
+
+	query := url.Query()
+	ref := query.Get("ref")
+
+	if ref != "" {
+		returnURL.GitRef = ref
+
+		match, err := regexp.Match("^(sha256:)?([a-f0-9]{64})$", []byte(ref))
+		if err != nil {
+			return nil
+		}
+
+		if match {
+			returnURL.Digest = ref
+		} else {
+			returnURL.Tag = ref
+		}
+	}
+
+	return returnURL
 }

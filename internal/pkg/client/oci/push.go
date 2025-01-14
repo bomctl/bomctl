@@ -25,7 +25,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	neturl "net/url"
 	"path"
+	"regexp"
 	"time"
 
 	"github.com/opencontainers/go-digest"
@@ -64,7 +66,9 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 
 	// Add annotation to save file name.
 	annotations := map[string]string{}
-	if url := client.Parse(pushURL); url != nil {
+
+	url, err := neturl.Parse(pushURL)
+	if err != nil {
 		annotations[ocispec.AnnotationTitle] = path.Base(url.Path)
 	}
 
@@ -81,15 +85,16 @@ func (client *Client) AddFile(pushURL, id string, opts *options.PushOptions) err
 }
 
 func (client *Client) PreparePush(pushURL string, opts *options.PushOptions) error {
-	url := client.Parse(pushURL)
-	if url == nil {
+	url, err := neturl.Parse(pushURL)
+	if err != nil {
 		return fmt.Errorf("%w", netutil.ErrParsingURL)
 	}
 
-	auth := netutil.NewBasicAuth(url.Username, url.Password)
+	pw, _ := url.User.Password()
+	auth := netutil.NewBasicAuth(url.User.Username(), pw)
 
 	if opts.UseNetRC {
-		if err := auth.UseNetRC(url.Hostname); err != nil {
+		if err := auth.UseNetRC(url.Hostname()); err != nil {
 			return fmt.Errorf("setting .netrc auth: %w", err)
 		}
 	}
@@ -104,12 +109,21 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 		client.store = nil
 	}()
 
-	tag := ""
-	if url := client.Parse(pushURL); url != nil {
-		tag = url.Tag
-		if tag == "" {
-			tag = "latest"
-		}
+	url, err := neturl.Parse(pushURL)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	query := url.Query()
+	tag := query.Get("ref")
+
+	match, err := regexp.Match("^(sha256:)?([a-f0-9]{64})$", []byte(tag))
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	if tag == "" || match {
+		tag = "latest"
 	}
 
 	manifestDesc, manifestBytes, err := client.generateManifest(nil)

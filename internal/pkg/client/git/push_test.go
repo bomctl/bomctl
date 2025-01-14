@@ -40,7 +40,7 @@ func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
 	pushOpts := &options.PushOptions{Options: gps.Options}
 	gps.Require().NoError(
 		gps.Client.PreparePush(
-			gps.Server.URL+"/test/repo.git@main#path/to/sbom.cdx.json",
+			gps.Server.URL+"/test/repo.git?ref=main#path/to/sbom.cdx.json",
 			pushOpts,
 		),
 	)
@@ -55,7 +55,7 @@ func (gps *gitPushSuite) BeforeTest(_suiteName, _testName string) {
 }
 
 func (gps *gitPushSuite) TestClient_AddFile() {
-	pushURL := gps.Server.URL + "/test/repo.git@main#path/to/testbom.cdx.json"
+	pushURL := gps.Server.URL + "/test/repo.git?ref=main#path/to/testbom.cdx.json"
 
 	opts := &options.PushOptions{
 		Options: gps.Options,
@@ -73,7 +73,7 @@ func (gps *gitPushSuite) TestClient_AddFile() {
 }
 
 func (gps *gitPushSuite) TestClient_Push() {
-	pushURL := gps.Server.URL + "/test/repo.git@main#path/to/testbom.cdx.json"
+	pushURL := gps.Server.URL + "/test/repo.git?ref=main#path/to/testbom.cdx.json"
 
 	opts := &options.PushOptions{
 		Options: gps.Options,

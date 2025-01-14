@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	neturl "net/url"
 	"regexp"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -61,59 +62,29 @@ func (*Client) RegExp() *regexp.Regexp {
 	)
 }
 
-func (client *Client) Parse(rawURL string) *netutil.URL {
-	results := map[string]string{}
-	pattern := client.RegExp()
-	match := pattern.FindStringSubmatch(rawURL)
-
-	for idx, name := range match {
-		results[pattern.SubexpNames()[idx]] = name
-	}
-
-	if results["scheme"] == "docker" || results["scheme"] == "" {
-		results["scheme"] = "oci"
+// Current implementation essentially a validate function
+// to make sure selected client can handle the given url
+//
+// Future improvements to initialize client fields and prerequisites
+// EXample: any common elements of prepare methods and replacement for createRepo.
+func Init(targetURL *neturl.URL) (*Client, error) {
+	if targetURL.Scheme == "" {
+		targetURL.Scheme = "oci"
 	}
 
 	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path"} {
-		if value, ok := results[required]; !ok || value == "" {
-			return nil
-		}
+	if targetURL.Host == "" || targetURL.Path == "" || targetURL.RawQuery == "" {
+		return nil, errors.ErrUnsupported
 	}
 
-	// One and only one of `tag` or `digest` must be present.
-	tag, ok := results["tag"]
-	hasTag := ok && tag != ""
-
-	digest, ok := results["digest"]
-	hasDigest := ok && digest != ""
-
-	// If both `tag` and `digest` are present, or neither are.
-	if hasTag == hasDigest {
-		return nil
-	}
-
-	return &netutil.URL{
-		Scheme:   results["scheme"],
-		Username: results["username"],
-		Password: results["password"],
-		Hostname: results["hostname"],
-		Port:     results["port"],
-		Path:     results["path"],
-		Tag:      results["tag"],
-		Digest:   results["digest"],
-	}
+	return &Client{}, nil
 }
 
-func (client *Client) createRepository(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
+func (client *Client) createRepository(url *neturl.URL, auth *netutil.BasicAuth, opts *options.Options) (err error) {
 	client.ctx = opts.Context()
 	client.store = memory.New()
 
-	repoPath := (&netutil.URL{
-		Hostname: url.Hostname,
-		Port:     url.Port,
-		Path:     url.Path,
-	}).String()
+	repoPath := url.Host + url.Path
 
 	if client.repo != nil && client.repo.Reference.String() == repoPath {
 		return nil
@@ -127,7 +98,7 @@ func (client *Client) createRepository(url *netutil.URL, auth *netutil.BasicAuth
 		client.repo.Client = &orasauth.Client{
 			Client: retry.DefaultClient,
 			Cache:  orasauth.DefaultCache,
-			Credential: orasauth.StaticCredential(url.Hostname, orasauth.Credential{
+			Credential: orasauth.StaticCredential(url.Host, orasauth.Credential{
 				Username: auth.Username,
 				Password: auth.Password,
 			}),

@@ -22,17 +22,21 @@ package git
 import (
 	"fmt"
 	"io"
+	neturl "net/url"
 
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-func (client *Client) PrepareFetch(url *netutil.URL, auth *netutil.BasicAuth, opts *options.Options) error {
+func (client *Client) PrepareFetch(url *neturl.URL, auth *netutil.BasicAuth, opts *options.Options) error {
 	return client.cloneRepo(url, auth, opts)
 }
 
 func (client *Client) Fetch(fetchURL string, _opts *options.FetchOptions) ([]byte, error) {
-	url := client.Parse(fetchURL)
+	url, err := neturl.Parse(fetchURL)
+	if err != nil {
+		return nil, fmt.Errorf("parsing url %s: %w", url.String(), err)
+	}
 
 	// Read the file specified in the URL fragment.
 	file, err := client.worktree.Filesystem.Open(url.Fragment)

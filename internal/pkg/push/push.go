@@ -27,21 +27,19 @@ import (
 	"github.com/protobom/protobom/pkg/sbom"
 
 	"github.com/bomctl/bomctl/internal/pkg/client"
-	"github.com/bomctl/bomctl/internal/pkg/client/git"
-	"github.com/bomctl/bomctl/internal/pkg/client/github"
-	"github.com/bomctl/bomctl/internal/pkg/client/http"
-	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/db"
 	"github.com/bomctl/bomctl/internal/pkg/fetch"
 	"github.com/bomctl/bomctl/internal/pkg/options"
-	"github.com/bomctl/bomctl/internal/pkg/sliceutil"
 )
 
 func NewPusher(url string) (client.Pusher, error) {
-	clients := []client.Pusher{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}}
-
-	pusher, err := sliceutil.Next(clients, func(f client.Pusher) bool { return f.Parse(url) != nil })
+	c, err := client.New(url)
 	if err != nil {
+		return nil, fmt.Errorf("%w: %s", client.ErrUnsupportedURL, url)
+	}
+
+	pusher, ok := c.(client.Pusher)
+	if !ok {
 		return nil, fmt.Errorf("%w: %s", client.ErrUnsupportedURL, url)
 	}
 

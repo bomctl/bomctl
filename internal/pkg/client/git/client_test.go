@@ -23,6 +23,7 @@ import (
 	"context"
 	"net/http/cgi"
 	"net/http/httptest"
+	neturl "net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -41,7 +42,6 @@ import (
 
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/db"
-	"github.com/bomctl/bomctl/internal/pkg/netutil"
 	"github.com/bomctl/bomctl/internal/pkg/options"
 	"github.com/bomctl/bomctl/internal/testutil"
 )
@@ -176,230 +176,97 @@ func (gcs *gitClientSuite) TearDownSuite() {
 	}
 }
 
-func (gcs *gitClientSuite) TestClient_Parse() {
-	client := &git.Client{}
-
+func (gcs *gitClientSuite) TestClient_Init() {
 	for _, data := range []struct {
-		expected *netutil.URL
+		expected *git.Client
 		name     string
 		url      string
 	}{
 		{
-			name: "git+http scheme",
-			url:  "git+http://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "http",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "http scheme",
+			url:      "http://github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git+https scheme with username, port",
-			url:  "git+https://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "https",
-				Username: "git",
-				Hostname: "github.com",
-				Port:     "12345",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "https scheme with username, port",
+			url:      "https://git@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git+https scheme with username, password, port",
-			url:  "git+https://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "https",
-				Username: "username",
-				Password: "password",
-				Hostname: "github.com",
-				Port:     "12345",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "https scheme with username, password, port",
+			url:      "https://username:password@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git+https scheme with username",
-			url:  "git+https://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "https",
-				Username: "git",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "https scheme with username",
+			url:      "https://git@github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "ssh scheme",
-			url:  "ssh://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "ssh scheme",
+			url:      "ssh://github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "ssh scheme with username, port",
-			url:  "ssh://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Username: "git",
-				Hostname: "github.com",
-				Port:     "12345",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "ssh scheme with username, port",
+			url:      "ssh://git@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "ssh scheme with username, password, port",
-			url:  "ssh://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Username: "username",
-				Password: "password",
-				Hostname: "github.com",
-				Port:     "12345",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "ssh scheme with username, password, port",
+			url:      "ssh://username:password@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "ssh scheme with username",
-			url:  "ssh://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Username: "git",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "ssh scheme with username",
+			url:      "ssh://git@github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git scheme",
-			url:  "git://github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "git",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "git scheme",
+			url:      "git://github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git scheme with username, port",
-			url:  "git://git@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "git",
-				Username: "git",
-				Hostname: "github.com",
-				Port:     "12345",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "git scheme with username, port",
+			url:      "git://git@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git scheme with username, password, port",
-			url:  "git://username:password@github.com:12345/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "git",
-				Username: "username",
-				Password: "password",
-				Hostname: "github.com",
-				Port:     "12345",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "git scheme with username, password, port",
+			url:      "git://username:password@github.com:12345/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
-			name: "git scheme with username",
-			url:  "git://git@github.com/bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "git",
-				Username: "git",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
-		},
-		{
-			name: "git SCP-like syntax",
-			url:  "github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
-		},
-		{
-			name: "git SCP-like syntax with username",
-			url:  "git@github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Username: "git",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
-		},
-		{
-			name: "git SCP-like syntax with username, password",
-			url:  "username:password@github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Username: "username",
-				Password: "password",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
-		},
-		{
-			name: "git SCP-like syntax with username",
-			url:  "git@github.com:bomctl/bomctl.git@main#sbom.cdx.json",
-			expected: &netutil.URL{
-				Scheme:   "ssh",
-				Username: "git",
-				Hostname: "github.com",
-				Path:     "bomctl/bomctl.git",
-				GitRef:   "main",
-				Fragment: "sbom.cdx.json",
-			},
+			name:     "git scheme with username",
+			url:      "git://git@github.com/bomctl/bomctl.git?ref=main#sbom.cdx.json",
+			expected: &git.Client{},
 		},
 		{
 			name:     "path does not end in .git",
-			url:      "git+https://github.com/bomctl/bomctl@main#sbom.cdx.json",
+			url:      "https://github.com/bomctl/bomctl?ref=main#sbom.cdx.json",
 			expected: nil,
 		},
 		{
 			name:     "missing git ref",
-			url:      "git+https://github.com/bomctl/bomctl.git#sbom.cdx.json",
+			url:      "https://github.com/bomctl/bomctl.git#sbom.cdx.json",
 			expected: nil,
 		},
 		{
 			name:     "missing path to SBOM file",
-			url:      "git+https://github.com/bomctl/bomctl.git@main",
+			url:      "https://github.com/bomctl/bomctl.git?ref=main",
 			expected: nil,
 		},
 	} {
 		gcs.Run(data.name, func() {
-			actual := client.Parse(data.url)
+			testURL, err := neturl.Parse(data.url)
+			gcs.Require().NoError(err)
+
+			actual, err := git.Init(testURL)
+			if data.expected != nil {
+				gcs.Require().NoError(err)
+			}
+
 			gcs.Require().Equal(data.expected, actual, data.url)
 		})
 	}
