@@ -143,7 +143,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 }
 
 func validateHTTPStatusCode(statusCode int) error {
-	if statusCode < http.StatusOK || http.StatusMultipleChoices <= statusCode {
+	if statusCode < http.StatusOK || statusCode >= http.StatusMultipleChoices {
 		return fmt.Errorf("%w. HTTP status code: %d", errFailedWebRequest, statusCode)
 	}
 

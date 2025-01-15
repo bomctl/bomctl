@@ -19,9 +19,7 @@
 
 package gitlab
 
-type (
-	StringWriter = stringWriter
-)
+type StringWriter = stringWriter
 
 func NewFetchClient(
 	projectProvider projectProvider,
