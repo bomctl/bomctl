@@ -73,14 +73,14 @@ type (
 	}
 )
 
-//revive:disable:unchecked-type-assertion
+//revive:disable:unchecked-type-assertion,import-shadowing
 
 func (mpp *mockGenericPackagePublisher) PublishPackageFile(
 	pid any,
 	packageName, packageVersion, fileName string,
 	content io.Reader,
 	opt *gogitlab.PublishPackageFileOptions,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.GenericPackagesFile, *gogitlab.Response, error) {
 	args := mpp.Called(pid, packageName, packageVersion, fileName, content, opt, options)
 
@@ -91,7 +91,7 @@ func (mpp *mockGenericPackagePublisher) PublishPackageFile(
 func (mpp *mockProjectProvider) GetProject(
 	pid any,
 	opt *gogitlab.GetProjectOptions,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mpp.Called(pid, opt, options)
 
@@ -102,7 +102,7 @@ func (mpp *mockProjectProvider) GetProject(
 func (mbp *mockBranchProvider) GetBranch(
 	pid any,
 	branch string,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mbp.Called(pid, branch, options)
 
@@ -114,7 +114,7 @@ func (mcp *mockCommitProvider) GetCommit(
 	pid any,
 	sha string,
 	opt *gogitlab.GetCommitOptions,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mcp.Called(pid, sha, opt, options)
 
@@ -125,7 +125,7 @@ func (mcp *mockCommitProvider) GetCommit(
 func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 	pipelineID int,
 	opt *gogitlab.CreateDependencyListExportOptions,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(pipelineID, opt, options)
 
@@ -135,7 +135,7 @@ func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 
 func (mdle *mockDependencyListExporter) GetDependencyListExport(
 	id int,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
@@ -145,13 +145,15 @@ func (mdle *mockDependencyListExporter) GetDependencyListExport(
 
 func (mdle *mockDependencyListExporter) DownloadDependencyListExport(
 	id int,
-	options ...gogitlab.RequestOptionFunc, //nolint:gocritic,revive
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
 	//nolint:errcheck,wrapcheck
 	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
+
+//revive:enable:unchecked-type-assertion,import-shadowing
 
 func (glcs *gitLabClientSuite) SetupTest() {
 	var err error
@@ -183,8 +185,6 @@ func (glcs *gitLabClientSuite) TearDownTest() {
 		glcs.T().Fatalf("Error removing temp directory %s", glcs.tmpDir)
 	}
 }
-
-//revive:enable:unchecked-type-assertion
 
 var successGitLabResponse = &gogitlab.Response{
 	Response: &http.Response{
