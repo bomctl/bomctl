@@ -137,19 +137,19 @@ func (client *Client) Push(pushURL string, opts *options.PushOptions) error {
 }
 
 func (client *Client) generateManifest(annotations map[string]string) (ocispec.Descriptor, []byte, error) {
-	configDesc := ocispec.Descriptor{
-		MediaType: ocispec.MediaTypeImageConfig,
-		Digest:    ocispec.DescriptorEmptyJSON.Digest,
-		Size:      ocispec.DescriptorEmptyJSON.Size,
+	emptyData := bytes.NewReader(ocispec.DescriptorEmptyJSON.Data)
+
+	// Push the empty JSON blob descriptor to memory store.
+	if _, err := client.pushBlob(ocispec.MediaTypeEmptyJSON, emptyData, nil); err != nil {
+		return ocispec.Descriptor{}, []byte{}, fmt.Errorf("pushing empty JSON blob: %w", err)
 	}
 
+	// Prepend the empty JSON blob descriptor to the list of layers.
 	client.descriptors = append([]ocispec.Descriptor{ocispec.DescriptorEmptyJSON}, client.descriptors...)
 
-	if err := client.store.Push(
-		client.ctx,
-		configDesc,
-		bytes.NewReader(ocispec.DescriptorEmptyJSON.Data),
-	); err != nil && !errors.Is(err, errdef.ErrAlreadyExists) {
+	// Push the manifest config blob to memory store.
+	configDesc, err := client.pushBlob(ocispec.MediaTypeImageConfig, emptyData, nil)
+	if err != nil {
 		return ocispec.Descriptor{}, []byte{}, fmt.Errorf("pushing config blob: %w", err)
 	}
 
@@ -188,7 +188,7 @@ func (client *Client) pushBlob(
 	}
 
 	// Add the "org.opencontainers.image.created" annotation to the blob descriptor if not provided.
-	if _, ok := annotations[ocispec.AnnotationCreated]; !ok {
+	if _, ok := annotations[ocispec.AnnotationCreated]; annotations != nil && !ok {
 		annotations[ocispec.AnnotationCreated] = time.Now().UTC().Format(time.RFC3339)
 	}
 
