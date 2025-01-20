@@ -20,6 +20,7 @@
 package gitlab
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -35,6 +36,8 @@ import (
 type stringWriter struct {
 	*strings.Builder
 }
+
+var errInvalidSbomID = errors.New("invalid SBOM ID")
 
 func (*stringWriter) Close() error {
 	return nil
@@ -80,12 +83,22 @@ func (client *Client) AddFile(_pushURL, id string, opts *options.PushOptions) er
 		return fmt.Errorf("%w", err)
 	}
 
-	uuidRegex := regexp.MustCompile(`^urn:uuid:([\w-]+)$`)
+	sbomFormat := sbom.GetMetadata().GetSourceData().GetFormat()
+
+	isCycloneDX := strings.Contains(sbomFormat, "cyclonedx")
+
+	var uuidRegex *regexp.Regexp
+
+	if isCycloneDX {
+		uuidRegex = regexp.MustCompile(`^urn:uuid:([\w-]+)$`)
+	} else {
+		uuidRegex = regexp.MustCompile(`^.+/([^/#]+)(?:#\w+)?`)
+	}
+
 	uuidMatch := uuidRegex.FindStringSubmatch(id)
 
 	if len(uuidMatch) == 0 {
-		uuidRegex = regexp.MustCompile(`^.+/([^/#]+)(?:#\w+)?`)
-		uuidMatch = uuidRegex.FindStringSubmatch(id)
+		return fmt.Errorf("%w: %s", errInvalidSbomID, id)
 	}
 
 	sbomFilename := uuidMatch[1]
