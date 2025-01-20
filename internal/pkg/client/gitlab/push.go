@@ -80,8 +80,14 @@ func (client *Client) AddFile(_pushURL, id string, opts *options.PushOptions) er
 		return fmt.Errorf("%w", err)
 	}
 
-	uuidRegex := regexp.MustCompile(`urn:uuid:([\w-]+)`)
+	uuidRegex := regexp.MustCompile(`^urn:uuid:([\w-]+)$`)
 	uuidMatch := uuidRegex.FindStringSubmatch(id)
+
+	if len(uuidMatch) == 0 {
+		uuidRegex = regexp.MustCompile(`^.+/([^/#]+)(?:#\w+)?`)
+		uuidMatch = uuidRegex.FindStringSubmatch(id)
+	}
+
 	sbomFilename := uuidMatch[1]
 
 	xmlFormatRegex := regexp.MustCompile(`\bxml\b`)
