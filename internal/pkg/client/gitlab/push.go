@@ -37,7 +37,10 @@ type stringWriter struct {
 	*strings.Builder
 }
 
-var errInvalidSbomID = errors.New("invalid SBOM ID")
+var (
+	errInvalidSbomID      = errors.New("invalid SBOM ID")
+	errMissingPackageInfo = errors.New("missing package name or version")
+)
 
 func (*stringWriter) Close() error {
 	return nil
@@ -140,21 +143,14 @@ func (client *Client) Push(pushURL string, _opts *options.PushOptions) error {
 		return err
 	}
 
-	packageName := ""
-	packageVersion := ""
+	packageInfo := strings.Split(url.Fragment, "@")
 
-	parameters := strings.Split(url.Query, "&")
-
-	for _, parameter := range parameters {
-		nameValuePair := strings.Split(parameter, "=")
-
-		switch nameValuePair[0] {
-		case "package_name":
-			packageName = nameValuePair[1]
-		case "package_version":
-			packageVersion = nameValuePair[1]
-		}
+	if len(packageInfo) != 2 {
+		return fmt.Errorf("%w: %s", errMissingPackageInfo, url.Fragment)
 	}
+
+	packageName := packageInfo[0]
+	packageVersion := packageInfo[1]
 
 	for _, sbomFile := range client.PushQueue {
 		sbomReader := strings.NewReader(sbomFile.Contents)

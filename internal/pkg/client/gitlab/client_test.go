@@ -321,7 +321,7 @@ func (glcs *gitLabClientSuite) TestClient_Push() {
 	dummyPackageVersion := "1.0.0"
 
 	dummyURL := fmt.Sprintf(
-		"https://%s/%s?package_name=%s&package_version=%s",
+		"https://%s/%s#%s@%s",
 		dummyHost,
 		dummyProjectName,
 		dummyPackageName,

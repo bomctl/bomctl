@@ -106,7 +106,7 @@ func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("(?i)^%s%s%s$",
 		`(?P<scheme>https?|git|ssh):\/\/`,
 		`(?P<hostname>[^@\/?#:]*gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
-		`(?P<path>[^@?#]+)(?:@(?P<gitRef>[^?#]+))?(?:\?(?P<query>[^#]+))?`))
+		`(?P<path>[^@?#]+)(?:@(?P<gitRef>[^?#]+))?(?:\?(?P<query>[^#]+))?(?:#(?P<fragment>.+))?`))
 }
 
 func (client *Client) Parse(rawURL string) *netutil.URL {
@@ -123,8 +123,8 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		"scheme",
 		"hostname",
 		"path",
-		// "gitRef", // Required if Fetch only
-		// "query",  // Required if Push only
+		// "gitRef",    // Required if Fetch only
+		// "fragment",  // Required if Push only
 	}
 	for _, required := range requiredFields {
 		if value, ok := results[required]; !ok || value == "" {
@@ -139,6 +139,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		Path:     results["path"],
 		GitRef:   results["gitRef"],
 		Query:    results["query"],
+		Fragment: results["fragment"],
 	}
 }
 
