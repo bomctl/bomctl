@@ -145,7 +145,7 @@ func (client *Client) Push(pushURL string, _opts *options.PushOptions) error {
 
 	packageInfo := strings.Split(url.Fragment, "@")
 
-	if len(packageInfo) != 2 {
+	if packageInfoExpectedLength := 2; len(packageInfo) != packageInfoExpectedLength {
 		return fmt.Errorf("%w: %s", errMissingPackageInfo, url.Fragment)
 	}
 
