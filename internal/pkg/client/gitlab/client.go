@@ -119,14 +119,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 
 	// Ensure required map fields are present.
-	requiredFields := []string{
-		"scheme",
-		"hostname",
-		"path",
-		// "gitRef",    // Required if Fetch only
-		// "fragment",  // Required if Push only
-	}
-	for _, required := range requiredFields {
+	for _, required := range []string{"scheme", "hostname", "path"} {
 		if value, ok := results[required]; !ok || value == "" {
 			return nil
 		}
