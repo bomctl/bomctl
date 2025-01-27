@@ -21,6 +21,8 @@ package gitlab
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"regexp"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -28,14 +30,73 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/netutil"
 )
 
-type Client struct {
-	ProjectProvider
-	BranchProvider
-	CommitProvider
-	DependencyListExporter
-	Export      *gitlab.DependencyListExport
-	GitLabToken string
-}
+type (
+	projectProvider interface {
+		GetProject(
+			any,
+			*gitlab.GetProjectOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Project, *gitlab.Response, error)
+	}
+
+	branchProvider interface {
+		GetBranch(
+			any,
+			string,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Branch, *gitlab.Response, error)
+	}
+
+	commitProvider interface {
+		GetCommit(
+			any,
+			string,
+			*gitlab.GetCommitOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.Commit, *gitlab.Response, error)
+	}
+
+	dependencyListExporter interface {
+		CreateDependencyListExport(
+			int,
+			*gitlab.CreateDependencyListExportOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.DependencyListExport, *gitlab.Response, error)
+		GetDependencyListExport(
+			int,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.DependencyListExport, *gitlab.Response, error)
+		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
+	}
+
+	genericPackagePublisher interface {
+		PublishPackageFile(
+			any,
+			string,
+			string,
+			string,
+			io.Reader,
+			*gitlab.PublishPackageFileOptions,
+			...gitlab.RequestOptionFunc,
+		) (*gitlab.GenericPackagesFile, *gitlab.Response, error)
+	}
+
+	sbomFile struct {
+		Contents string
+		Name     string
+	}
+
+	Client struct {
+		projectProvider
+		branchProvider
+		commitProvider
+		dependencyListExporter
+		genericPackagePublisher
+		GitLabToken string
+		Export      *gitlab.DependencyListExport
+		PushQueue   []*sbomFile
+	}
+)
 
 func (*Client) Name() string {
 	return "GitLab"
@@ -44,8 +105,8 @@ func (*Client) Name() string {
 func (*Client) RegExp() *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("(?i)^%s%s%s$",
 		`(?P<scheme>https?|git|ssh):\/\/`,
-		`(?P<hostname>[^@\/?#:]+gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
-		`(?P<path>[^@#]+)@(?P<gitRef>\S+)`))
+		`(?P<hostname>[^@\/?#:]*gitlab[^@\/?#:]+)(?::(?P<port>\d+))?/`,
+		`(?P<path>[^@?#]+)(?:@(?P<gitRef>[^?#]+))?(?:\?(?P<query>[^#]+))?(?:#(?P<fragment>.+))?`))
 }
 
 func (client *Client) Parse(rawURL string) *netutil.URL {
@@ -58,7 +119,7 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 	}
 
 	// Ensure required map fields are present.
-	for _, required := range []string{"scheme", "hostname", "path", "gitRef"} {
+	for _, required := range []string{"scheme", "hostname", "path"} {
 		if value, ok := results[required]; !ok || value == "" {
 			return nil
 		}
@@ -70,5 +131,15 @@ func (client *Client) Parse(rawURL string) *netutil.URL {
 		Port:     results["port"],
 		Path:     results["path"],
 		GitRef:   results["gitRef"],
+		Query:    results["query"],
+		Fragment: results["fragment"],
 	}
+}
+
+func validateHTTPStatusCode(statusCode int) error {
+	if statusCode < http.StatusOK || statusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("%w. HTTP status code: %d", errFailedWebRequest, statusCode)
+	}
+
+	return nil
 }

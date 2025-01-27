@@ -29,6 +29,7 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/client"
 	"github.com/bomctl/bomctl/internal/pkg/client/git"
 	"github.com/bomctl/bomctl/internal/pkg/client/github"
+	"github.com/bomctl/bomctl/internal/pkg/client/gitlab"
 	"github.com/bomctl/bomctl/internal/pkg/client/http"
 	"github.com/bomctl/bomctl/internal/pkg/client/oci"
 	"github.com/bomctl/bomctl/internal/pkg/db"
@@ -38,7 +39,7 @@ import (
 )
 
 func NewPusher(url string) (client.Pusher, error) {
-	clients := []client.Pusher{&github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}}
+	clients := []client.Pusher{&gitlab.Client{}, &github.Client{}, &git.Client{}, &http.Client{}, &oci.Client{}}
 
 	pusher, err := sliceutil.Next(clients, func(f client.Pusher) bool { return f.Parse(url) != nil })
 	if err != nil {
