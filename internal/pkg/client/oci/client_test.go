@@ -183,9 +183,9 @@ func (otr *ociTestRepository) blobsHandler() http.Handler {
 }
 
 func (otr *ociTestRepository) blobsUploadsHandler() http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		uploadUUID := uuid.NewString()
+	uploadUUID := uuid.NewString()
 
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		switch {
 		case req.Method == http.MethodPost:
 			resp.Header().Set("Content-Length", "0")
