@@ -21,21 +21,35 @@ package gitlab_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/protobom/protobom/pkg/sbom"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	gogitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/bomctl/bomctl/internal/pkg/client/gitlab"
+	"github.com/bomctl/bomctl/internal/pkg/db"
+	"github.com/bomctl/bomctl/internal/pkg/options"
+	"github.com/bomctl/bomctl/internal/pkg/outpututil"
+	"github.com/bomctl/bomctl/internal/testutil"
 )
 
 type (
 	gitLabClientSuite struct {
 		suite.Suite
+		tmpDir string
+		*options.Options
+		*db.Backend
+		documents    []*sbom.Document
+		documentInfo []testutil.DocumentInfo
 	}
 
 	mockProjectProvider struct {
@@ -53,14 +67,31 @@ type (
 	mockDependencyListExporter struct {
 		mock.Mock
 	}
+
+	mockGenericPackagePublisher struct {
+		mock.Mock
+	}
 )
 
-//revive:disable:unchecked-type-assertion
+//revive:disable:unchecked-type-assertion,import-shadowing
+
+func (mpp *mockGenericPackagePublisher) PublishPackageFile(
+	pid any,
+	packageName, packageVersion, fileName string,
+	content io.Reader,
+	opt *gogitlab.PublishPackageFileOptions,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
+) (*gogitlab.GenericPackagesFile, *gogitlab.Response, error) {
+	args := mpp.Called(pid, packageName, packageVersion, fileName, content, opt, options)
+
+	//nolint:errcheck,wrapcheck
+	return args.Get(0).(*gogitlab.GenericPackagesFile), args.Get(1).(*gogitlab.Response), args.Error(2)
+}
 
 func (mpp *mockProjectProvider) GetProject(
 	pid any,
 	opt *gogitlab.GetProjectOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.Project, *gogitlab.Response, error) {
 	args := mpp.Called(pid, opt, options)
 
@@ -71,7 +102,7 @@ func (mpp *mockProjectProvider) GetProject(
 func (mbp *mockBranchProvider) GetBranch(
 	pid any,
 	branch string,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.Branch, *gogitlab.Response, error) {
 	args := mbp.Called(pid, branch, options)
 
@@ -83,7 +114,7 @@ func (mcp *mockCommitProvider) GetCommit(
 	pid any,
 	sha string,
 	opt *gogitlab.GetCommitOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.Commit, *gogitlab.Response, error) {
 	args := mcp.Called(pid, sha, opt, options)
 
@@ -94,7 +125,7 @@ func (mcp *mockCommitProvider) GetCommit(
 func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 	pipelineID int,
 	opt *gogitlab.CreateDependencyListExportOptions,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(pipelineID, opt, options)
 
@@ -104,7 +135,7 @@ func (mdle *mockDependencyListExporter) CreateDependencyListExport(
 
 func (mdle *mockDependencyListExporter) GetDependencyListExport(
 	id int,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (*gogitlab.DependencyListExport, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
@@ -114,7 +145,7 @@ func (mdle *mockDependencyListExporter) GetDependencyListExport(
 
 func (mdle *mockDependencyListExporter) DownloadDependencyListExport(
 	id int,
-	options ...gogitlab.RequestOptionFunc,
+	options ...gogitlab.RequestOptionFunc, //nolint:gocritic
 ) (io.Reader, *gogitlab.Response, error) {
 	args := mdle.Called(id, options)
 
@@ -122,7 +153,38 @@ func (mdle *mockDependencyListExporter) DownloadDependencyListExport(
 	return args.Get(0).(io.Reader), args.Get(1).(*gogitlab.Response), args.Error(2)
 }
 
-//revive:enable:unchecked-type-assertion
+//revive:enable:unchecked-type-assertion,import-shadowing
+
+func (glcs *gitLabClientSuite) SetupTest() {
+	var err error
+
+	glcs.tmpDir, err = os.MkdirTemp("", "gitlab-push-test")
+	glcs.Require().NoError(err, "Failed to create temporary directory")
+
+	glcs.Backend, err = testutil.NewTestBackend()
+	glcs.Require().NoError(err, "failed database backend creation")
+
+	glcs.documentInfo, err = testutil.AddTestDocuments(glcs.Backend)
+	glcs.Require().NoError(err, "failed database backend setup")
+
+	for _, docInfo := range glcs.documentInfo {
+		glcs.documents = append(glcs.documents, docInfo.Document)
+	}
+
+	glcs.Options = options.New().
+		WithCacheDir(glcs.tmpDir).
+		WithContext(context.WithValue(context.Background(), db.BackendKey{}, glcs.Backend))
+}
+
+func (glcs *gitLabClientSuite) TearDownTest() {
+	glcs.Backend.CloseClient()
+	glcs.documents = nil
+	glcs.documentInfo = nil
+
+	if err := os.RemoveAll(glcs.tmpDir); err != nil {
+		glcs.T().Fatalf("Error removing temp directory %s", glcs.tmpDir)
+	}
+}
 
 var successGitLabResponse = &gogitlab.Response{
 	Response: &http.Response{
@@ -233,13 +295,12 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		[]gogitlab.RequestOptionFunc(nil),
 	).Return(bytes.NewBuffer(expectedSbomData), successGitLabResponse, nil)
 
-	client := &gitlab.Client{
-		ProjectProvider:        mockedProjectProvider,
-		BranchProvider:         mockedBranchProvider,
-		CommitProvider:         mockedCommitProvider,
-		DependencyListExporter: mockedDependencyListExporter,
-		Export:                 nil,
-	}
+	client := gitlab.NewFetchClient(
+		mockedProjectProvider,
+		mockedBranchProvider,
+		mockedCommitProvider,
+		mockedDependencyListExporter,
+	)
 
 	glcs.Run("Fetch", func() {
 		_, err := client.Fetch(dummyFetchURL, nil)
@@ -249,6 +310,87 @@ func (glcs *gitLabClientSuite) TestClient_Fetch() {
 		mockedBranchProvider.AssertExpectations(glcs.T())
 		mockedCommitProvider.AssertExpectations(glcs.T())
 		mockedDependencyListExporter.AssertExpectations(glcs.T())
+	})
+}
+
+func (glcs *gitLabClientSuite) TestClient_Push() {
+	dummyHost := "gitlab.dummy"
+	dummyProjectID := 1234
+	dummyProjectName := "TESTING/TEST"
+	dummyPackageName := "SBOM"
+	dummyPackageVersion := "1.0.0"
+
+	dummyURL := fmt.Sprintf(
+		"https://%s/%s#%s@%s",
+		dummyHost,
+		dummyProjectName,
+		dummyPackageName,
+		dummyPackageVersion,
+	)
+
+	uuidRegex := regexp.MustCompile(`urn:uuid:([\w-]+)`)
+	uuidMatch := uuidRegex.FindStringSubmatch(glcs.documents[0].GetMetadata().GetId())
+	expectedSbomFileName := uuidMatch[1] + ".json"
+
+	sbomWriter := &gitlab.StringWriter{&strings.Builder{}}
+	err := outpututil.WriteStream(glcs.documents[0], "original", glcs.Options, sbomWriter)
+	glcs.Require().NoError(err, "failed to serialize SBOM: %v", err)
+
+	expectedSbom := sbomWriter.String()
+
+	mockedProjectProvider := &mockProjectProvider{}
+	mockedGenericPackagePublisher := &mockGenericPackagePublisher{}
+
+	mockedProjectProvider.On(
+		"GetProject",
+		dummyProjectName,
+		(*gogitlab.GetProjectOptions)(nil),
+		[]gogitlab.RequestOptionFunc(nil),
+	).Return(
+		&gogitlab.Project{
+			ID:   dummyProjectID,
+			Name: dummyProjectName,
+		},
+		successGitLabResponse,
+		nil,
+	)
+
+	mockedGenericPackagePublisher.On(
+		"PublishPackageFile",
+		dummyProjectID,
+		dummyPackageName,
+		dummyPackageVersion,
+		expectedSbomFileName,
+		mock.Anything,
+		(*gogitlab.PublishPackageFileOptions)(nil),
+		[]gogitlab.RequestOptionFunc(nil),
+	).Return(
+		&gogitlab.GenericPackagesFile{},
+		successGitLabResponse,
+		nil,
+	)
+
+	client := gitlab.NewPushClient(mockedProjectProvider, mockedGenericPackagePublisher)
+
+	glcs.Run("Push", func() {
+		err = client.AddFile(
+			dummyURL,
+			glcs.documents[0].GetMetadata().GetId(),
+			&options.PushOptions{
+				Options: glcs.Options,
+				Format:  "original",
+			},
+		)
+		glcs.Require().NoError(err, "failed to add file: %v", err)
+		glcs.Require().Len(client.PushQueue, 1)
+		glcs.Require().Equal(expectedSbomFileName, client.PushQueue[0].Name)
+		glcs.Require().Equal(expectedSbom, client.PushQueue[0].Contents)
+
+		err = client.Push(dummyURL, nil)
+		glcs.Require().NoError(err, "failed to create dependency list export: %v", err)
+
+		mockedProjectProvider.AssertExpectations(glcs.T())
+		mockedGenericPackagePublisher.AssertExpectations(glcs.T())
 	})
 }
 

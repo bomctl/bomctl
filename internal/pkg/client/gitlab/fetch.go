@@ -33,59 +33,11 @@ import (
 	"github.com/bomctl/bomctl/internal/pkg/options"
 )
 
-type (
-	ProjectProvider interface {
-		GetProject(
-			any,
-			*gitlab.GetProjectOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.Project, *gitlab.Response, error)
-	}
-
-	BranchProvider interface {
-		GetBranch(
-			any,
-			string,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.Branch, *gitlab.Response, error)
-	}
-
-	CommitProvider interface {
-		GetCommit(
-			any,
-			string,
-			*gitlab.GetCommitOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.Commit, *gitlab.Response, error)
-	}
-
-	DependencyListExporter interface {
-		CreateDependencyListExport(
-			int,
-			*gitlab.CreateDependencyListExportOptions,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.DependencyListExport, *gitlab.Response, error)
-		GetDependencyListExport(
-			int,
-			...gitlab.RequestOptionFunc,
-		) (*gitlab.DependencyListExport, *gitlab.Response, error)
-		DownloadDependencyListExport(int, ...gitlab.RequestOptionFunc) (io.Reader, *gitlab.Response, error)
-	}
-)
-
 var (
 	errInvalidGitLabURL = errors.New("invalid URL for GitLab fetching")
 	errFailedWebRequest = errors.New("web request failed")
 	errForbiddenAccess  = errors.New("the supplied token is missing the read_dependency permission")
 )
-
-func validateHTTPStatusCode(statusCode int) error {
-	if statusCode < http.StatusOK || http.StatusMultipleChoices <= statusCode {
-		return fmt.Errorf("%w. HTTP status code: %d", errFailedWebRequest, statusCode)
-	}
-
-	return nil
-}
 
 func (client *Client) createExport(projectName, branchName string) error {
 	project, response, err := client.GetProject(projectName, nil)
@@ -191,10 +143,10 @@ func (client *Client) PrepareFetch(url *netutil.URL, _auth *netutil.BasicAuth, _
 	}
 
 	client.GitLabToken = gitLabToken
-	client.ProjectProvider = gitLabClient.Projects
-	client.BranchProvider = gitLabClient.Branches
-	client.CommitProvider = gitLabClient.Commits
-	client.DependencyListExporter = gitLabClient.DependencyListExport
+	client.projectProvider = gitLabClient.Projects
+	client.branchProvider = gitLabClient.Branches
+	client.commitProvider = gitLabClient.Commits
+	client.dependencyListExporter = gitLabClient.DependencyListExport
 
 	return nil
 }

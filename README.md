@@ -235,6 +235,12 @@ Flags:
       --tree              Recursively push all SBOMs in external reference tree
 ```
 
+An SBOM may be pushed as a package to a GitLab repository through the [Generic Package Registry web API](https://docs.gitlab.com/ee/user/packages/generic_packages) by using the following URL format. Authorization for this command is configured by assigning the value of your GitLab token to the `BOMCTL_GITLAB_TOKEN` environment variable.
+
+```shell
+bomctl push SBOM_ID_OR_ALIAS https://www.gitlab.com/PROJECT/REPOSITORY#PACKAGE_NAME@PACKAGE_VERSION
+```
+
 ### Tag
 
 Edit the tags of an SBOM document.
