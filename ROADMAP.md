@@ -10,24 +10,23 @@ timeline
 
     section Core Architecture
         Near (0-2 Months) : Indirect Multi-Document Linking
-                          : Storing and Retreiving Source SBOMs Without Modification
 
         Mid (2-6 Months)  : Fetch and Push Integration with Commercial SBOM Registries
                           : Signature and Attestation Verification
 
     section Commands
-        Near (0-2 Months) : `link`
-                          : `merge`
-                          : `diff`
-                          : `visualize`
+        Near (0-2 Months) : link
+                          : merge
+                          : diff
+                          : visualize
 
-        Mid (2-6 Months)  : `redact`
-                          : `trim`
-                          : `verify`
-                          : `sign`
+        Mid (2-6 Months)  : redact
+                          : trim
+                          : verify
+                          : sign
 
-        Far (6+ Months)   : `split`
-                          : `enrich`
+        Far (6+ Months)   : split
+                          : enrich
 ```
 
 ## Missing Architecture
@@ -44,18 +43,6 @@ Key questions that need answers are:
 - When SBOMs are `push`ed to an external location, should all the external references be updated
 to allow easy `fetch`ing by someone else?
 
-### Storing and Retreiving Source SBOMs Without Modification (2 Months)
-
-Some users of `bomctl` will need SBOMs ingested into the cache outputted without modification.
-
-Reasons would be:
-
-- Ability to verify signatures of SBOMs that are moved from one system to the next with `bomctl`
-- SBOMs with data not supported by protobom can be preserved if the SBOM is not modified
-
-The biggest architectural decision is how should we maintain traceability from a component to the
-SBOM it originally came from.
-
 ### `fetch` and `push` Integration with Commercial SBOM Registries (3 Months)
 
 One of the big usecases for `bomctl` is the ability to fetch and push SBOMs from different SBOM
@@ -71,10 +58,11 @@ Teams will be signing and attesting to SBOMs how should this be tied into `bomct
 
 ## Commands
 
-### Document and Document Relationship Commands (1 Month)
+### Document and Document Relationship Commands (2 Months)
 
 - `link`
-  - Ability to create external references between documents
+  - Ability to create internal references between documents
+  - Ability to push documents with internal references and have the document tree `fetch`-able
 - `merge`
   - Merge fields from similar components in two or more SBOM documents
   - Merge components and component dependencies from two or more SBOM documents
