@@ -25,8 +25,7 @@ __bomctl__ is format-agnostic Software Bill of Materials (SBOM) tooling, which i
 ## Join our Community
 
 - [#bomctl on OpenSSF Slack](https://openssf.slack.com/archives/C06ED5VB81W)
-- [OpenSSF Security Tooling Working Group Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/94897563315?password=7f03d8e7-7bc9-454e-95bd-6e1e09cb3b0b) - Every other Friday at 8am Pacific
-- [SBOM Tooling Working Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/92103679564?password=c351279a-5cec-44a4-ab5b-e4342da0e43f) - Every Monday, 2pm Pacific
+- [OpenSSF Security Tooling Working Group Meeting](https://zoom-lfx.platform.linuxfoundation.org/meeting/94897563315?password=7f03d8e7-7bc9-454e-95bd-6e1e09cb3b0b) - Every other Friday at 11am Eastern / 8am Pacific
 
 ## Installation
 
