@@ -56,7 +56,7 @@ jobs:
           cache: false
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@2226d7cb06a077cd73e56eedd38eecad18e5d837 # v6.5.0
+        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
         with:
           install-mode: goinstall
           version: 89476e7a1eaa0a8a06c17343af960a5fd9e7edb7 # v1.62.2
