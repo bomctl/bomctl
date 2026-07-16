@@ -153,6 +153,12 @@ func mergeRootNodes(merged *sbom.Document) error {
 	// Augment new root node with other root node data
 	for _, root := range merged.GetNodeList().GetRootElements() {
 		rootNode := merged.GetNodeList().GetNodeByID(root)
+		if rootNode == nil {
+			// A root element ID with no backing node (dangling root, e.g. an SPDX
+			// documentDescribes pointing at an undefined SPDXID) has nothing to
+			// merge. Skip it instead of passing a nil node into the merger.
+			continue
+		}
 
 		err = NewMerger(mergedRootNode).MergeProtoMessage(rootNode)
 		if err != nil {
