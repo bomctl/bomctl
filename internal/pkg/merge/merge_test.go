@@ -31,6 +31,30 @@ import (
 	"github.com/bomctl/bomctl/internal/testutil"
 )
 
+// danglingRootSPDX is a valid SPDX 2.3 document whose documentDescribes points
+// at an SPDXID that no package or file node defines. Parsing it yields a root
+// element with no backing node in the NodeList.
+const danglingRootSPDX = `{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "dangling-root-test",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-01-01T00:00:00Z",
+    "creators": ["Tool: bomctl-test"]
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://spdx.org/spdxdocs/bomctl-dangling-root",
+  "documentDescribes": ["SPDXRef-Package-ghost"],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-real",
+      "name": "real-package",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "NOASSERTION"
+    }
+  ]
+}`
+
 type mergeSuite struct {
 	suite.Suite
 	*options.Options
@@ -77,6 +101,31 @@ func (ms *mergeSuite) TestMerge() {
 	mergedTools := append(baseDocument.GetMetadata().GetTools(), otherDocument.GetMetadata().GetTools()...)
 
 	ms.Len(mergedDocument.GetMetadata().GetTools(), len(mergedTools))
+}
+
+func (ms *mergeSuite) TestMergeDanglingRootNode() {
+	opts := &options.MergeOptions{
+		Options: ms.Options,
+	}
+
+	danglingDoc, err := ms.Backend.AddDocument(
+		[]byte(danglingRootSPDX),
+		db.WithSourceDocumentAnnotations([]byte(danglingRootSPDX)),
+	)
+	ms.Require().NoError(err, "failed to add dangling-root SBOM")
+
+	// The parsed document carries a root element that no node backs.
+	ms.Contains(danglingDoc.GetNodeList().GetRootElements(), "Package-ghost")
+
+	baseDocument := ms.documentInfo[0].Document
+
+	// Merging a document with a dangling root used to panic with a nil pointer
+	// dereference in mergeRootNodes. It should now complete without crashing.
+	_, err = merge.Merge(
+		[]string{baseDocument.GetMetadata().GetId(), danglingDoc.GetMetadata().GetId()},
+		opts,
+	)
+	ms.Require().NoError(err)
 }
 
 func TestMergeSuite(t *testing.T) {
